@@ -1,0 +1,31 @@
+bracket watertight True bodies 1 volume 46.5 cm3
+pad faces: gap to chest from -0.01 to 0.01 mm (want about 0)
+rest of bracket: closest to chest 3.33 mm (want > 0)
+Brio: lens 160 mm in front of the torso origin, 0.978 m above the floor, tilted 20 deg up
+camera body overlapping the bracket: 0.00 mm3 (want 0)
+closest bracket vertex to the camera body: 0.00 mm
+USB-C plug (35 x 13 x 7 mm) overlapping the bracket: 0.00 mm3 (want 0)
+  closest bracket point to the plug: 3.50 mm
+  from the plug end, free straight back: 31.3 mm
+  from the plug end, free level back: 26.3 mm
+  from the plug end, free up: clear
+  from the plug end, free back and up 45: 47.9 mm
+  plug end at x=104.3 z=117.6; chest surface there x=67.5
+screw: 10.28 mm of plastic, sticks 4.00 mm into the camera with one 1.6 mm washer
+Brio view: 82.1 deg wide x 52.2 deg tall
+  worst case 66 deg tall: rays blocked by the bracket: 0 of 4941
+  worst case 66 deg tall: rays blocked by the torso + head: 0 of 4941
+  rays blocked by the bracket: 0 of 3969
+  rays blocked by the robot torso + head: 0 of 3969
+  top of view 46.1 deg above level, bottom 6.1 deg below level
+  a face at 1.20 m is in view from 0.37 m in front of the robot
+  a face at 1.50 m is in view from 0.66 m in front of the robot
+  a face at 1.60 m is in view from 0.76 m in front of the robot
+  a face at 1.75 m is in view from 0.90 m in front of the robot
+  a face at 1.90 m is in view from 1.05 m in front of the robot
+  at 1.5 m the bottom of the view is 0.83 m above the floor
+  at 3.0 m the bottom of the view is 0.67 m above the floor
+  at 5.0 m the bottom of the view is 0.46 m above the floor
+talk spot floor: 0 of 1617 depth-camera sight lines blocked
+talk spot thigh 0.45 m: 0 of 1617 depth-camera sight lines blocked
+closest a talk-spot sight line passes to the camera or bracket: 15 mm

@@ -1,0 +1,3 @@
+# --mock: laptop webcam, mic and speaker stand in for the G1.
+-r base.txt
+sounddevice>=0.5

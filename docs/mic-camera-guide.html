@@ -1,0 +1,255 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>G1 EDU+ Mic and Camera Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~760px) with full-width tables that scroll inside their own box; verdict chips carry state */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #17202a;
+  --muted: #55606b;
+  --line: #dde2e7;
+  --accent: #0f6e7a;
+  --accent-soft: #e2f1f2;
+  --ok: #1d7a43; --ok-bg: #e5f4ea;
+  --warn: #9a5b00; --warn-bg: #fdf1dc;
+  --bad: #b3261e; --bad-bg: #fbe7e5;
+  --code-bg: #eef1f4;
+  --sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12171c; --surface: #1a2128; --ink: #e6ebf0; --muted: #a0abb6; --line: #2c3540;
+  --accent: #5cc3cf; --accent-soft: #163338;
+  --ok: #6fd39a; --ok-bg: #16301f; --warn: #f0b860; --warn-bg: #352712; --bad: #f28b82; --bad-bg: #3a1d1b;
+  --code-bg: #222b34; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --ink: #e6ebf0; --muted: #a0abb6; --line: #2c3540;
+  --accent: #5cc3cf; --accent-soft: #163338;
+  --ok: #6fd39a; --ok-bg: #16301f; --warn: #f0b860; --warn-bg: #352712; --bad: #f28b82; --bad-bg: #3a1d1b;
+  --code-bg: #222b34; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 40px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(28px, 4.5vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-size: 24px; line-height: 1.25; margin: 0; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 72ch; }
+.lede { color: var(--muted); font-size: 17px; }
+section { display: flex; flex-direction: column; gap: 14px; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, .mono { font-family: var(--mono); font-size: 13.5px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { font-family: var(--mono); font-size: 13px; background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 0; line-height: 1.5; }
+ul, ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; max-width: 78ch; }
+.buy { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+.buy > div { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.buy h3 { color: var(--accent); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.buy .item { font-weight: 600; font-size: 17px; }
+.buy .sub { color: var(--muted); font-size: 14px; }
+.total { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 14px; font-size: 15px; color: var(--muted); }
+.total b { color: var(--ink); }
+.alert { border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.alert.bad { background: var(--bad-bg); color: var(--ink); border: 1px solid var(--bad); }
+.alert.warn { background: var(--warn-bg); border: 1px solid var(--warn); }
+.alert.info { background: var(--accent-soft); border: 1px solid var(--accent); }
+.alert strong { font-weight: 600; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.ok { color: var(--ok); background: var(--ok-bg); }
+.chip.warn { color: var(--warn); background: var(--warn-bg); }
+.chip.bad { color: var(--bad); background: var(--bad-bg); }
+.steps { counter-reset: s; list-style: none; padding: 0; gap: 10px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+.steps li::before { content: counter(s); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--surface); font-size: 13px; font-weight: 600; display: grid; place-items: center; margin-top: 2px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.muted { color: var(--muted); }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+footer ul { font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Open Day robot greeter · procurement check · prices seen 28–31 Oct 2026 · updated 2 Nov</span>
+  <h1>Microphones and cameras for the Unitree G1 EDU+ (23 DoF)</h1>
+  <p class="lede">Which webcam and microphone to buy for our G1, and how to mount the webcam, checked against Unitree’s published port and power specs, the robot’s Linux system, and real user reports. Every item below is USB-powered at 5 V and plugs into the robot’s USB-C ports; nothing connects to the robot’s 12/24/58 V outputs.</p>
+</header>
+
+<section aria-labelledby="buy">
+  <h2 id="buy">What to buy</h2>
+  <div class="buy">
+    <div>
+      <h3>Camera</h3>
+      <span class="item">Logitech Brio 4K</span>
+      <span class="sub">+ 1 m USB-C to USB-C data cable (USB 3.x). About £83 on Amazon UK: <a href="https://www.amazon.co.uk/dp/B0F1TYFRYT">Brio 4K for Business</a> £69.99 (deal price) + <a href="https://www.amazon.co.uk/dp/B0BFGSX9JR">CableCreation 1 m USB 3.2 Gen 2</a> £12.99.</span>
+      <span class="sub"><b>Backup if out of stock:</b> Logitech C930e + USB-C (male) to USB-A (female) adapter. About £109. Our chest bracket is sized for the Brio, so a C930e would need the bracket’s camera size and screw position changed and the part reprinted.</span>
+    </div>
+    <div>
+      <h3>Microphone</h3>
+      <span class="item">First: test the robot’s built-in mic</span>
+      <span class="sub">Free. It has 4 mics with noise reduction; it only needs a mode setting (see below).</span>
+      <span class="sub"><b>If it is not good enough:</b> Seeed ReSpeaker USB Mic Array (XVF-3000) + USB-C to Micro-B cable. About £58.</span>
+    </div>
+    <div>
+      <h3>Small parts</h3>
+      <span class="item">Bracket, screws, ties</span>
+      <span class="sub">Our 3D-printed chest bracket (PETG or ASA; see <a href="#mount">Mounting</a>), 2× M6 screws with washers (probably M6×18 or M6×20), one ¼"-20 × 5/8" camera screw with two M6 washers, velcro cable ties, and a spare USB-C to USB-A adapter.</span>
+    </div>
+    <p class="total">Recommended spend: <b>about £83</b> (camera + 1 m cable) now, plus a few pounds of screws and filament, plus <b>about £60</b> for the mic array only if the built-in mic fails the hall test. Buying the C930e as a second camera adds about £110 and removes the single-supplier risk.</p>
+  </div>
+
+  <div class="alert bad">
+    <strong>Never plug anything into the XT30 power sockets.</strong>
+    <span>The robot’s panel has three XT30 sockets at 58 V (battery), 24 V and 12 V, each up to 5 A. A USB device connected there through a homemade lead would be destroyed. Webcams and mics go only into the USB-C ports, which supply 5 V.</span>
+  </div>
+</section>
+
+<section aria-labelledby="ports">
+  <h2 id="ports">The robot’s ports and power</h2>
+  <p>All user ports are on one panel at the back of the neck (Unitree calls it the shoulder interface). They connect to PC2, the Jetson Orin NX computer our program runs on. Source: Unitree <a href="https://support.unitree.com/home/en/G1_developer/about_G1">About G1</a> and help centre article 031347.</p>
+  <div class="tbl"><table>
+    <thead><tr><th style="width:22%">Port</th><th style="width:22%">Output</th><th>What it means for us</th></tr></thead>
+    <tbody>
+      <tr><td>USB-C ×3 (ports 6–8)</td><td class="num">5 V, 1.5 A each</td><td><span class="chip ok">Use these</span> USB 3.0 host. Our camera (≤ 0.9 A worst case for a USB 3 device) and mic (0.17–0.18 A for the ReSpeaker) fit easily. Unitree does not say whether the three ports share one 1.5 A budget; even if shared, camera + mic stay under it.</td></tr>
+      <tr><td>USB-C Alt Mode (port 9)</td><td class="num">Not documented</td><td><span class="chip warn">Spare</span> USB 3.2 host plus DisplayPort. Usable, but its power output is not published, so put the camera and mic on ports 6–8 first.</td></tr>
+      <tr><td>XT30 VBAT</td><td class="num">Up to 58 V, 5 A</td><td><span class="chip bad">Do not use</span> Direct battery output (13-cell Li-ion, about 54.6 V when full, falling as it discharges).</td></tr>
+      <tr><td>XT30 24 V / XT30 12 V</td><td class="num">24 V 5 A / 12 V 5 A</td><td><span class="chip bad">Do not use</span> Regulated supplies for accessories that need them. None of our items do.</td></tr>
+      <tr><td>I/O OUT</td><td class="num">12 V 3 A + GPIO</td><td><span class="chip bad">Do not use</span> Not needed.</td></tr>
+      <tr><td>RJ45 ×2</td><td class="num">Data only</td><td>Laptop connection for setup.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="alert warn">
+    <strong>EDU+ specific: one USB-C port is probably already taken.</strong>
+    <span>In Unitree’s documents, “EDU+” is the current build in which the head depth camera (RealSense D435i) is wired outside the body into one of these USB-C ports on PC2 (help article 011320 and the G1 FAQ). So expect two free USB-C ports plus port 9: enough for one camera and one mic. Unitree’s own services on PC2 (<code>master_service</code>, <code>videohub_pc4</code>) hold the depth camera open; our program already handles that.</span>
+  </div>
+</section>
+
+<section aria-labelledby="builtin">
+  <h2 id="builtin">The built-in microphone: where it is and how to use it</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Where</h3>
+      <p>Four small holes in a row at the <b>front of the neck, just above the chest plate</b>: a 4-microphone linear array, 20 mm spacing, wired to PC1 (the motion computer). Unitree advises speaking from directly in front, within about 1 m. The speaker (5 W) is in the centre of the upper chest.</p>
+      <p class="muted">Sources: <a href="https://support.unitree.com/home/en/G1_developer/VuiClient_Service">VuiClient Service</a> component drawing; topology in help article 031345.</p>
+    </div>
+    <div class="card">
+      <h3>How to turn it on</h3>
+      <ol class="steps">
+        <li><span>Put the voice assistant in <b>wake-up mode</b>: on the remote press <b>L1 + L2 together</b>, or in the Unitree app go to Device → Data → Audio → Voice assistant. Confirm the mode in the app; there is also a “closed” state.</span></li>
+        <li><span>In the app, Device → Service Status, switch off <b>chat_go</b>, so Unitree’s own assistant does not answer visitors who say its wake word (“Hello Robot”).</span></li>
+        <li><span>Our program then receives the noise-reduced audio over the robot’s internal network: multicast <code>239.168.123.161:5555</code>, mono, 16 kHz, 16-bit, 5120-byte packets.</span></li>
+      </ol>
+    </div>
+  </div>
+  <ul>
+    <li><b>There is no physical button on the robot.</b> Older notes (including ours) said “push-button mode”; Unitree documents <b>wake-up mode</b> for this stream, and users report silent or all-zero audio otherwise. Our software now says this and warns when the audio arrives all zeros.</li>
+    <li><b>Check it works:</b> if the received audio is all zeros, the mode is wrong. Our program’s self-check reports the bytes it receives, and <code>scripts/record_mic.py</code> saves 5 seconds as <code>mic_test.wav</code> so you can listen to it.</li>
+    <li><b>If voice was never used on this robot</b> and its firmware is 1.5.4 or later, Unitree says voice may need reactivating: with the robot online over Wi-Fi, press L1+L2+R1+R2+START on the remote, then reboot (help article 011335).</li>
+    <li>Unitree’s brochure claims echo cancellation for the array, but the developer docs only say “noise-reduced”. We keep the robot from listening while it speaks either way.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="cams">
+  <h2 id="cams">Cameras</h2>
+  <p>Needs: a standard USB video (UVC) camera that works on Linux without a driver, gives 640×480 compressed video (MJPG) at 30 frames per second, lets software lock exposure and white balance, and has a wide view (about 90°) so people 1–5 m away stay in frame. The robot’s own head camera points 47.6° down at the floor, which is why we add one.</p>
+  <div class="tbl"><table>
+    <thead><tr><th style="width:17%">Camera</th><th style="width:11%">Verdict</th><th style="width:8%">View</th><th>Evidence and caveats</th><th style="width:15%">Connect with</th><th style="width:12%">Price (UK)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Logitech Brio 4K</b><br><span class="muted">960-001106 / 960-001746</span></td><td><span class="chip ok">Best choice</span></td><td>90° (also 78°, 65°)</td><td>Only candidate with a published success on an Orin NX (the same computer family). 640×480 MJPG at 30 fps and the exposure, white-balance and focus controls are confirmed on Linux. 65 g without its clip. <b>Caveats:</b> Scan lists the original 960-001106 as end of life, and Logitech UK now redirects it to the Brio 4K for Business (960-001746), which Amazon UK sells; don’t pick the listing labelled “New version” (960-001718), which we have not checked. Update its firmware to 1.0.423 or later on a Windows or Mac computer before fitting, because an older firmware failed on a Jetson.</td><td>USB-C to USB-C cable, USB 3.x, 1 m (reaches from the chest to the neck panel)</td><td class="num"><a href="https://www.amazon.co.uk/dp/B0F1TYFRYT">£69.99</a><br><span class="muted">Amazon UK, deal price seen 31 Oct</span></td></tr>
+      <tr><td><b>Logitech C930e</b><br><span class="muted">960-000971 / 960-000972</span></td><td><span class="chip ok">Backup</span></td><td>90° fixed</td><td>640×480 MJPG at 30 fps and the lockable controls confirmed on Linux (ARM). USB 2.0 only, which avoids the USB 3 link problems Unitree lists for some robots. No Orin-specific report. 162 g with clip; fixed 1.5 m cable to coil.</td><td>USB-C (male) to USB-A (female) adapter</td><td class="num"><a href="https://onedirect.co.uk/product/logitech-c930e-webcam">£109.19</a><br><span class="muted">OneDirect, 3 in stock</span></td></tr>
+      <tr><td><b>Logitech C920s</b><br><span class="muted">960-001252</span></td><td><span class="chip warn">Fallback</span></td><td>78°</td><td>The most proven model: the C920 is documented working on a Jetson with the same Linux kernel (5.10). But its view is narrower than we want, so people at the sides will drop out of frame.</td><td>USB-C to USB-A adapter</td><td class="num"><a href="https://www.logitech.com/en-gb/products/webcams/c920s-pro-hd-webcam.960-001252.html">£50.99</a><br><span class="muted">Logitech UK, sold out</span></td></tr>
+      <tr><td><b>Arducam IMX291, 120°</b><br><span class="muted">B0448</span></td><td><span class="chip warn">Test one first</span></td><td>120°</td><td>Widest view, fixed focus, the only one with a published current (5 V, 300 mA). But 640×480 MJPG and exposure locking are not confirmed for this exact model, long exposures drop the frame rate, and the wide lens distorts distances at the edges.</td><td>USB-C to USB-A adapter</td><td class="num"><a href="https://thepihut.com/products/2mp-wide-angle-usb-camera-module-with-waterproof-metal-case">£60.50</a><br><span class="muted">The Pi Hut</span></td></tr>
+      <tr><td><b>Unitree head stereo camera</b><br><span class="muted">60 mm baseline</span></td><td><span class="chip bad">Not for us</span></td><td>125°</td><td>Unitree’s own camera for teleoperation (<a href="https://github.com/unitreerobotics/xr_teleoperate/blob/main/Device.md">xr_teleoperate Device.md</a> 5.2.1–5.2.2), streamed by their teleimager software on PC2. Unitree’s bracket holds it in the face opening pitched about 49° down (measured from the bracket’s STEP file), so at 3–5 m it sees legs rather than faces, and that spot is the depth camera’s window. Only sold through Taobao links; exposure and white-balance locking unknown; its side-by-side stereo picture would need cropping in our software.</td><td>—</td><td class="num">about CNY 209–256 (30 fps)<br><span class="muted">Taobao search results; listings not opened (they need a login)</span></td></tr>
+      <tr><td>Logitech Brio 500</td><td><span class="chip bad">Do not buy</span></td><td>90°</td><td>No evidence it meets the video-format or exposure-lock needs on Linux; the one Linux report is a failure.</td><td>—</td><td class="num">£99.99</td></tr>
+      <tr><td>OBSBOT Meet 2</td><td><span class="chip bad">Do not buy</span></td><td>79°</td><td>No MJPG at 640×480, narrower view, Linux not listed.</td><td>—</td><td class="num">—</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="mount">Mounting: on the chest, not the head</h3>
+  <p>Unitree’s 3D-printable head brackets (<a href="https://github.com/unitreerobotics/xr_teleoperate/blob/main/Device.md">xr_teleoperate Device.md</a>; “Classic Head (98 mm)” and “Renewed Head (88 mm)” are the spacings of their two M4 screw holes) put a camera in the top of the face opening. That is the window the depth camera looks through to check the talk spot, and the Brio (102 mm wide) does not fit those brackets anyway.</p>
+  <p>So we designed a 3D-printed bracket that bolts to the two <b>lower front M6 accessory holes</b> on the chest (64.5 mm apart on Unitree’s <a href="https://support.unitree.com/home/en/G1_developer/about_G1">About G1</a> drawing) and holds the Brio itself: its clip pulls off, and the ¼" tripod thread is under the camera body, so one screw from below holds it on a seat tilted 20° up. The thread sits about 14.5 mm in front of the camera’s back face and is shallow (a thin steel plate held in with tape), so the screw goes only 4 mm into it. The USB-C socket is low on the back face, so the back stops have a gap for the plug, and the shelf is open behind the camera so the stiff cable can bend up towards the shoulder. The lens ends up about 0.98 m above the floor. The tilt keeps a visitor’s face in view from about 0.75 m away, while people 3–5 m away are still seen from the thighs up. Checked against Unitree’s 3D model of the robot (<a href="https://github.com/unitreerobotics/unitree_ros">unitree_ros</a>): both pads sit flat, the rest of the bracket stays at least 3.3 mm off the chest, nothing blocks the webcam’s view, and none of the depth camera’s sight lines to the talk spot is blocked (the closest passes 15 mm from the camera). The camera’s size, thread and socket positions come from Logitech’s documents, teardown photos and published 3D-printed holders made around the real camera. The cable runs over the shoulder to the neck panel. Files are in the project’s <code>hardware/brio_chest_mount</code> folder (STL to print, STEP for CAD, parametric source).</p>
+  <p class="muted">Not yet fitted: before the final print, measure the hole spacing and thread depth on the robot, check that the Brio’s thread is 11.5–17.5 mm from its back face once the clip is off, and try a quick test print in cheap PLA (the final part is PETG or ASA). When fitting, the camera screw should turn about three full turns before it stops.</p>
+</section>
+
+<section aria-labelledby="mics">
+  <h2 id="mics">Microphones (only if the built-in mic is not good enough)</h2>
+  <p>Needs: a standard USB audio device that Linux recognises without a driver and that can record at 16 kHz. Note that the echo cancelling built into some of these only works when the robot’s voice is played through the device itself, not through the robot’s chest speaker.</p>
+  <div class="tbl"><table>
+    <thead><tr><th style="width:18%">Microphone</th><th style="width:11%">Verdict</th><th>Evidence and caveats</th><th style="width:16%">Connect with</th><th style="width:12%">Price (UK)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Seeed ReSpeaker USB Mic Array</b> (XVF-3000)<br><span class="muted">107990193</span></td><td><span class="chip ok">Best choice</span></td><td>Strongest evidence: Seeed states standard USB audio and “No driver is required” on Linux; the robot’s kernel has USB audio built in. Records at 16 kHz natively; 4 mics with noise suppression and beamforming; 5 V, 170–180 mA. <b>Caveats:</b> end of life, so buy now; do not reflash its firmware (reports of bricked units).</td><td>USB-C (male) to Micro-B (male) USB 2.0 cable, or a C-to-A adapter with the included cable</td><td class="num"><a href="https://cpc.farnell.com/seeed-studio/107990193/respeaker-usb-mic-array/dp/SC19968">£57.58</a><br><span class="muted">CPC, 10 in stock</span></td></tr>
+      <tr><td><b>Seeed reSpeaker XVF3800</b></td><td><span class="chip warn">Second option</span></td><td>Newer and better processing, USB-C, 16 kHz. But an open bug on ARM Linux gives a constant hum after the computer restarts until it is replugged (workaround: reset it at start-up), and UK supply is slow: Amazon UK ships from the US for delivery 18 Nov–6 Dec.</td><td>USB-C to USB-C cable</td><td class="num"><a href="https://www.amazon.co.uk/dp/B0GVJ5YQ58">£77.03</a><br><span class="muted">Amazon UK (from US)</span></td></tr>
+      <tr><td>Jabra Speak2 55</td><td><span class="chip warn">Table use only</span></td><td>Works on Linux (third-party reports, firmware tools). But 280 g and 12 cm wide, so not for the head; contains a battery that charges from the robot; sample rates unpublished.</td><td>Built-in USB-C cable</td><td class="num"><a href="https://www.onedirect.co.uk/product/jabra-speak2-55-uc">£115.19</a></td></tr>
+      <tr><td>RØDE VideoMic GO II</td><td><span class="chip warn">Not first choice</span></td><td>Light and directional, but Linux not stated by RØDE, 48 kHz only (needs a software change), no noise processing, cable sold separately.</td><td>RØDE SC16 (C-to-C)</td><td class="num">£75.00 (Wex)</td></tr>
+      <tr><td>RØDE Wireless GO (Gen 3)</td><td><span class="chip warn">Not first choice</span></td><td>Linux and sample rate unverified, three batteries, 2.4 GHz radio in a busy hall, and wireless brings no benefit on a robot. Most expensive.</td><td>Included C-to-C</td><td class="num">£159.00 (Wex)</td></tr>
+      <tr><td>Hollyland Lark M2S (USB-C)</td><td><span class="chip bad">Do not buy</span></td><td>Weakest evidence: the receiver is designed for phones, settings need a phone app, only a different model has a Linux report, and the dongle levers on the robot’s port.</td><td>—</td><td class="num">£84.00 (Wex)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="verify">
+  <h2 id="verify">Why we cannot promise 100%, and how to close the gap</h2>
+  <p>Unitree publishes the port voltages and currents, but not everything: whether the three USB-C ports share one power budget, how they map to the computer inside, or a load limit for the accessory holes. Manufacturers also rarely state Linux support for webcams and mics. The checks above reduce the risk as far as documents allow; the rest has to be confirmed on the robot. So:</p>
+  <ul>
+    <li><b>Buy from sellers that accept returns</b> (OneDirect, CPC, The Pi Hut, Logitech UK, Amazon UK), and test on the robot the day the items arrive.</li>
+    <li><b>Before ordering,</b> confirm the robot’s identity: count the forearm joints (Unitree’s way to tell the 23-DoF and 29-DoF versions apart), read the label in the battery bay, and check that the depth camera’s cable runs from the back of the neck into a USB-C port (EDU+).</li>
+  </ul>
+  <div class="two">
+    <div class="card">
+      <h3>Camera test on arrival (on the robot’s computer)</h3>
+<pre>lsusb -t
+ls -l /dev/v4l/by-id/
+v4l2-ctl -d /dev/v4l/by-id/&lt;camera&gt;-video-index0 --list-formats-ext
+v4l2-ctl -d /dev/v4l/by-id/&lt;camera&gt;-video-index0 --list-ctrls-menus
+v4l2-ctl -d /dev/v4l/by-id/&lt;camera&gt;-video-index0 \
+  --set-fmt-video=width=640,height=480,pixelformat=MJPG \
+  --stream-mmap --stream-count=300</pre>
+      <p class="muted">Pass: MJPG 640×480 at 30 fps listed; exposure, white-balance and focus controls listed; the 300-frame stream runs at about 30 fps.</p>
+    </div>
+    <div class="card">
+      <h3>Microphone test on arrival</h3>
+<pre>cat /proc/asound/cards
+arecord -l
+arecord -D plughw:CARD=&lt;name&gt;,DEV=0 -r 16000 -c 1 \
+  -f S16_LE -d 10 test.wav
+aplay test.wav   # or copy it to a laptop</pre>
+      <p class="muted">Pass: the device is listed, records 10 seconds at 16 kHz, and the recording is clear. Repeat after a reboot with the mic left plugged in.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="sw">
+  <h2 id="sw">Changes made, and one to make if needed</h2>
+  <ul>
+    <li><span class="chip ok">Done 31 Oct</span> <code>scripts/record_mic.py</code> records 5 seconds from the built-in mic to a WAV file and says if no audio arrives or it is all zeros (the wrong mode). Tested only with a simulated stream on a laptop.</li>
+    <li><span class="chip warn">Final design 2 Nov</span> The chest bracket for the Brio (<a href="#mount">Mounting</a>), revised for the camera’s real thread and USB-C positions and the bought straight-plug cable. Checked in CAD only; not printed or fitted yet.</li>
+    <li><span class="chip ok">Done 30 Oct</span> Our program now tells the operator to use <b>wake-up mode</b>, and warns when the built-in mic’s audio arrives all zeros (the sign of the wrong mode). The self-check fails in that case too.</li>
+    <li><span class="chip ok">Done 30 Oct</span> Cameras: before the picture settles, 50 Hz anti-flicker for UK lighting and no frame-rate drop in dim light; then white balance, exposure <b>and focus</b> are locked, so the image no longer hunts for focus as people walk past. Covered by automated tests (148 pass).</li>
+    <li><span class="chip warn">To do, only if bought</span> XVF3800: reset it once at start-up to avoid the hum bug.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="model">
+  <h2 id="model">Note on the model name “G1 EDU+ 23 DoF”</h2>
+  <p>Unitree’s own spec tables list only “G1” and “G1-EDU”. In Unitree’s support documents “EDU+” means the current EDU build with the depth camera wired to the user computer, which matches a 23-DoF robot. Some UK resellers instead use “EDU Plus” for the 29-DoF version, so if the purchase paperwork says “EDU Plus”, check the DoF. It is not the newer <b>G1+</b> (launched September 2026), which has a moving head, different cameras, a 6-mic array and a different port panel; none of the above would apply to that robot.</p>
+</section>
+
+<footer>
+  <span>Prepared for the Open Day robot greeter project. Prices and stock were checked on 28–31 October 2026 and may have changed.</span>
+  <span>Main sources:</span>
+  <ul>
+    <li>Unitree: <a href="https://support.unitree.com/home/en/G1_developer/about_G1">About G1</a> (ports and power), <a href="https://support.unitree.com/home/en/G1_developer/VuiClient_Service">VuiClient Service</a> (mic, speaker, multicast), <a href="https://support.unitree.com/home/en/G1_developer/voice_assistant_instructions">Voice assistant instructions</a> (L1+L2 mode switch), <a href="https://support.unitree.com/home/en/G1_developer/FAQ">G1 FAQ</a> (EDU+, PC2), help centre articles 011320, 011322, 011335, 031328, 031345, 031347 at serviceconsole.unitree.com.</li>
+    <li>Unitree GitHub: <a href="https://github.com/unitreerobotics/xr_teleoperate/blob/main/Device.md">xr_teleoperate Device.md</a> (head brackets and stereo camera), <a href="https://github.com/unitreerobotics/unitree_ros">unitree_ros</a> (G1 3D model, used to check the chest bracket), <a href="https://github.com/unitreerobotics/unitree_sdk2_python/pull/133">unitree_sdk2_python #133</a> (wake-up conversation mode).</li>
+    <li>Linux evidence: NVIDIA L4T R35.3 kernel configuration (USB audio built in, USB video as a module); Seeed wikis for the ReSpeaker arrays; public v4l2-ctl listings for the Logitech Brio and C930e; NVIDIA developer forum reports.</li>
+  </ul>
+</footer>
+</div>
+</body></html>

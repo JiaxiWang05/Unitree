@@ -1,0 +1,10 @@
+[project]
+name = "g1-greeter"
+version = "0.1.0"
+description = "Proactive green-visitor greeter for the Unitree G1 EDU (robot bridge + laptop dialogue)"
+requires-python = ">=3.8"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

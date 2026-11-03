@@ -1,0 +1,7 @@
+# Core: robot hardware, detector, dialogue and the default OpenAI Realtime backend.
+# Works on Python 3.8+ (the Jetson's system Python on JetPack 5).
+numpy
+opencv-python>=4.7        # skipped by install.sh when the Jetson already has cv2
+websockets>=13.1          # 13.1 is the newest release for Python 3.8
+ultralytics>=8.4.0        # YOLO26 (install.sh installs it without letting it replace NVIDIA's torch)
+lap>=0.5.12               # ByteTrack matching; don't let Ultralytics fetch it at run time

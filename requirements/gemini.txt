@@ -1,0 +1,2 @@
+# --backend gemini (Python 3.10+)
+google-genai>=2.31

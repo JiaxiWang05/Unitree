@@ -1,0 +1,3 @@
+-r mock.txt
+-r gemini.txt
+pytest>=8
