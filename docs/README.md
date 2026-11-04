@@ -2,6 +2,7 @@
 
 | File | What it is |
 |---|---|
+| [`g1-open-day-scene.html`](g1-open-day-scene.html) | Interactive 3D of the G1 greeter at the Open Day stand, built from Unitree's G1 model and the bracket STL: one visit you can play through with the robot's states and speech, what the webcam sees, how it works, status and links |
 | [`mic-camera-guide.html`](mic-camera-guide.html) | Procurement guide: which webcam and microphone to use on the G1 EDU+, the robot's ports and power, how to use the built-in mic, and the chest mount |
 | [`g1-lab-day.html`](g1-lab-day.html) | Lab day guide (in Chinese): a 3D step-by-step for fitting the chest bracket, testing the built-in mic, setting up the robot's computer, and running the whole flow with a lab USB webcam. Opens in the browser on this site; the 3D view needs an internet connection |
 | `test-results.txt` | Output of the test suite (`pytest -v`) on a laptop, with the robot, camera and cloud services replaced by stand-ins |
