@@ -448,6 +448,7 @@ greeter/
 scripts/                setup-jetson.sh (human, once), deploy.sh + install.sh (Claude), set-api-key.sh,
                         make_test_clip.py, record_mic.py (5 s test recording from the built-in mic)
 hardware/               brio_chest_mount/: 3D-printed chest bracket for the Brio (STL, STEP, CadQuery source)
+                        helmet_ring_mount/: trial ends of a head-top arch that hangs on the shoulder lifting rings
 ```
 
 Ideas reused from:
