@@ -1,23 +1,23 @@
 == left foot (ring at y +71.2)
    to the ring           1.19 mm
-   to the shoulder shell 2.20 mm
-   below the cheeks      2.51 mm (straight down)
-   to the head           21.91 mm
-   robot surface inside the foot: 0 of 1603 sample points within its box
-   bolt      to ring 1.42, to shoulder 3.48
-   bolt head to ring 8.49, to shoulder 7.15
-   nut       to ring 3.47, to shoulder 3.01, 0.0% of it overlaps the foot (pocket fit)
+   to the shoulder shell 2.21 mm
+   below the cheeks      2.50 mm (straight down)
+   to the head           23.16 mm
+   robot surface inside the foot: 0 of 1588 sample points within its box
+   bolt      to ring 1.42, to shoulder 4.67
+   bolt head to ring 6.57, to shoulder 6.63
+   nut       to ring 3.49, to shoulder 3.00, 0.0% of it overlaps the foot (pocket fit)
    bolt to the eye's round top 1.33 mm; eye bottom 5.00 mm below the bolt
    leg stub covers 9.6 deg of the lidar's 360 deg
 == right foot (ring at y -73.6)
-   to the ring           1.58 mm
-   to the shoulder shell 3.01 mm
+   to the ring           1.46 mm
+   to the shoulder shell 3.02 mm
    below the cheeks      3.52 mm (straight down)
-   to the head           23.20 mm
-   robot surface inside the foot: 0 of 1615 sample points within its box
-   bolt      to ring 1.50, to shoulder 4.44
-   bolt head to ring 7.85, to shoulder 7.84
-   nut       to ring 4.20, to shoulder 3.80, 0.0% of it overlaps the foot (pocket fit)
+   to the head           24.57 mm
+   robot surface inside the foot: 0 of 1560 sample points within its box
+   bolt      to ring 1.50, to shoulder 5.59
+   bolt head to ring 5.92, to shoulder 7.28
+   nut       to ring 4.21, to shoulder 3.81, 0.0% of it overlaps the foot (pocket fit)
    bolt to the eye's round top 1.33 mm; eye bottom 5.00 mm below the bolt
    leg stub covers 9.3 deg of the lidar's 360 deg
 ALL CLEAR

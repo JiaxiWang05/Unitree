@@ -13,14 +13,14 @@ import numpy as np
 import trimesh
 from scipy.spatial import cKDTree
 
-from trial_feet import (BOTTOM_Z, CHEEK_IN_T, CHEEK_OUT_T, EYE_R, EYE_Z, FOOT_LEN, LEG_W, PIN_Z,
+from trial_feet import (BOLT_SEAT, BOTTOM_Z, CHEEK_IN_T, CHEEK_OUT_T, EYE_R, EYE_Z, FOOT_LEN, LEG_W, PIN_Z,
                         RING_X, RING_Y, SLOT_W)
 
 HERE = Path(__file__).resolve().parent
 MESH = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE
 HEAD_OFFSET = np.array([3.9635, 0.0, -44.0])   # head_joint in the torso frame, mm
 LIDAR = np.array([0.28, 0.03, 405.0])          # MID-360 window centre (dome), torso frame
-BOLT_D, HEAD_D, HEAD_H, BOLT_L = 5.0, 8.5, 5.0, 25.0   # ISO 4762 M5x25
+BOLT_D, HEAD_D, HEAD_H, BOLT_L = 5.0, 8.5, 5.0, 20.0   # ISO 4762 M5x20, head in the counterbore
 NUT_AC, NUT_H = 9.24, 5.0                      # DIN 985 M5: across corners, height
 NEED = {"ring": 1.0, "shoulder": 2.0, "head": 3.0, "below cheeks": 2.0}
 
@@ -71,8 +71,8 @@ def bolt_parts(side):
     rot = trimesh.geometry.align_vectors([0, 0, 1], axis)
     parts = {}
     for name, m, start, length in (
-        ("bolt", trimesh.creation.cylinder(radius=BOLT_D / 2, height=BOLT_L, sections=48), out_face, BOLT_L),
-        ("bolt head", trimesh.creation.cylinder(radius=HEAD_D / 2, height=HEAD_H, sections=48), out_face + side * HEAD_H, HEAD_H),
+        ("bolt", trimesh.creation.cylinder(radius=BOLT_D / 2, height=BOLT_L, sections=48), out_face - side * BOLT_SEAT, BOLT_L),
+        ("bolt head", trimesh.creation.cylinder(radius=HEAD_D / 2, height=HEAD_H, sections=48), out_face - side * BOLT_SEAT + side * HEAD_H, HEAD_H),
         ("nut", trimesh.creation.cylinder(radius=NUT_AC / 2, height=NUT_H, sections=6), in_face + side * NUT_H, NUT_H),
     ):
         m = m.copy()

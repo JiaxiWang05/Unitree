@@ -5,8 +5,13 @@ lifting ring, over the head, to the other ring. These are only the two **ends** 
 Print them first, fit them on the rings and measure. The full arch is then drawn from your
 numbers.
 
+Each foot follows its ring. The slot and the outside are arches around the ring's round top, so
+the wall is 5 mm all round. The leg stub flares out of the top, and the outside edges are
+rounded. The slot mouth is chamfered so it finds the ring. The screw head sits in a counterbore,
+and L or R and a forward arrow are engraved on the outer cheek.
+
 ![the idea: an arch from ring to ring over the head, with the Brio on top (sketch)](helmet_concept.png)
-![both feet on their rings, from behind and from the side, and one taken apart](preview_on_robot.png)
+![both feet on their rings from behind, and the left one from the side with its screw](preview_on_robot.png)
 ![the print plate](preview_part.png)
 
 ## Why a trial first
@@ -30,9 +35,9 @@ short print and answer those questions.
 | Part | Notes |
 |---|---|
 | The two printed feet | `trial_feet_plate.stl`: both on one plate |
-| 2× M5 × 25 socket cap screws | ISO 4762, A2 stainless. They go through the cheek, the ring's eye and the other cheek |
+| 2× M5 × 20 socket cap screws | ISO 4762, A2 stainless. They go through the cheek, the ring's eye and the other cheek |
 | 2× M5 nylon-insert lock nuts | DIN 985, A2. Each sits in the hex pocket on the neck side |
-| 2× M5 washers | ISO 7089, A2, under the screw heads |
+| 2× M5 washers | ISO 7089, A2, under the screw heads, inside the counterbore |
 | 4 mm hex key and 8 mm spanner | For the screw and the nut |
 
 **Why M5 and not M6:** the bolt has to sit high in the eye so its nut pocket stays above the
@@ -42,22 +47,23 @@ from the shell beside the neck. M5 still leaves 1.3 mm between the bolt and the 
 ## Printing
 
 - Print both on one plate, standing as they sit on the robot: cheek bottoms on the bed, leg
-  stubs up. The plate is 31 × 63 × 59 mm.
-- No supports. The slot roof bridges 8.5 mm. The bolt holes are 5.5 mm, and the nut pockets
-  have a corner pointing up, so both print without support.
+  stubs up. The plate is 35 × 63 × 59 mm.
+- No supports. The slot's top is an arch, the bolt holes are 5.5 mm, and the nut pockets have a
+  corner pointing up, so all of them print without support.
 - PLA is fine for this trial. Use 0.2 mm layers, 3–4 walls and 30 % infill. Each foot is
-  15.3 cm³ solid, about 19 g if printed solid in PLA, less with infill.
+  14.8 cm³ solid, about 18 g if printed solid in PLA, less with infill.
 
 ## Fitting
 
 Do this while the robot is **not** hanging from its rings, for example sitting or lying down
 with the power off.
 
-1. The feet are mirror images. On each one, the hex pocket faces the neck and the small arrow on
-   the roof points forward, the way the robot faces.
+1. The feet are mirror images: L goes on the robot's left shoulder, R on its right. The letter
+   and the arrow are engraved on the outer cheek; the arrow points forward, the way the robot
+   faces, and the hex pocket faces the neck.
 2. Slide the foot straight down over its ring until the bolt holes line up with the eye.
-3. Put a washer on the M5 screw and push it in from the shoulder side: through the outer cheek,
-   the ring's eye and the inner cheek.
+3. Put a washer on the M5 × 20 screw and push it in from the shoulder side: through the outer
+   cheek, the ring's eye and the inner cheek. The head and washer sit in the counterbore.
 4. Put the nut into the hex pocket from the neck side. Turn the screw until it just holds.
    **Don't tighten it**: the foot should still move a little.
 
@@ -96,14 +102,14 @@ With a caliper:
 Checked against Unitree's model (`torso_link_23dof_rev_1_0.STL` and `head_link.STL`) with
 `check_trial_feet.py`. Its output is in `check_output.txt`.
 
-- **Slot:** 1.19 mm (left) and 1.58 mm (right) from the ring at the closest point.
-- **Shoulder shell:** the feet are 2.20 mm (left) and 3.01 mm (right) from it. Straight down
-  under the cheeks, the gap is 2.51 mm and 3.52 mm.
+- **Slot:** 1.19 mm (left) and 1.46 mm (right) from the ring at the closest point.
+- **Shoulder shell:** the feet are 2.21 mm (left) and 3.02 mm (right) from it. Straight down
+  under the cheeks, the gap is 2.50 mm and 3.52 mm.
 - **Screw and nut:**
   - The screw is 1.33 mm from the eye's round top and 5 mm above the eye's bottom.
   - Screw and nut are at least 1.4 mm from the ring and at least 3 mm from the shell.
   - The nut fits in its pocket without touching the foot.
-- **Head:** the stubs are at least 21.9 mm from it.
+- **Head:** the stubs are at least 23.1 mm from it.
 - **Overlap:** none of the robot's surface is inside either foot.
 
 Not checked, because it needs the real robot:
