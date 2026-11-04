@@ -17,8 +17,10 @@ from greeter.backends.spend import METER
 from greeter.dialogue.links import RobotLink
 from greeter.dialogue.machine import (
     SESSION_STATES,
+    AddNote,
     Begin,
     CloseSession,
+    CutIn,
     Dialogue,
     DialogueConfig,
     EnableTriggers,
@@ -253,6 +255,10 @@ class GreeterApp:
                 self._job(lambda b, i=action.instruction: b.begin(i))
             elif isinstance(action, SendText):
                 self._job(lambda b, t=action.text: b.send_text(t))
+            elif isinstance(action, CutIn):
+                self._job(lambda b, t=action.instruction: b.cut_in(t))
+            elif isinstance(action, AddNote):
+                self._job(lambda b, t=action.text: b.add_note(t))
             elif isinstance(action, CloseSession):
                 self._flush_transcript()
                 self.recorder.end_visit()
@@ -297,7 +303,7 @@ class GreeterApp:
             self.recorder.event("robot_clip", text)
             await self._play(pcm)
             self._job(lambda b, t=text: b.commit_opener(t))
-        elif name == "hey_green":
+        elif name in ("hey_green", "hey_there"):
             self._job(lambda b: b.speak_opener())  # no clip rendered: say the invitation live
 
     # --- backend -------------------------------------------------------------
@@ -381,8 +387,9 @@ class GreeterApp:
             elif kind == "user_turn_end":
                 await self._apply(self.dialogue.on_user_turn_end(now))
             elif kind == "turn_complete":
+                said = "".join(self._said)
                 self._flush_transcript()
-                await self._apply(self.dialogue.on_turn_complete(now))
+                await self._apply(self.dialogue.on_turn_complete(now, said))
             elif kind == "interrupted":
                 self._flush_transcript()
                 await self._apply(self.dialogue.on_interrupted(now))

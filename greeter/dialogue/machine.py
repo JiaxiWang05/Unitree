@@ -1,22 +1,29 @@
 """Interaction ladder (design doc 3.2): IDLE -> NOTICED -> BID -> OPEN -> CONVERSE -> CLOSE -> COOLDOWN.
 
 * IDLE      perception only, LED white breathing.
-* NOTICED   someone in green within 5 m who isn't walking past: open a warm session
-            and generate the opener in the background (LED light green).
+* NOTICED   someone worth inviting (anyone by default; only people in green with
+            ``invite="green"``) within 5 m who isn't walking past: open a warm
+            session and generate the opener in the background (LED light green).
 * BID       target at 1.2-2.2 m, facing us >= 0.8 s, no crowd, 8 s since the last
             bid, not invited in the last 30 min: play the opener (<= 15 words,
-            names the green item, invites them to the talk spot). Not ready
-            within 1 s: play the canned "Hey, you in the green!" clip.
+            names something they wear, invites them over). Not ready within 1 s:
+            play a canned clip ("Hey there!" or "Hey, you in the green!").
 * OPEN      they reply, step onto the talk spot or keep facing 1.5 s: talk.
             Otherwise drop silently (they count as invited).
             Anyone speaking on the talk spot can also start a conversation.
-* CONVERSE  until goodbye, nobody in range for 4 s, someone queued 30 s after
-            2 min of chat, or the 4 min cap. LED green listening / amber thinking.
-* CLOSE     one-line takeaway calling back to the green item (skipped if they left).
+* CONVERSE  until goodbye (theirs or the robot's), nobody in range for 4 s, someone
+            queued 30 s after 2 min of chat, or the 4 min cap. Someone talking for
+            20 s without a break gets a polite cut-in; at 90 s the model is told to
+            start wrapping up. LED green listening / amber thinking.
+* CLOSE     one-line takeaway (skipped if they left or the robot already said goodbye).
 * COOLDOWN  close the session, then back to IDLE.
 
+``roam``: a team member walks the robot with the Unitree remote. While the robot
+side reports walking, nothing new starts and an invitation in progress is dropped;
+walking on for 2 s during a chat closes it.
+
 Pure logic with an explicit ``now``: every input returns a list of actions for
-the runner (``greeter.dialogue.app``). The robot never moves.
+the runner (``greeter.dialogue.app``). This program never moves the robot.
 """
 
 from __future__ import annotations
@@ -102,6 +109,16 @@ class SendText:
 
 
 @dataclass(frozen=True)
+class CutIn:
+    instruction: str  # speak now, over a visitor who hasn't paused
+
+
+@dataclass(frozen=True)
+class AddNote:
+    text: str  # silent context for the model's next reply
+
+
+@dataclass(frozen=True)
 class StopAudio:
     pass
 
@@ -137,6 +154,12 @@ class DialogueConfig:
     cooldown_s: float = 2.0
     reacquire_iou: float = 0.3
     spot_accept_margin_s: float = 0.5  # spot filled from just before the invitation began = they accepted
+    invite: str = "anyone"  # "anyone" or "green" (greeter.dialogue.prompts)
+    roam: bool = False  # a team member walks the robot around with the remote
+    cut_in_s: float = 20.0  # visitor talking this long without a break: cut in politely (0 = off)
+    wrap_after_s: float = 90.0  # tell the model to start wrapping up (0 = off)
+    bye_min_visit_s: float = 15.0  # the robot's own goodbye ends the chat after this long
+    walk_close_s: float = 2.0  # robot walked on this long during a chat: close it
 
 
 class Dialogue:
@@ -165,6 +188,12 @@ class Dialogue:
         self.in_range_seen = 0.0
         self.spot_listen = False
         self.spot_since: Optional[float] = None  # when the talk spot last became occupied
+        self.talk_since: Optional[float] = None  # start of the visitor's current unbroken turn
+        self.cut_in_done = False
+        self.wrap_sent = False
+        self.bot_goodbye = False
+        self.walking = False
+        self.walking_since = 0.0
         self._spot_source = "webcam"
         self.session_ended_at = float("-inf")
         self.end_reason = ""
@@ -195,9 +224,10 @@ class Dialogue:
         elif state is State.NOTICED:
             self.opener_ready = self.bid_played = False
             self.speech_until, self.turn_done, self.thinking = 0.0, False, False
-            note = prompts.scene_note(kw.get("distance"), self.group_size)
+            cfg = self.cfg
+            note = prompts.scene_note(kw.get("distance"), self.group_size, cfg.invite)
             a += [EnableTriggers(False)] + self._led_mode("noticed")
-            a += [OpenSession(kw["jpeg"], note), PrepareOpener(kw["jpeg"], prompts.opener_instruction(self.group_size))]
+            a += [OpenSession(kw["jpeg"], note), PrepareOpener(kw["jpeg"], prompts.opener_instruction(self.group_size, cfg.invite, cfg.roam))]
         elif state is State.BID:
             self.last_bid = now
             self.bid_audio_seen = False
@@ -211,6 +241,7 @@ class Dialogue:
             a += [Stream(mic=True, video=True)] + self._led_mode("listening")
         elif state is State.CONVERSE:
             self.visit_started = self.last_user = self.in_range_seen = now
+            self.talk_since, self.cut_in_done, self.wrap_sent, self.bot_goodbye = None, False, False, False
             a += [EnableTriggers(False), Stream(mic=True, video=True)] + self._led_mode("listening")
             if "begin" in kw:
                 a.append(Begin(kw["begin"]))
@@ -219,7 +250,7 @@ class Dialogue:
             if not kw.get("spoken", True):
                 return a + self._enter(State.COOLDOWN, now, reason)
             self.turn_done = False
-            a += [Stream(mic=False, video=False), SendText(prompts.CLOSE_INSTRUCTION)] + self._led_mode("speaking")
+            a += [Stream(mic=False, video=False), SendText(prompts.close_instruction(self.cfg.invite))] + self._led_mode("speaking")
         elif state is State.COOLDOWN:
             self.session_ended_at = now
             self.speech_until = now  # StopAudio cuts whatever was still playing
@@ -280,14 +311,14 @@ class Dialogue:
 
     def on_notice(self, event: Dict[str, Any], jpeg: bytes, now: float) -> List[Action]:
         tid = int(event["track_id"])
-        if self.state is not State.IDLE:
+        if self.state is not State.IDLE or self.walking:
             return [Release(tid)]  # busy: let the robot notice them again later
         if now - self.invited.get(tid, -1e9) < self.cfg.invited_memory_s:
             return []
         self.target_id, self.target_box, self.target_seen = tid, tuple(event.get("bbox") or (0, 0, 0, 0)), now
         self.group_size = int(event.get("group_size") or 1)
         self.target = {"id": tid, "distance": event.get("distance"), "facing_for": 0.0}
-        return self._enter(State.NOTICED, now, "green at %.1f m" % (event.get("distance") or 0), jpeg=jpeg, distance=event.get("distance"))
+        return self._enter(State.NOTICED, now, "noticed at %.1f m" % (event.get("distance") or 0), jpeg=jpeg, distance=event.get("distance"))
 
     def on_tracks(self, snapshot: Dict[str, Any], now: float) -> List[Action]:
         occupied_now = bool(snapshot.get("spot_occupied"))
@@ -301,9 +332,18 @@ class Dialogue:
             self.spot_since = now
         self._spot_source = source
         self.snapshot = snapshot
+        walking = bool(snapshot.get("walking"))
+        if walking and not self.walking:
+            self.walking_since = now
+            log.info("robot is walking: no new invitations")
+        elif self.walking and not walking:
+            log.info("robot is standing again")
+        self.walking = walking
         a: List[Action] = []
+        if walking and self.state in (State.NOTICED, State.BID, State.OPEN):
+            return self._drop(now, "robot walking", release=self.state is State.NOTICED)
         if self.state is State.IDLE:
-            occupied = bool(snapshot.get("spot_occupied"))
+            occupied = bool(snapshot.get("spot_occupied")) and not walking
             if occupied != self.spot_listen:  # listen for talk-spot speech only when someone is there
                 self.spot_listen = occupied
                 a.append(Stream(mic=occupied, video=False))
@@ -329,7 +369,7 @@ class Dialogue:
 
     def on_spot_speech(self, now: float) -> List[Action]:
         """Someone on the talk spot started speaking (any clothing)."""
-        if self.state is not State.IDLE or not self.snapshot.get("spot_occupied"):
+        if self.state is not State.IDLE or not self.snapshot.get("spot_occupied") or self.walking:
             return []
         if self.spot_since is not None and self.spot_since <= self.session_ended_at:
             return []  # the visitor we just said goodbye to is still standing there
@@ -359,26 +399,40 @@ class Dialogue:
         return []
 
     def on_user_activity(self, now: float) -> List[Action]:
+        """The visitor is speaking (speech start/stop, and every second while a turn stays open)."""
+        if self.state is State.CONVERSE and self.talk_since is None:
+            self.talk_since = now
+        return self._heard(now)
+
+    def _heard(self, now: float) -> List[Action]:
         self.last_user = now
         if self.state is State.OPEN:
             return self._enter(State.CONVERSE, now, "they replied")
         return []
 
     def on_user_text(self, text: str, now: float) -> List[Action]:
-        a = self.on_user_activity(now)
+        a = self._heard(now)  # a transcript arrives after the turn: not new speech
         if self.state is State.CONVERSE and GOODBYE.search(text or ""):
             a += self._enter(State.CLOSE, now, "goodbye")
         return a
 
     def on_user_turn_end(self, now: float) -> List[Action]:
         self.last_user = now
+        self.talk_since, self.cut_in_done = None, False
         if self.state is State.CONVERSE:
             self.thinking = True
             return self._led_mode("thinking")
         return []
 
-    def on_turn_complete(self, now: float) -> List[Action]:
+    def on_turn_complete(self, now: float, said: str = "") -> List[Action]:
+        """The model finished its turn; ``said`` is what the robot said in it."""
         self.turn_done = True
+        if (
+            self.state is State.CONVERSE
+            and now - self.visit_started >= self.cfg.bye_min_visit_s
+            and GOODBYE.search((said or "")[-80:])
+        ):
+            self.bot_goodbye = True  # closes once it has finished speaking
         return []
 
     def on_interrupted(self, now: float) -> List[Action]:
@@ -415,7 +469,7 @@ class Dialogue:
         elif state is State.BID:
             if not self.bid_played and in_state >= cfg.opener_wait_s:
                 self.bid_played = True
-                return [PlayClip("hey_green")]
+                return [PlayClip("hey_green" if cfg.invite == "green" else "hey_there")]
             # a live (non pre-generated) invitation takes a moment to start: wait for its audio
             done = self.bid_audio_seen and in_state > 0.3 and not self.speaking(now)
             if self.bid_played and (done or in_state >= 6.0):
@@ -435,6 +489,10 @@ class Dialogue:
             visit = now - self.visit_started
             if now - self.in_range_seen >= cfg.spot_empty_s:
                 return self._enter(State.CLOSE, now, "nobody there", spoken=False)
+            if self.bot_goodbye and not self.speaking(now):
+                return self._enter(State.CLOSE, now, "robot said goodbye", spoken=False)
+            if self.walking and now - self.walking_since >= cfg.walk_close_s:
+                return self._enter(State.CLOSE, now, "robot walked on")
             if visit >= cfg.max_visit_s:
                 return self._enter(State.CLOSE, now, "4 min cap")
             if visit >= cfg.queue_after_s and self._queued(now):
@@ -442,6 +500,14 @@ class Dialogue:
             if cfg.silence_s and not self.speaking(now) and not self.thinking:
                 if now - max(self.last_user, self.speech_until, self.entered_at) >= cfg.silence_s:
                     return self._enter(State.CLOSE, now, "long silence")
+            if (cfg.cut_in_s and self.talk_since is not None and not self.cut_in_done
+                    and now - self.talk_since >= cfg.cut_in_s and not self.speaking(now)):
+                self.cut_in_done = True
+                log.info("visitor has talked for %.0f s without a break: cutting in", now - self.talk_since)
+                return [CutIn(prompts.CUT_IN_INSTRUCTION)]
+            if cfg.wrap_after_s and not self.wrap_sent and visit >= cfg.wrap_after_s:
+                self.wrap_sent = True
+                return [AddNote(prompts.WRAP_UP_NOTE)]
         elif state is State.CLOSE:
             if (self.turn_done and not self.speaking(now) and in_state > 0.5) or in_state >= cfg.close_timeout_s:
                 return self._enter(State.COOLDOWN, now, self.end_reason)

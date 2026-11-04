@@ -23,6 +23,7 @@ DEFAULT_DIR = Path(__file__).resolve().parent.parent / "models" / "clips"
 
 LINES: Dict[str, str] = {
     "hey_green": "Hey, you in the green! Come and say hi!",
+    "hey_there": "Hey there! Come and say hi!",
     "hello": "Hello! Lovely to meet you.",
     "step_closer": "Come and stand on the green spot in front of me.",
     "say_again": "Sorry, it's a bit noisy in here. Could you say that again?",

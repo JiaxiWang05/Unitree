@@ -2,8 +2,10 @@
 
 from greeter.dialogue import prompts
 from greeter.dialogue.machine import (
+    AddNote,
     Begin,
     CloseSession,
+    CutIn,
     Dialogue,
     DialogueConfig,
     EnableTriggers,
@@ -145,8 +147,35 @@ def test_opener_arriving_during_bid_is_played():
 def test_canned_clip_when_opener_not_ready_within_1s():
     d = bid(opener=False)
     a = ticks(d, 1.4, 2.4, snap(p()))
-    assert PlayClip("hey_green") in a
+    assert PlayClip("hey_there") in a
     assert d.on_opener_ready(2.6) == []  # too late: not played on top of the clip
+
+
+def test_green_mode_keeps_the_green_wording_and_clip():
+    d = bid(DialogueConfig(invite="green"), opener=False)
+    assert ticks(d, 1.4, 2.4, snap(p())) == [PlayClip("hey_green")]
+    d = Dialogue(DialogueConfig(invite="green"))
+    d.start(0.0)
+    a = d.on_notice(NOTICE, b"jpeg", 1.0)
+    note = next(x for x in a if isinstance(x, OpenSession)).note
+    instruction = next(x for x in a if isinstance(x, PrepareOpener)).instruction
+    assert "wearing green" in note and "green item" in instruction
+
+
+def test_anyone_mode_names_whatever_they_wear():
+    d = Dialogue()
+    d.start(0.0)
+    a = d.on_notice(NOTICE, b"jpeg", 1.0)
+    note = next(x for x in a if isinstance(x, OpenSession)).note
+    instruction = next(x for x in a if isinstance(x, PrepareOpener)).instruction
+    assert "green" not in note and "wear or carry" in instruction and "talk spot" in instruction
+
+
+def test_roam_invites_them_over_instead_of_to_the_talk_spot():
+    d = Dialogue(DialogueConfig(roam=True))
+    d.start(0.0)
+    instruction = next(x for x in d.on_notice(NOTICE, b"jpeg", 1.0) if isinstance(x, PrepareOpener)).instruction
+    assert "come over" in instruction and "talk spot" not in instruction
 
 
 def test_bid_waits_for_live_invitation_audio():
@@ -321,3 +350,97 @@ def test_spot_speech_ignored_when_spot_empty():
     d = Dialogue()
     d.start(0.0)
     assert d.on_spot_speech(1.0) == []
+
+
+# --- groups of rules added for the open day ---------------------------------------
+
+
+def chatting(d, t0, t1, every=5.0, scene=None):
+    """Keep a chat alive from t0 to t1: the visitor speaks briefly every ``every`` seconds."""
+    actions, t, next_turn = [], t0, t0
+    while t <= t1 + 1e-9:
+        if t >= next_turn:
+            actions += d.on_user_activity(t) + d.on_user_turn_end(t)
+            next_turn += every
+        actions += d.on_tracks(scene or snap(p()), t) + d.tick(t)
+        t += 0.1
+    return actions
+
+
+def test_long_talker_gets_one_polite_cut_in():
+    d = conversing()
+    a, t = [], 4.0
+    while t < 30.0:
+        if abs(t - round(t)) < 1e-6:
+            a += d.on_user_activity(t)  # keep-alive every second while their turn stays open
+        a += d.on_tracks(snap(p()), t) + d.tick(t)
+        t = round(t + 0.1, 1)
+    cut_ins = [x for x in a if isinstance(x, CutIn)]
+    assert cut_ins == [CutIn(prompts.CUT_IN_INSTRUCTION)]
+    assert d.state is State.CONVERSE
+    d.on_user_turn_end(30.0)  # the cut-in closed their turn
+    assert d.talk_since is None and not d.cut_in_done
+
+
+def test_a_transcript_after_the_turn_is_not_more_talking():
+    d = conversing()
+    d.on_user_activity(4.0)
+    d.on_user_turn_end(5.0)
+    d.on_user_text("so what does this robot do?", 5.5)  # transcripts arrive after the turn
+    a = ticks(d, 5.6, 30.0, snap(p()))
+    assert not any(isinstance(x, CutIn) for x in a)
+
+
+def test_wrap_up_note_after_90_seconds():
+    d = conversing()
+    a = chatting(d, 3.2, 100.0)
+    assert [x for x in a if isinstance(x, AddNote)] == [AddNote(prompts.WRAP_UP_NOTE)]
+    assert d.state is State.CONVERSE
+
+
+def test_robot_goodbye_ends_the_chat_without_another_line():
+    d = conversing()
+    chatting(d, 3.2, 29.9)
+    d.on_bot_audio(2.0, 30.0)
+    d.on_turn_complete(30.1, "Lovely chatting with you. Enjoy the open day, bye!")
+    ticks(d, 30.2, 31.8, snap(p()))
+    assert d.state is State.CONVERSE  # still saying it
+    a = ticks(d, 32.1, 32.3, snap(p()))
+    assert d.state is State.COOLDOWN and ("converse", "close", "robot said goodbye") in d.transitions
+    assert not any(isinstance(x, SendText) for x in a)
+
+
+def test_an_early_bye_from_the_robot_does_not_end_the_chat():
+    d = conversing()
+    d.on_turn_complete(5.0, "Bye-bye boring robots, hello me!")
+    assert not d.bot_goodbye
+
+
+def walking(scene):
+    return dict(scene, walking=True)
+
+
+def test_walking_drops_an_invitation_and_blocks_new_ones():
+    d = noticed()
+    a = d.on_tracks(walking(snap(p())), 1.5)
+    assert d.state is State.IDLE and ("noticed", "idle", "robot walking") in d.transitions and Release(3) in a
+    assert d.on_notice(dict(NOTICE, track_id=7), b"j", 2.0) == [Release(7)]
+    d.on_tracks(snap(p(tid=7)), 3.0)  # standing again
+    d.on_notice(dict(NOTICE, track_id=7), b"j", 3.1)
+    assert d.state is State.NOTICED
+
+
+def test_walking_on_during_a_chat_closes_it():
+    d = conversing()
+    ticks(d, 3.2, 4.0, snap(p()))
+    a = ticks(d, 4.1, 6.5, walking(snap(p())))
+    assert d.state is State.CLOSE and ("converse", "close", "robot walked on") in d.transitions
+    assert SendText(prompts.CLOSE_INSTRUCTION) in a
+
+
+def test_walking_stops_talk_spot_listening():
+    d = Dialogue()
+    d.start(0.0)
+    a = d.on_tracks(walking(snap(p(distance=1.0, at_spot=True))), 1.0)
+    assert Stream(mic=True, video=False) not in a
+    assert d.on_spot_speech(1.5) == []

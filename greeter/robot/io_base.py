@@ -166,3 +166,7 @@ class RobotIO:
     def status(self) -> dict:
         """Robot health for the logs (battery etc.); empty when unknown."""
         return {}
+
+    def walking(self) -> Optional[bool]:
+        """Whether the robot is being walked right now; None when not measured."""
+        return None

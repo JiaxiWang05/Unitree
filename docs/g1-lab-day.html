@@ -175,7 +175,7 @@ footer { color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--lin
       <li><label><input type="checkbox" id="b5"><span>1 颗 ¼"-20 × 5/8" 内六角螺丝、2 个 M6 垫圈、3/16" 六角扳手</span></label></li>
       <li><label><input type="checkbox" id="b6"><span>尺子或卡尺</span></label></li>
       <li><label><input type="checkbox" id="b7"><span>实验室 USB 摄像头 + USB-C 公转 USB-A 母的数据转接头（OTG）+ 胶带</span></label></li>
-      <li><label><input type="checkbox" id="b8"><span>贴地面站位区域用的胶带，一件绿色衣服</span></label></li>
+      <li><label><input type="checkbox" id="b8"><span>贴地面站位区域用的胶带（要试 <code>--invite green</code> 的话再带一件绿色衣服）</span></label></li>
       <li><label><input type="checkbox" id="b9"><span>机器人能用的 Wi-Fi 或手机热点（eduroam 不行），充好值的 OpenAI API key</span></label></li>
       <li><label><input type="checkbox" id="b10"><span>（可选）打印好的两个头盔试装件、2 颗 M5×20 螺丝、2 个 M5 尼龙防松螺母、2 个 M5 垫圈、4 mm 六角扳手和 8 mm 扳手</span></label></li>
     </ul>
@@ -290,9 +290,9 @@ footer { color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--lin
 v4l2-ctl -d /dev/v4l/by-id/&lt;摄像头&gt;-video-index0 --list-formats-ext</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>程序要 640×480 MJPG、30 帧。只有 YUYV 也能跑，但帧率可能低。视角比 Brio（90°）窄的话，人要站远一点脸才进画面。</p></div></li>
     <li><div class="body"><h3>在地上贴出站位区域</h3><p>机器人正前方 0.6–1.4 m、左右各 0.6 m，用胶带贴一个框。再在 1 m、2 m、3 m 处各贴一个记号，用来校准距离。</p><p class="why-line"><b>为什么：</b>站位区域由头上的深度相机判断：有人站上去说话，就直接开始对话。用平贴的胶带，不要拉绳子，绳子会被当成"有东西"。</p></div></li>
     <li><div class="body"><h3>先用固定台词模式跑（不花 API 的钱）</h3><div class="cmd"><pre>systemctl --user stop g1-greeter
-.venv/bin/python -m greeter --scripted</pre><button type="button">复制</button></div><p>测试的人穿绿色衣服，走到 1.5–2 m、面朝机器人：灯变浅绿 → 机器人邀请 → 站到站位区域或回一句话 → 开始对话。</p><p class="why-line"><b>为什么：</b>先确认看人、灯、喇叭、麦克风、状态切换都通，再接真实的模型。现在的版本只主动邀请穿绿色的人（见下面"待定"）。</p></div></li>
+.venv/bin/python -m greeter --scripted</pre><button type="button">复制</button></div><p>测试的人穿什么都行（加 <code>--invite green</code> 时要穿绿色），走到 1.5–2 m、面朝机器人：灯变浅绿 → 机器人邀请 → 站到站位区域或回一句话 → 开始对话。</p><p class="why-line"><b>为什么：</b>先确认看人、灯、喇叭、麦克风、状态切换都通，再接真实的模型。现在默认谁都邀请，<code>--invite green</code> 换回只邀请穿绿色的人。</p></div></li>
     <li><div class="body"><h3>再用真实对话跑</h3><div class="cmd"><pre>systemctl --user start g1-greeter
-journalctl --user -u g1-greeter -f</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>服务会用 OpenAI 实时语音模型。日志里能看到状态变化、双方说了什么、花了多少钱。哪里不顺告诉我，我来调阈值。</p></div></li>
+journalctl --user -u g1-greeter -f</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>服务会用 OpenAI 实时语音模型。日志里能看到状态变化、双方说了什么、花了多少钱。哪里不顺告诉我，我来调阈值。</p><p>顺便试这几件事：一个人连续说 20 秒以上（机器人应该礼貌插话）；聊满 1.5 分钟（它应该开始收尾并自己说再见，说完就结束）；两个人同时说话；问它学费或作业占比（它应该交给工作人员，不报数字）。跑完后对比两个相机对"站位区域有没有人"的判断：</p><div class="cmd"><pre>.venv/bin/python -m greeter.spot_compare recordings/&lt;日期&gt;/trace.jsonl</pre><button type="button">复制</button></div></div></li>
     <li><div class="body"><h3>换成 Brio 时告诉我</h3><p>安装时会把找到的摄像头路径写进配置。换成 Brio 后，我要把配置改成新摄像头，再让它重新锁定颜色和曝光。</p></div></li>
   </ol>
 </section>
@@ -416,16 +416,16 @@ journalctl --user -u g1-greeter -f</pre><button type="button">复制</button></d
   </div>
   <div class="why-grid">
     <div class="why"><h3>电脑不用一直在旁边</h3><p>程序全部跑在机器人身体里的 Jetson 上，开机自动启动；上网靠随身路由器的 Wi-Fi。把路由器绑在机器人背上，Wi-Fi 就跟着它走。网线只在第一次配置时用，走路时绝不能拖着线。</p></div>
-    <div class="why"><h3>现在的程序按"站着不动"写</h3><p>程序里没有任何走路指令。机器人一走，画面里所有人看起来都在动，"路过的人不叫"和"一伙人"这两个判断会失灵；"站到对话点上"也要改成"过来聊聊"。</p></div>
-    <div class="why"><h3>建议：有人拿遥控器带它走</h3><p>用 Unitree 自带的走路模式，走到人多的地方停下来；程序只在它站定时找人聊天。要改的：走路时暂停找人，改邀请词和提示词里"今天不能动"那句。</p></div>
+    <div class="why"><h3>加 <code>--roam</code> 就能边走边用</h3><p>启动时加 <code>--roam</code>，或在 greeter.env 里写 <code>GREETER_ROAM=1</code>。程序从腿部关节转得多快判断机器人在不在走：只读数据，不发任何动作指令。走的时候不邀请人，已经开始的邀请会取消；聊天时机器人被带走超过 2 秒，它说一句再见就结束。邀请词改成"过来聊聊"，不再提站位区域。判断"在走"的阈值是估的，上机时要试。</p></div>
+    <div class="why"><h3>建议：有人拿遥控器带它走</h3><p>用 Unitree 自带的走路模式，走到人多的地方停下来。程序只在它站定时找人聊天，提示词也改成"有同事用遥控器带着我走"。</p></div>
     <div class="why"><h3>安全</h3><p>G1 约 35 kg，撞到人或摔倒都可能伤人。拿遥控器的人全程跟着，随时能让它停下。风险评估或伦理申请里如果写了"机器人不动"，要先改。让它自己在人群里走（导航、避障）是另一个大项目，开放日前做不完。</p></div>
   </div>
 </section>
 
 <section aria-labelledby="pending">
   <div class="decision">
-    <h2 id="pending" style="font-size:22px">待定：任何颜色的衣服都能触发邀请</h2>
-    <p>现在机器人只主动邀请穿绿色的人（站位区域谁都能用）。你说想改成穿什么颜色都行。方案是加一个设置 <code>--invite anyone|green</code>，默认 anyone：开场白改成点名对方身上的一件衣物和颜色，备用语音改成 "Hey there! Come and say hi!"，提示词和收尾句不再提绿色，保留 <code>--invite green</code> 作为选项。还没开始改代码，等你确认。</p>
+    <h2 id="pending" style="font-size:22px">已改：任何颜色的衣服都能触发邀请</h2>
+    <p>已经改好：设置 <code>--invite anyone|green</code>，默认 anyone。开场白点名对方身上的一件衣物或随身物品，备用语音是 "Hey there! Come and say hi!"，提示词和收尾句不再提绿色。<code>--invite green</code> 换回只邀请穿绿色的人（研究设计原来的规则）。新的备用语音要重新生成一次：<code>python -m greeter.clips --render</code>（安装脚本有 API key 时会自动做）。</p>
   </div>
 </section>
 

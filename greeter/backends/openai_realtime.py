@@ -14,7 +14,9 @@ reasoning effort "minimal" and a pre-generated opener.
 * turn detection: semantic VAD with ``create_response: false``. A fresh frame
   goes in as ``input_image`` when the visitor starts speaking and again at
   commit if the scene changed; then ``response.create``;
-* barge-in: ``conversation.item.truncate`` at the audio actually played;
+* barge-in: ``conversation.item.truncate`` at the audio actually played, both while
+  the reply is still being generated and while its audio is still playing;
+* a visitor who doesn't pause: commit their turn and answer with a cut-in instruction;
 * a dropped connection is re-opened once and re-seeded with the text so far;
 * usage from every ``response.done`` goes to the spend meter; spend-limit or
   quota errors raise ``provider_down`` so the runner switches provider.
@@ -111,6 +113,7 @@ class OpenAIRealtimeBackend(Backend):
         self._upsample = StreamResampler(16000, RATE)
         self._responding = False
         self._user_turn_open = False
+        self._pending_instruction: Optional[str] = None  # for the reply to a turn we committed ourselves
         self._history: List[Tuple[str, str]] = []  # (role, text), for re-seeding after a reconnect
         self._said = ""
         # out-of-band opener
@@ -327,7 +330,7 @@ class OpenAIRealtimeBackend(Backend):
         elif kind == "input_audio_buffer.speech_started":
             self._user_turn_open = True
             self._emit("user_activity")
-            if self._responding:
+            if self._responding or self._playing():
                 await self._truncate()
                 self._emit("interrupted")  # the server cancels the reply; drop what is queued
             await self._attach_frame()
@@ -335,9 +338,11 @@ class OpenAIRealtimeBackend(Backend):
             self._emit("user_activity")
         elif kind == "input_audio_buffer.committed":
             self._emit("user_turn_end")
+            self._user_turn_open = False
             if frames_differ(self._sent_jpeg, self.latest_jpeg):
                 await self._attach_frame()
-            await self._respond()
+            instruction, self._pending_instruction = self._pending_instruction, None
+            await self._respond(instruction)
         elif kind == "conversation.item.input_audio_transcription.completed":
             text = (event.get("transcript") or "").strip()
             if text:
@@ -357,6 +362,10 @@ class OpenAIRealtimeBackend(Backend):
         self._sent_jpeg = jpeg
         await self._send({"type": "conversation.item.create", "item": _user_item([_image_part(jpeg, self.turn_detail)])})
 
+    def _playing(self) -> bool:
+        """The last reply's audio is still coming out of the speaker (estimated from its length)."""
+        return self._item_id is not None and (time.monotonic() - self._item_first_audio) * 1000.0 < self._item_audio_ms
+
     async def _truncate(self) -> None:
         """Tell the model how much of its reply was actually heard."""
         if self._item_id is None:
@@ -365,6 +374,7 @@ class OpenAIRealtimeBackend(Backend):
         await self._send(
             {"type": "conversation.item.truncate", "item_id": self._item_id, "content_index": 0, "audio_end_ms": max(0, int(played))}
         )
+        self._item_id = None  # truncated once; later speech in this turn isn't a new interruption
 
     async def _keep_alive(self) -> None:
         """Semantic VAD can take seconds to decide a turn is over; that is not silence."""
@@ -386,6 +396,21 @@ class OpenAIRealtimeBackend(Backend):
         if self._responding:
             await self._send({"type": "response.cancel"})
         await self._respond(text)
+
+    async def cut_in(self, instruction: str) -> None:
+        """The visitor hasn't paused: close their turn now so the reply hears what they said."""
+        if self._responding:
+            return  # already answering
+        if self._user_turn_open:
+            self._pending_instruction = instruction
+            await self._send({"type": "input_audio_buffer.commit"})
+        else:
+            await self._respond(instruction)
+
+    async def add_note(self, text: str) -> None:
+        await self._send(
+            {"type": "conversation.item.create", "item": {"type": "message", "role": "system", "content": [{"type": "input_text", "text": text}]}}
+        )
 
     async def close(self) -> None:
         await super().close()

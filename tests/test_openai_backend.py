@@ -265,3 +265,85 @@ def test_slow_turn_detection_is_not_silence():
         return kinds
 
     assert asyncio.run(main()).count("user_activity") >= 3
+
+
+def _barge_in_after_generation(shift_s):
+    """The reply was fully generated (response.done) and its 5 s of audio is still playing,
+    unless ``shift_s`` moves its start into the past; then the visitor starts speaking."""
+    fake = FakeRealtime()
+
+    async def main():
+        server, url = await serve_fake(fake)
+        b = OpenAIRealtimeBackend(api_key="k", url=url)
+        await b.open(None, "")
+        await b._handle({"type": "response.created", "response": {"id": "r9"}})
+        await b._handle({"type": "response.output_audio.delta", "response_id": "r9", "item_id": "it9", "delta": b64(PCM * 50)})
+        await b._handle({"type": "response.done", "response": {"id": "r9", "usage": {}}})
+        b._item_first_audio -= shift_s
+        await asyncio.sleep(0.3)
+        await b._handle({"type": "input_audio_buffer.speech_started"})
+        events = []
+        while not b._events.empty():
+            events.append((await b._events.get()).kind)
+        await asyncio.sleep(0.1)
+        await b.close()
+        server.close()
+        return events
+
+    events = asyncio.run(main())
+    truncates = [e for e in fake.connections[0] if e["type"] == "conversation.item.truncate"]
+    return events, truncates
+
+
+def test_barge_in_while_the_reply_is_still_playing():
+    events, truncates = _barge_in_after_generation(0.0)
+    assert "interrupted" in events
+    assert len(truncates) == 1 and 200 <= truncates[0]["audio_end_ms"] <= 1000
+
+
+def test_speaking_after_the_reply_finished_is_not_an_interruption():
+    events, truncates = _barge_in_after_generation(10.0)
+    assert "interrupted" not in events and truncates == []
+
+
+def test_cut_in_commits_their_turn_and_answers_with_the_instruction():
+    fake = FakeRealtime()
+
+    async def main():
+        server, url = await serve_fake(fake)
+        b = OpenAIRealtimeBackend(api_key="k", url=url)
+        await b.open(None, "")
+        await b._handle({"type": "input_audio_buffer.speech_started"})
+        await b.cut_in("CUT IN NOW")
+        await asyncio.sleep(0.1)
+        await b._handle({"type": "input_audio_buffer.committed"})
+        await asyncio.sleep(0.2)
+        await b.close()
+        server.close()
+
+    asyncio.run(main())
+    sent = fake.connections[0]
+    kinds = [e["type"] for e in sent]
+    assert "input_audio_buffer.commit" in kinds
+    create = [e for e in sent if e["type"] == "response.create"]
+    assert len(create) == 1 and create[0]["response"]["instructions"].endswith("CUT IN NOW")
+    assert kinds.index("input_audio_buffer.commit") < kinds.index("response.create")
+
+
+def test_note_is_silent_context():
+    fake = FakeRealtime()
+
+    async def main():
+        server, url = await serve_fake(fake)
+        b = OpenAIRealtimeBackend(api_key="k", url=url)
+        await b.open(None, "")
+        await b.add_note("(wrap up soon)")
+        await asyncio.sleep(0.1)
+        await b.close()
+        server.close()
+
+    asyncio.run(main())
+    sent = fake.connections[0]
+    items = [e["item"] for e in sent if e["type"] == "conversation.item.create"]
+    assert items[-1]["role"] == "system" and items[-1]["content"][0]["text"] == "(wrap up soon)"
+    assert not any(e["type"] == "response.create" for e in sent)

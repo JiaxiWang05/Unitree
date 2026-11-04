@@ -1,4 +1,4 @@
-"""Real G1 hardware via unitree_sdk2_python: speaker, mic multicast, LED, battery. No motion.
+"""Real G1 hardware via unitree_sdk2_python: speaker, mic multicast, LED, battery, walk detection. No motion.
 
 Audio plumbing follows unitree_sdk2's g1_audio_client_example and
 namanbansal013/unitree-openai-voice (MIT, (c) 2026 Naman Bansal):
@@ -13,6 +13,9 @@ namanbansal013/unitree-openai-voice (MIT, (c) 2026 Naman Bansal):
 
 Tier 1 upgrade: ``mic_device`` / ``speaker_device`` switch either side to a USB
 mic (e.g. a Lark M2 receiver) or a USB-C DAC through ALSA/PortAudio.
+
+With ``walk_detect`` it also reads the legs' joint speeds from ``rt/lowstate`` (read only)
+to tell when a team member is walking the robot with the remote (``greeter.robot.motion``).
 
 This module never imports the arm, waist or locomotion clients.
 """
@@ -37,6 +40,7 @@ MIC_PORT = 5555
 PC2_IP = "192.168.123.164"
 APP_NAME = "greeter"
 BMS_TOPIC = os.environ.get("GREETER_BMS_TOPIC", "rt/lf/bmsstate")  # unverified on the G1: check on the robot
+LOWSTATE_TOPIC = os.environ.get("GREETER_LOWSTATE_TOPIC", "rt/lowstate")
 WAKE_UP_HINT = "set the Unitree voice assistant to wake-up mode (remote: L1+L2; app: Device > Data > Audio > Voice assistant)"
 
 
@@ -81,6 +85,7 @@ class G1RobotIO(RobotIO):
         mic_device: Optional[str] = None,
         speaker_device: Optional[str] = None,
         battery: bool = True,
+        walk_detect: bool = False,
     ) -> None:
         from unitree_sdk2py.core.channel import ChannelFactoryInitialize
         from unitree_sdk2py.g1.audio.g1_audio_client import AudioClient
@@ -110,6 +115,11 @@ class G1RobotIO(RobotIO):
         self._bms_sub = None
         if battery:
             self._subscribe_battery()
+        self._walk = None
+        self._walk_t = 0.0
+        self._low_sub = None
+        if walk_detect:
+            self._subscribe_lowstate()
         if speaker_device is None:
             self._speaker = threading.Thread(target=self._speaker_loop, name="g1-speaker", daemon=True)
             self._speaker.start()
@@ -135,6 +145,36 @@ class G1RobotIO(RobotIO):
             self._bms_sub.Init(on_bms, 10)
         except Exception as exc:
             log.warning("battery logging off (%s on %s): %s", "BmsState_", BMS_TOPIC, exc)
+
+    # --- walk detection (read only) ---------------------------------------
+    def _subscribe_lowstate(self) -> None:
+        from greeter.robot.motion import LEG_MOTORS, WalkDetector
+
+        try:
+            from unitree_sdk2py.core.channel import ChannelSubscriber
+            from unitree_sdk2py.idl.unitree_hg.msg.dds_ import LowState_
+
+            self._walk = WalkDetector()
+            count = [0]
+
+            def on_low(msg) -> None:
+                count[0] += 1
+                if count[0] % 10:  # ~50 Hz is plenty
+                    return
+                self._walk.feed([m.dq for m in msg.motor_state[:LEG_MOTORS]], time.monotonic())
+                self._walk_t = time.monotonic()
+
+            self._low_sub = ChannelSubscriber(LOWSTATE_TOPIC, LowState_)
+            self._low_sub.Init(on_low, 10)
+            log.info("walk detection on (%s)", LOWSTATE_TOPIC)
+        except Exception as exc:
+            self._walk = None
+            log.warning("walk detection off (LowState_ on %s): %s", LOWSTATE_TOPIC, exc)
+
+    def walking(self) -> Optional[bool]:
+        if self._walk is None or time.monotonic() - self._walk_t > 2.0:
+            return None  # off, or no recent leg data
+        return self._walk.walking
 
     def status(self) -> dict:
         bat = dict(self._battery)

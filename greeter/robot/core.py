@@ -31,7 +31,7 @@ class RobotEvent:
     """``kind`` and ``data``:
 
     ``notice``    dict: track_id, distance, bbox, green_ratio, group_size, frame_size, jpeg (bytes)
-    ``tracks``    dict: people (list of Person dicts), crowd, spot_occupied (about 5 Hz)
+    ``tracks``    dict: people (list of Person dicts), crowd, spot_occupied, spot_webcam, walking (about 5 Hz)
     ``playback``  "playing" or "idle"
     ``mic``       16 kHz mono s16le bytes (only while mic streaming is on)
     ``video``     JPEG bytes, every ``frame_interval_s`` (only while video streaming is on)
@@ -178,6 +178,7 @@ class RobotCore:
                     snap.spot_occupied, snap.spot = spot.occupied, spot.to_dict()
                 else:  # depth gone for a while: fall back to the webcam's own estimate
                     snap.spot = {"source": "depth", "stale": True}
+            snap.walking = self.io.walking()
             person = self.scene.notice(snap)
             if person is not None:
                 log.info(

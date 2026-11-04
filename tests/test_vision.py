@@ -174,7 +174,7 @@ def run(scene, frames, t0=0.0, dt=0.1):
 
 
 def test_green_needs_6_of_10_frames():
-    scene = Scene(SceneConfig(notice_min_present_s=0.0))
+    scene = Scene(SceneConfig(notice_min_present_s=0.0, invite="green"))
     noticed, snap = run(scene, [[person(1)]] * 5)
     assert noticed == [] and not snap.people[0].green
     noticed, snap = run(scene, [[person(1)]], t0=0.5)
@@ -182,7 +182,7 @@ def test_green_needs_6_of_10_frames():
 
 
 def test_flicker_does_not_count():
-    scene = Scene()
+    scene = Scene(SceneConfig(notice_min_present_s=0.0, invite="green"))
     red = (30, 30, 200)
     frames = [[person(1, shirt=SHIRT if i % 2 else red)] for i in range(10)]
     assert run(scene, frames)[0] == []  # green in only 5 of 10 frames
@@ -253,3 +253,31 @@ def test_must_be_watched_a_second_before_noticing():
     noticed, _ = run(scene, [[person(1)]] * 10)  # 0.9 s
     assert noticed == []
     assert run(scene, [[person(1)]], t0=1.0)[0] == [1]
+
+
+def test_anyone_is_invited_by_default_and_green_mode_needs_green():
+    red = (30, 30, 200)
+    noticed, snap = run(Scene(SceneConfig(notice_min_present_s=0.0)), [[person(1, shirt=red)]] * 12)
+    assert noticed == [1] and not snap.people[0].green
+    noticed, _ = run(Scene(SceneConfig(notice_min_present_s=0.0, invite="green")), [[person(1, shirt=red)]] * 12)
+    assert noticed == []
+
+
+def test_nobody_is_noticed_while_the_robot_walks():
+    scene = Scene(SceneConfig(notice_min_present_s=0.0))
+    for i in range(12):
+        snap = scene.update(frame_of(person(1)), [person(1)[0]], i * 0.1)
+        snap.walking = True
+        assert scene.notice(snap) is None
+    snap.walking = False
+    assert scene.notice(snap).track_id == 1
+
+
+def test_snapshot_keeps_the_webcam_spot_estimate_for_comparison():
+    scene = Scene()
+    snap = scene.update(frame_of(person(1, w=160)), [person(1, w=160)[0]], 0.0)  # 1 m away, centred
+    d = snap.to_dict()
+    assert d["spot_webcam"] is True and d["spot_occupied"] is True and "walking" not in d
+    snap.spot_occupied, snap.walking = False, False  # depth overrules; walking now measured
+    d = snap.to_dict()
+    assert d["spot_webcam"] is True and d["spot_occupied"] is False and d["walking"] is False

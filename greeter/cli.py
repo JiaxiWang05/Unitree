@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 
 from greeter import protocol
+from greeter.dialogue.prompts import INVITE_MODES, system_prompt
 from greeter.envfile import DEFAULT_ENV_FILE, load_env_file
 from greeter.vision import GreenConfig, SceneConfig
 
@@ -105,6 +106,7 @@ def scene_config(args: argparse.Namespace) -> SceneConfig:
     return SceneConfig(
         green=GreenConfig(hue_lo=args.hue[0], hue_hi=args.hue[1], chroma_min=args.min_chroma, min_ratio=args.min_green),
         dist_k=args.dist_k,
+        invite=args.invite,
     )
 
 
@@ -133,6 +135,10 @@ def parse_args(argv=None) -> argparse.Namespace:
     b.add_argument("--kokoro-voice", default="bf_emma")
 
     d = p.add_argument_group("dialogue")
+    d.add_argument("--invite", choices=INVITE_MODES, default=env("GREETER_INVITE", "anyone"),
+                   help="anyone (default): invite whoever looks interested; green: only people wearing green")
+    d.add_argument("--roam", action="store_true", default=env("GREETER_ROAM") == "1",
+                   help="a team member walks the robot with the Unitree remote: pause invitations while it walks")
     d.add_argument("--max-visit", type=float, default=float(env("GREETER_MAX_VISIT", 240.0)), help="seconds")
     d.add_argument("--silence", type=float, default=float(env("GREETER_SILENCE", 15.0)), help="close after this much silence (0 = never)")
     d.add_argument("--no-transcripts", action="store_true", default=env("GREETER_TRANSCRIPTS") == "0", help="don't print what is said")
@@ -165,7 +171,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     if args.serve and args.robot:
         p.error("--serve and --robot are the two halves of the split; pick one")
     # values from the env file arrive as defaults, which argparse doesn't check against choices
-    for name, allowed in (("backend", BACKENDS), ("depth", ("auto", "realsense", "synthetic", "off"))):
+    for name, allowed in (("backend", BACKENDS), ("depth", ("auto", "realsense", "synthetic", "off")), ("invite", INVITE_MODES)):
         if getattr(args, name) not in allowed:
             p.error("%s must be one of %s, not %r (check GREETER_%s in the env file)" % (name, ", ".join(allowed), getattr(args, name), name.upper()))
     return args
@@ -179,15 +185,17 @@ def providers(args: argparse.Namespace):
     """The fallback chain: the chosen backend first, then whatever else is configured, then clips."""
     from greeter import clips
 
+    persona = system_prompt(args.invite, args.roam)
+
     def openai(model):
         from greeter.backends.openai_realtime import OpenAIRealtimeBackend
 
-        return ("openai:" + model, lambda: OpenAIRealtimeBackend(model=model, voice=args.openai_voice, eagerness=args.vad_eagerness))
+        return ("openai:" + model, lambda: OpenAIRealtimeBackend(model=model, voice=args.openai_voice, eagerness=args.vad_eagerness, system_prompt=persona))
 
     def gemini():
         from greeter.backends.gemini import GeminiBackend
 
-        return ("gemini:" + args.gemini_model, lambda: GeminiBackend(model=args.gemini_model, voice=args.gemini_voice, media_resolution=args.media_resolution))
+        return ("gemini:" + args.gemini_model, lambda: GeminiBackend(model=args.gemini_model, voice=args.gemini_voice, media_resolution=args.media_resolution, system_prompt=persona))
 
     def gemini_available() -> bool:
         if not _has("GEMINI_API_KEY", "GOOGLE_API_KEY"):
@@ -209,7 +217,8 @@ def providers(args: argparse.Namespace):
 
         asr_model = args.asr_model or ("base.en" if on_jetson() else None)
         chain.append(("local", lambda: LocalBackend(
-            vlm_model=args.vlm, ollama_host=args.ollama_host, asr=args.asr, asr_model=asr_model, voice=args.kokoro_voice
+            vlm_model=args.vlm, ollama_host=args.ollama_host, asr=args.asr, asr_model=asr_model, voice=args.kokoro_voice,
+            system_prompt=persona,
         )))
     elif backend == "gemini":
         if not gemini_available():
@@ -240,7 +249,7 @@ def make_io(args: argparse.Namespace):
 
     return G1RobotIO(
         iface=args.iface, local_ip=args.local_ip, volume=args.volume,
-        mic_device=args.mic_device, speaker_device=args.speaker_device,
+        mic_device=args.mic_device, speaker_device=args.speaker_device, walk_detect=args.roam,
     )
 
 
@@ -261,7 +270,7 @@ def build_core(args: argparse.Namespace, io):
 def dialogue_config(args: argparse.Namespace):
     from greeter.dialogue.machine import DialogueConfig
 
-    return DialogueConfig(max_visit_s=args.max_visit, silence_s=args.silence)
+    return DialogueConfig(max_visit_s=args.max_visit, silence_s=args.silence, invite=args.invite, roam=args.roam)
 
 
 def make_app(link, args):

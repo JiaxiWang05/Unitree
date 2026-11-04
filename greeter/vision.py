@@ -1,4 +1,4 @@
-"""Scene understanding for the greeter: who is green, how far, facing us, moving, in a group.
+"""Scene understanding for the greeter: who is there, how far, facing us, moving, in a group, in green.
 
 Pure NumPy/OpenCV (no YOLO, no robot) so all of it is unit-testable. The
 detector (``greeter.robot.detector``) turns Ultralytics results into
@@ -76,6 +76,7 @@ class SceneConfig:
     inherit_iou: float = 0.4  # a new track on top of a recently lost noticed one is the same person
     inherit_window_s: float = 8.0
     max_remembered: int = 10000
+    invite: str = "anyone"  # "anyone": invite whoever is near and interested; "green": only people in green
 
 
 @dataclass
@@ -130,14 +131,19 @@ class Snapshot:
     crowd: bool = False
     spot_occupied: bool = False  # from the head D435i depth when available, else the webcam estimate
     spot: Optional[dict] = None  # depth talk-spot details (greeter.robot.depth_spot.SpotState)
+    spot_webcam: bool = False  # the webcam's own estimate, kept even when depth decides (to compare them)
+    walking: Optional[bool] = None  # the robot is being walked (None: not measured)
 
     def get(self, track_id: int) -> Optional[Person]:
         return next((p for p in self.people if p.track_id == track_id), None)
 
     def to_dict(self) -> dict:
-        d = {"people": [p.to_dict() for p in self.people], "crowd": self.crowd, "spot_occupied": self.spot_occupied}
+        d = {"people": [p.to_dict() for p in self.people], "crowd": self.crowd, "spot_occupied": self.spot_occupied,
+             "spot_webcam": self.spot_webcam}
         if self.spot is not None:
             d["spot"] = self.spot
+        if self.walking is not None:
+            d["walking"] = self.walking
         return d
 
 
@@ -425,11 +431,13 @@ class Scene:
         for tid in [t for t, tr in self._tracks.items() if now - tr.last_seen > cutoff]:
             del self._tracks[tid]
         self._groups(people, now)
+        at_spot = any(p.at_spot for p in people)
         return Snapshot(
             t=now,
             people=people,
             crowd=self._crowded(people),
-            spot_occupied=any(p.at_spot for p in people),
+            spot_occupied=at_spot,
+            spot_webcam=at_spot,
         )
 
     # --- noticing (first rung of the ladder) ---------------------------------
@@ -458,7 +466,7 @@ class Scene:
     def noticeable(self, person: Person) -> bool:
         cfg = self.cfg
         return (
-            person.green
+            (person.green or cfg.invite != "green")
             and person.distance is not None
             and person.distance <= cfg.notice_max_dist
             and person.speed < cfg.notice_max_speed
@@ -466,8 +474,8 @@ class Scene:
         )
 
     def notice(self, snap: Snapshot) -> Optional[Person]:
-        """At most one newly noticeable green person per frame (nearest first); marks them."""
-        if not self.enabled or snap.crowd:
+        """At most one newly noticeable person per frame (nearest first); marks them."""
+        if not self.enabled or snap.crowd or snap.walking:
             return None
         ready = [p for p in snap.people if not self.was_noticed(p.track_id) and self.noticeable(p)]
         if not ready:

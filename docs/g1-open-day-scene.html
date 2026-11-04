@@ -182,10 +182,13 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
 
   <section class="sec">
     <h2>Questions people ask</h2>
-    <p class="note">What the robot does today in awkward situations, taken from the code. "Not yet" lines are changes that are planned but not written.</p>
+    <p class="note">What the robot does today in awkward situations, taken from the code. "Not yet" lines are things still to test or build.</p>
     <div class="faq">
+      <details><summary>Who does it invite?</summary><div class="a">
+        <p>Anyone who stops nearby and looks at it. It names something they wear or carry, for example "Hey, love the red scarf!", and invites them over. The original study rule, inviting only people wearing green, is a setting that can be switched back on.</p>
+      </div></details>
       <details><summary>What if lots of people turn up at once?</summary><div class="a">
-        <p>It invites one person at a time: the nearest person in green who has stopped and is looking at it. People standing close together and moving together count as one group and get one invitation.</p>
+        <p>It invites one person at a time: the nearest person who has stopped and is looking at it (only people in green, if that setting is on). People standing close together and moving together count as one group and get one invitation.</p>
         <p>If it gets crowded (more than 8 people within 2.5 m, or 3 or more groups), it stops inviting anyone and only answers people who step onto the talk spot.</p>
         <p>A new person doesn't interrupt a chat. After 2 minutes, if someone has been waiting nearby for 30 seconds, the robot wraps up so they can have a turn.</p>
         <p class="todo"><b>Not yet:</b> the crowd numbers are estimates and still need testing with real people.</p>
@@ -193,22 +196,22 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
       <details><summary>What if two people wear the same clothes?</summary><div class="a">
         <p>It tells people apart by how each one moves in the picture, not by their clothes, so matching outfits don't confuse it. Two friends in the same green top standing together get one invitation as a group.</p>
         <p>If two people cross in front of each other, it can mix them up for a moment. The worst case is inviting the same person twice.</p>
-        <p class="todo"><b>On the day:</b> people working on the stand shouldn't wear green, or the robot will keep inviting them.</p>
+        <p class="todo"><b>On the day:</b> people working on the stand should stand beside or behind the robot, not in front of it, or it will keep inviting them.</p>
       </div></details>
       <details><summary>What if two people talk at the same time?</summary><div class="a">
         <p>The robot hears through one microphone, so two voices arrive mixed together and it can't tell who said what. Usually it answers the part it understood, or asks them to say it again.</p>
-        <p class="todo"><b>Not yet:</b> telling the AI that several people may be talking, so it answers one and then turns to the other.</p>
+        <p>The AI is told it may be talking to a group: if two people speak at once, it answers the one question it understood and invites the other person to go next.</p>
       </div></details>
       <details><summary>Can you interrupt the robot while it is talking?</summary><div class="a">
         <p>Not at the moment. While the robot speaks, and for 0.35 s after, it ignores its microphone. Otherwise it would hear its own voice and stop itself. Someone who talks over it has to say it again once it finishes, and it never says more than two short sentences in a row.</p>
-        <p class="todo"><b>Not yet:</b> there is a setting that keeps the microphone open so people can cut in, but it has a known bug: only the first second or two of each reply can be interrupted. The robot also needs an echo test before that setting is used.</p>
+        <p class="todo"><b>Not yet:</b> a setting keeps the microphone open so people can cut in at any point while it speaks (an earlier bug that limited this to the first second or two is fixed). It stays off until the robot has had an echo test.</p>
       </div></details>
       <details><summary>What if someone never stops talking?</summary><div class="a">
-        <p>The robot keeps listening and waits for a pause before it answers. Every chat ends after 4 minutes at most, with a short goodbye. After 2 minutes, it ends sooner if someone else is waiting. Someone who stays on the spot after the goodbye can't start again straight away.</p>
-        <p class="todo"><b>Not yet:</b> letting the robot cut in politely after about 20 seconds, starting to wrap up at about 1½ minutes, and ending the chat when the robot itself says goodbye. Today only the visitor's goodbye ends it.</p>
+        <p>The robot waits for a pause before it answers. If someone talks for 20 seconds without a break, it cuts in politely, answers in one sentence and offers someone else a turn.</p>
+        <p>After about 1½ minutes it starts wrapping up, and when it says goodbye itself, the chat ends. Every chat still ends after 4 minutes at most, sooner after 2 minutes if someone else is waiting. Someone who stays on the spot after the goodbye can't start again straight away.</p>
       </div></details>
       <details><summary>Can it answer questions about Durham, like fees or coursework?</summary><div class="a">
-        <p>It is told never to make up facts about the university and to send detailed questions to the people on the stand. It has no Durham information and can't look things up, so it hands questions about fees or how much coursework counts to a person.</p>
+        <p>It is told never to make up facts about the university, and its instructions list what it must never guess: fees, entry requirements, offers, module content, how coursework or exams count, accommodation and funding. It sends those questions to the people on the stand. It has no Durham information and can't look things up, so it hands questions about fees or how much coursework counts to a person.</p>
         <p>An AI can still sometimes invent a number, so this will be tested before the day with a list of such questions.</p>
         <p>It doesn't replace student reps. Its job is the first half-minute: getting people to come over and breaking the ice. Then a person takes over.</p>
       </div></details>
@@ -226,10 +229,11 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
         </table></div>
         <p>The webcam also doesn't wait for someone to stand still, so a person walking across the spot can count. The depth camera waits 1.5 s and ignores bags and signs.</p>
         <p>The two cameras don't need their pictures lined up frame by frame. Each makes its own decision, and the software combines the decisions using one clock. Someone has to stand there 1.5 s before it counts, so a few hundredths of a second between the cameras makes no difference. If the depth camera goes quiet for 5 s, the webcam's guess takes over.</p>
+        <p>Both answers are saved side by side in the day's log, so a lab session can measure how often they disagree.</p>
       </div></details>
       <details><summary>Could the robot walk around the hall?</summary><div class="a">
         <p>Not on its own. The software never sends movement commands. Walking among visitors by itself would need navigation and obstacle avoidance, which is a separate project with real safety risk: the robot weighs about 35 kg.</p>
-        <p>The practical way is for a person to walk it with the remote and stop near people, with the greeter chatting only while it stands. No laptop needs to be there: everything runs on the robot's own computer, which gets internet from a pocket router strapped to it.</p>
+        <p>The practical way is for a person to walk it with the remote and stop near people. With the walking setting on, the greeter notices when it is being walked (from how fast its leg joints turn), stops inviting people, and starts again once it stands still; walking off during a chat ends it with a goodbye. No laptop needs to be there: everything runs on the robot's own computer, which gets internet from a pocket router strapped to it.</p>
       </div></details>
     </div>
   </section>
@@ -238,7 +242,8 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
     <h2>Where things stand</h2>
     <div class="status">
       <div class="col"><h3>Done</h3><ul>
-        <li>The software is written and passes 148 automated tests on a laptop, with the robot, camera and AI replaced by stand-ins</li>
+        <li>The software is written and passes 170 automated tests on a laptop, with the robot, camera and AI replaced by stand-ins</li>
+        <li>Invites anyone by default; handles groups, long talkers and Durham questions; pauses while being walked</li>
         <li>Webcam (Logitech Brio 4K) and cable bought</li>
         <li>Chest bracket designed, checked against the robot's 3D model, and test-printed</li>
         <li>Trial ends of a head-top camera mount designed and checked against the model; they hang on the shoulder lifting rings</li>
@@ -249,7 +254,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
         <li>Install the software on the robot and run its self-test</li>
         <li>Run a full visit with a lab webcam, then fit the Brio on the bracket</li>
         <li>Print the head mount's trial ends and measure the rings, then draw the full arch</li>
-        <li>Decide: invite anyone, or only people in green</li>
+        <li>Test the walking setting with someone steering the robot</li>
       </ul></div>
       <div class="col"><h3>Not yet known</h3><ul>
         <li>How fast it answers and how well it hears in a noisy hall</li>

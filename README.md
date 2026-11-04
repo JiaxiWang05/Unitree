@@ -1,11 +1,16 @@
 # G1 proactive greeter
 
-A Unitree G1 EDU (23 DoF) notices open-day visitors wearing **green**, invites
-them over by naming the green thing they wear, and chats with them. It refers
-only to clothing and objects, never to appearance.
+A Unitree G1 EDU (23 DoF) notices open-day visitors, invites them over by
+naming something they wear, and chats with them. By default it invites anyone
+who looks interested; `--invite green` brings back the original rule of inviting
+only people wearing **green**. It refers only to clothing and objects, never to
+appearance.
 
-**It never moves.** There are no arm, waist or walking commands anywhere in the
-code. It only talks, listens, looks, and uses the LED strip.
+**This program never moves the robot.** There are no arm, waist or walking
+commands anywhere in the code. It only talks, listens, looks, and uses the LED
+strip. With `--roam`, a team member walks the robot around with the Unitree
+remote (the robot's own walking mode); the program only reads the legs' joint
+speeds, so it can stop inviting people while the robot walks.
 
 Everything runs **in one process on the robot's Jetson Orin NX (PC2)**. The
 laptop is only used over SSH. This is the "simplest route" / phase 1 of the
@@ -193,6 +198,8 @@ Keys are never kept in the code.
 | `GREETER_MIN_GREEN` | `0.25` | green share of the torso |
 | `GREETER_CAMERA` | auto | `/dev/v4l/by-id/...-video-index0` |
 | `GREETER_VOLUME` | `80` | |
+| `GREETER_INVITE` | `anyone` | `green`: only invite people wearing green |
+| `GREETER_ROAM` | off | `1`: a team member walks the robot with the remote; no invitations while it walks |
 | `GREETER_DUPLEX` | off | `1` keeps the mic open while the robot talks (barge-in) |
 | `GREETER_MAX_VISIT` | `240` | seconds |
 | `GREETER_RECORD` | on | `0` stops recording |
@@ -202,12 +209,12 @@ Keys are never kept in the code.
 
 | state | LED | what happens | next |
 |---|---|---|---|
-| **IDLE** | white breathing | perception only | someone in green within 5 m, not walking past (sideways < 0.6 m/s, watched ≥ 1 s) → NOTICED |
-| **NOTICED** | light green | open a warm session and generate the opener *out of band*: `response.create` with `conversation: "none"`, the frame as `input_image` plus a scene note, audio out, ≤ 15 words naming the green item | target at 1.2–2.2 m **and** facing ≥ 0.8 s **and** no crowd **and** 8 s since the last bid → BID. Left, or 20 s without coming closer → IDLE |
-| **BID** | green | play the opener; if it isn't ready within 1 s, play the canned "Hey, you in the green!" | invitation played → OPEN |
+| **IDLE** | white breathing | perception only | someone (in green, with `--invite green`) within 5 m, not walking past (sideways < 0.6 m/s, watched ≥ 1 s), while the robot isn't walking → NOTICED |
+| **NOTICED** | light green | open a warm session and generate the opener *out of band*: `response.create` with `conversation: "none"`, the frame as `input_image` plus a scene note, audio out, ≤ 15 words naming something they wear | target at 1.2–2.2 m **and** facing ≥ 0.8 s **and** no crowd **and** 8 s since the last bid → BID. Left, 20 s without coming closer, or the robot starts walking → IDLE |
+| **BID** | green | play the opener; if it isn't ready within 1 s, play the canned "Hey there! Come and say hi!" ("Hey, you in the green!" with `--invite green`) | invitation played → OPEN |
 | **OPEN** | green | listen | they reply, step onto the talk spot, or keep facing 1.5 s → CONVERSE. Otherwise drop silently; they count as invited for 30 min |
-| **CONVERSE** | green listening / amber thinking | one fresh session per visitor or group, append-only (no item deletes, prompt cache stays warm). A frame goes in at speech start, and again at commit if the scene changed | goodbye, nobody there for 4 s, someone queued 30 s after 2 min of chat, the 4 min cap, or 15 s of silence → CLOSE |
-| **CLOSE** | green | one line: a stand highlight plus a callback to the green item (skipped if they left) | → COOLDOWN |
+| **CONVERSE** | green listening / amber thinking | one fresh session per visitor or group, append-only (no item deletes, prompt cache stays warm). A frame goes in at speech start, and again at commit if the scene changed | their goodbye or the robot's own, nobody there for 4 s, someone queued 30 s after 2 min of chat, the 4 min cap, 15 s of silence, or the robot walked on for 2 s → CLOSE |
+| **CLOSE** | green | one line: a stand highlight plus a callback to something they said or wore (the green item with `--invite green`); skipped if they left or the robot already said goodbye | → COOLDOWN |
 | **COOLDOWN** | white | close the session | 2 s → IDLE |
 
 **Other triggers:**
@@ -219,7 +226,23 @@ Keys are never kept in the code.
   robot doesn't invite anyone; it only answers the talk spot.
 - **Groups:** people within 1.5 m of each other, moving at under 0.4 m/s
   relative to each other, for at least 1 s, are treated as a group. A group gets
-  a group opener.
+  a group opener. The persona tells the model it may be talking to several
+  people: talk to the whole group, and if two speak at once, answer one and
+  invite the other next.
+- **Long talkers:** a visitor who talks for 20 s without a break gets a polite
+  cut-in: their turn is closed so the model hears what they said, and it
+  answers in one sentence and offers someone else a turn.
+- **Wrap-up:** after 90 s of chat the model gets a silent note to start
+  wrapping up. When the robot then says goodbye itself, the chat ends without
+  another line. The 4 min cap stays as a backstop.
+- **Durham questions:** the persona forbids guessing fees, entry requirements,
+  offers, module content, how coursework or exams are weighted, accommodation
+  or funding; the robot passes those to the team.
+- **Walking (`--roam`):** while the robot is being walked, nothing new starts,
+  an invitation in progress is dropped, and walking on for 2 s during a chat
+  closes it with a goodbye. "Walking" is the RMS speed of the 12 leg joints
+  from `rt/lowstate`, read only (`greeter/robot/motion.py`); the thresholds
+  still need checking on the robot.
 
 ## How it sees green, distance and facing
 
@@ -341,7 +364,15 @@ For tuning, every visit is saved under `~/g1-greeter/recordings/<date>/<time>-tr
 - `events.jsonl` with transcripts, states and spend.
 
 A day-long `trace.jsonl` holds every scene snapshot (~5 Hz) and the battery
-state every 10 s. Recording pauses when less than 2 GB is free. There is no face
+state every 10 s. Each snapshot keeps both talk-spot answers, the head depth
+camera's and the webcam's own estimate, so a lab session can compare them:
+
+```bash
+.venv/bin/python -m greeter.spot_compare recordings/<date>/trace.jsonl
+```
+
+It prints how often they agree, how long each one said "occupied" on its own,
+and when. Recording pauses when less than 2 GB is free. There is no face
 recognition.
 
 If this data is used for PhD research, it needs Durham ethics approval first
@@ -395,10 +426,13 @@ No webcam? Build a test clip: a visitor in red, then green, then gone.
   - Dual-uplink network switching, and Tailscale.
   - A 30-minute ReID gallery and "welcome back". Today "already invited" is
     per track ID.
-  - Reading the robot's FSM state to suppress invitations while it isn't
-    standing, and latency fillers or apologies.
-- **Unverified on the robot:** the battery topic `rt/lf/bmsstate`; the
-  battery is logged best-effort.
+  - Latency fillers or apologies.
+- **Barge-in (`--duplex`):** the visitor can interrupt the robot while its
+  reply is being generated and while its audio is still playing. Off by
+  default, because without echo cancellation the robot may hear itself: test
+  the echo on the robot first.
+- **Unverified on the robot:** the battery topic `rt/lf/bmsstate` (logged
+  best-effort), and the walk-detection thresholds on `rt/lowstate`.
 
 ## Tests
 
@@ -406,13 +440,15 @@ No webcam? Build a test clip: a visitor in red, then green, then gone.
 .venv/bin/python -m pytest
 ```
 
-148 tests:
+170 tests:
 
 | file | covers |
 |---|---|
-| `test_vision.py` | CIELAB colours including hi-vis rejection, the 6-of-10 window, torso crop, head and shoulder yaw, distance, walking past, notice once and release, ID-switch inheritance, groups, crowd, talk spot |
-| `test_dialogue.py` | Every rung and threshold of the ladder, including the "cloud brain" apology playing out after a session error |
-| `test_openai_backend.py` | Out-of-band opener, append-only commit, frames at speech start and commit, truncate on barge-in, reconnect and re-seed, spend limit → provider down, cost |
+| `test_vision.py` | CIELAB colours including hi-vis rejection, the 6-of-10 window, torso crop, head and shoulder yaw, distance, walking past, notice once and release, ID-switch inheritance, groups, crowd, talk spot, invite anyone vs green, no notices while walking, both spot estimates kept |
+| `test_dialogue.py` | Every rung and threshold of the ladder, including the "cloud brain" apology playing out after a session error; anyone vs green invitations, roam wording, the long-talker cut-in, the 90 s wrap-up note, the robot's own goodbye, walking |
+| `test_openai_backend.py` | Out-of-band opener, append-only commit, frames at speech start and commit, truncate on barge-in (also after the reply was generated, while it still plays), cut-in, silent notes, reconnect and re-seed, spend limit → provider down, cost |
+| `test_motion.py` | Walk detection from leg speeds: standing balance, start, short stops, stop after a quiet pause |
+| `test_spot_compare.py` | Depth vs webcam talk-spot comparison from a trace |
 | `test_gemini_backend.py` | Speaks first, session resumption after a drop |
 | `test_local_backend.py` | The local cascade's glue, with stub models |
 | `test_e2e.py` | The full ladder in one process (with recording), visitor walking away, the apology clip not cut off by the cooldown, the WebSocket split, token, LED, spot trigger over hall noise |
@@ -439,12 +475,13 @@ No webcam? Build a test clip: a visitor in red, then green, then gone.
 ```
 greeter/
   cli.py, __main__.py   python -m greeter (all modes), provider chain
-  vision.py             CIELAB green, geometry, groups, crowd, Scene (noticing)
+  vision.py             CIELAB green, geometry, groups, crowd, Scene (noticing: anyone or green)
   dialogue/             machine.py (ladder), app.py (runner, LED, spot trigger), prompts.py, links.py
   backends/             openai_realtime.py, gemini.py, local.py, scripted.py (+ canned clips), spend.py
   robot/                core.py, camera.py, detector.py, botsort_reid.yaml, g1_io.py, mock_io.py,
-                        server.py (optional bridge), calibrate.py
-  recorder.py, clips.py, check.py, envfile.py, audio.py, protocol.py
+                        motion.py (walk detection for --roam), server.py (optional bridge), calibrate.py
+  recorder.py, clips.py, check.py, envfile.py, audio.py, protocol.py,
+  spot_compare.py       depth vs webcam talk-spot comparison from a day's trace
 scripts/                setup-jetson.sh (human, once), deploy.sh + install.sh (Claude), set-api-key.sh,
                         make_test_clip.py, record_mic.py (5 s test recording from the built-in mic)
 hardware/               brio_chest_mount/: 3D-printed chest bracket for the Brio (STL, STEP, CadQuery source)

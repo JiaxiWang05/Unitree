@@ -93,6 +93,13 @@ class Backend:
         """An instruction for the next turn (e.g. wrap up)."""
         raise NotImplementedError
 
+    async def cut_in(self, instruction: str) -> None:
+        """Speak now, although the visitor hasn't paused (they have talked for a long time)."""
+        await self.send_text(instruction)
+
+    async def add_note(self, text: str) -> None:
+        """Silent context for the model's next reply (e.g. start wrapping up). Default: ignored."""
+
     async def close(self) -> None:
         if not self._closed:
             self._closed = True
