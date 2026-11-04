@@ -1,0 +1,565 @@
+<title>G1 Open Day Scene</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a large 3D stage with the webcam's own view inset and a caption under it, the visit's steps beside it, then plain explanations, status and links. */
+:root {
+  --bg: #eef0f4; --surface: #ffffff; --ink: #14161b; --muted: #5a6070; --line: #d7dbe3;
+  --accent: #6a3fd0; --accent-ink: #ffffff; --accent-soft: #ece6fb;
+  --teal: #13806b; --tape: #18a07f; --amber: #c27a10; --stage: #e3e6ec; --floor: #d6d9e0; --grid: #b9bfca;
+  --display: "Barlow Condensed", "IBM Plex Sans", sans-serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101217; --surface: #181b22; --ink: #e8eaf0; --muted: #a0a6b4; --line: #2a2e3a;
+  --accent: #a98bff; --accent-ink: #15111f; --accent-soft: #241e3a; --teal: #4fd1b3; --tape: #2bc49c; --amber: #f2b04e;
+  --stage: #171a21; --floor: #262a33; --grid: #3a3f4c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101217; --surface: #181b22; --ink: #e8eaf0; --muted: #a0a6b4; --line: #2a2e3a;
+  --accent: #a98bff; --accent-ink: #15111f; --accent-soft: #241e3a; --teal: #4fd1b3; --tape: #2bc49c; --amber: #f2b04e;
+  --stage: #171a21; --floor: #262a33; --grid: #3a3f4c; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15.5px; line-height: 1.6; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 6px; }
+.eyebrow { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-size: clamp(26px, 4vw, 40px); line-height: 1.15; text-wrap: balance; font-weight: 600; }
+h2 { margin: 0; font-size: 22px; font-weight: 600; text-wrap: balance; }
+h3 { margin: 0; font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 75ch; font-size: 16.5px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+.left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; background: var(--stage); border: 1px solid var(--line); border-radius: 12px 12px 0 0; overflow: hidden; touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.overlay { position: absolute; inset: 0; pointer-events: none; }
+.lbl { position: absolute; transform: translate(-50%, -100%); font-size: 12px; line-height: 1.35; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.12); transition: opacity .25s; }
+.lbl::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 8px; height: 8px; background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
+.bubble { position: absolute; transform: translate(-50%, -100%); max-width: 260px; font-size: 14px; line-height: 1.45; padding: 8px 11px; border-radius: 12px; background: var(--surface); color: var(--ink); border: 1.5px solid var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,.16); transition: opacity .25s; }
+.bubble.visitor { border-color: var(--teal); }
+.bubble b { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.inset { position: absolute; right: 12px; bottom: 12px; width: 30%; min-width: 150px; aspect-ratio: 4 / 3; border: 2px solid var(--accent); border-radius: 8px; overflow: hidden; background: var(--stage); box-shadow: 0 6px 20px rgba(0,0,0,.25); pointer-events: none; }
+.inset canvas { width: 100%; height: 100%; display: block; }
+.inset span { position: absolute; left: 6px; top: 5px; font-size: 11.5px; color: #fff; background: rgba(0,0,0,.6); border-radius: 4px; padding: 1px 6px; }
+.hint { position: absolute; left: 12px; top: 10px; font-size: 12px; color: var(--muted); pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; opacity: .9; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; }
+.caption { background: var(--surface); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 12px 12px; margin-top: -10px; padding: 10px 14px; display: flex; gap: 12px; align-items: baseline; min-height: 3.2em; }
+.caption .n { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--accent); white-space: nowrap; }
+.caption p { font-size: 15px; }
+.timeline { display: flex; align-items: center; gap: 10px; }
+.timeline input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.btn { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); min-width: 74px; }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group > b { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 18px; height: 12px; border-radius: 3px; flex: none; }
+.steps { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.steps h2 { font-size: 17px; padding: 2px 4px 6px; }
+.step { font: inherit; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 8px 10px; cursor: pointer; display: grid; grid-template-columns: 26px 1fr; gap: 2px 8px; color: var(--ink); }
+.step:hover { border-color: var(--line); }
+.step .i { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--muted); grid-row: span 2; line-height: 1.3; }
+.step b { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+.step small { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.step code { font-family: var(--mono); font-size: 10.5px; color: var(--muted); font-weight: 400; }
+.step .dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--line); flex: none; }
+.step[aria-current="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.step[aria-current="true"] .i { color: var(--accent); }
+.step .more { display: none; }
+.step[aria-current="true"] .more { display: block; margin-top: 4px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fact .n { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1; color: var(--accent); }
+.fact p { font-size: 14px; color: var(--muted); }
+.sec { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: h; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.how li { counter-increment: h; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.how li::before { content: counter(h); font-family: var(--display); font-weight: 700; font-size: 24px; line-height: 1; color: var(--accent); }
+.how li p { font-size: 14px; color: var(--muted); }
+.note { color: var(--muted); font-size: 14.5px; max-width: 85ch; }
+.status { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.status .col { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.status h3 { margin-bottom: 6px; }
+.status ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.docs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.docs a { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; text-decoration: none; color: var(--ink); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.docs a:hover { border-color: var(--accent); }
+.docs a span { color: var(--muted); font-size: 13px; }
+.modal { position: fixed; inset: 0; background: rgba(10,12,16,.72); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
+.modal > div { background: var(--surface); border-radius: 12px; padding: 14px; max-width: min(1100px, 100%); max-height: 100%; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.modal img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+.modal p { font-size: 14px; color: var(--muted); }
+.faq { display: flex; flex-direction: column; gap: 8px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; min-width: 0; }
+.faq details[open] { border-color: var(--accent); }
+.faq summary { cursor: pointer; list-style: none; padding: 13px 0; font-weight: 600; display: flex; gap: 10px; align-items: baseline; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: "+"; font-family: var(--mono); color: var(--accent); flex: none; width: 1ch; }
+.faq details[open] summary::before { content: "\2212"; }
+.faq .a { padding: 0 0 14px calc(1ch + 10px); display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.faq .a p { max-width: 75ch; }
+.faq .todo { color: var(--muted); font-size: 14px; }
+.faq .todo b { color: var(--ink); font-weight: 600; }
+.tbl-wrap { overflow-x: auto; }
+.tbl { border-collapse: collapse; font-size: 14px; min-width: 420px; }
+.tbl th, .tbl td { text-align: left; padding: 6px 12px 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.tbl th { color: var(--muted); font-weight: 600; font-size: 13px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 920px) { .layout { grid-template-columns: minmax(0, 1fr); } .stage { aspect-ratio: 4 / 4.2; } .inset { width: 42%; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Unitree G1 robot · Open Day greeter</span>
+    <h1>What the Open Day stand will look like</h1>
+    <p class="lede">One visit, built from the real robot's 3D model. A humanoid robot stands still at our stand, spots a visitor in green, invites them over by name of what they wear, and chats. Press play or click a step. The small window shows what the robot's camera sees.</p>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="3D scene of the robot at the Open Day stand"></canvas>
+        <div class="overlay" id="overlay"></div>
+        <div class="inset" id="inset"><canvas id="cv2" aria-label="What the robot's camera sees"></canvas><span>What the robot's camera sees</span></div>
+        <span class="hint">Drag to look around · scroll or pinch to zoom</span>
+        <div class="loading" id="loading">Loading the robot model…</div>
+      </div>
+      <div class="caption" aria-live="polite"><span class="n" id="capn">Step 1 of 7</span><p id="capt">The robot watches the hall through its chest camera.</p></div>
+      <div class="timeline">
+        <button class="btn primary" id="play" type="button">Pause</button>
+        <input type="range" id="t" min="0" max="27" step="0.05" value="0" aria-label="Time in the visit">
+        <span id="clock" style="font-family:var(--mono);font-size:13px;min-width:4.5em;text-align:right">0.0 s</span>
+      </div>
+      <div class="key" aria-label="Colour key">
+        <span><i class="sw" style="background:#7445d6;opacity:.45"></i>What the chest camera can see</span>
+        <span><i class="sw" style="background:#18a07f;opacity:.45"></i>Where the head's depth camera looks</span>
+        <span><i class="sw" style="background:var(--tape)"></i>Talk spot: stand here to chat</span>
+        <span><i class="sw" style="background:#e0a030;opacity:.5"></i>Invite zone, 1.2–2.2 m away</span>
+      </div>
+      <div class="group"><b>View</b>
+        <button class="btn" data-view="overview" type="button" aria-pressed="true">Overview</button>
+        <button class="btn" data-view="side" type="button">Side</button>
+        <button class="btn" data-view="chest" type="button">Camera close-up</button>
+        <button class="btn" data-view="visitor" type="button">Visitor's eyes</button>
+        <button class="btn" id="snap" type="button">4K picture</button>
+      </div>
+      <div class="group"><b>Show</b>
+        <button class="btn" data-show="brio" aria-pressed="true" type="button">Camera view</button>
+        <button class="btn" data-show="d435" aria-pressed="true" type="button">Depth camera view</button>
+        <button class="btn" data-show="labels" aria-pressed="true" type="button">Labels</button>
+        <button class="btn" data-show="inset" aria-pressed="true" type="button">Camera window</button>
+      </div>
+    </div>
+
+    <nav class="steps" aria-label="Steps of a visit">
+      <h2>The steps of a visit</h2>
+      <div id="steps"></div>
+    </nav>
+  </div>
+
+  <div class="facts">
+    <div class="fact"><span class="n">1.32 m</span><p>The robot's height. It never moves during the day: no walking, no arm movements.</p></div>
+    <div class="fact"><span class="n">0.98 m</span><p>Height of the chest camera, tilted 20° up so faces stay in the picture as people come close.</p></div>
+    <div class="fact"><span class="n">0.6–1.4 m</span><p>Talk spot marked with floor tape. Anyone who speaks there starts a chat, whatever they wear.</p></div>
+    <div class="fact"><span class="n">1.2–2.2 m</span><p>Invite zone: a visitor in green looking at the robot from here gets a spoken invitation.</p></div>
+  </div>
+
+  <section class="sec">
+    <h2>How it works</h2>
+    <ol class="how">
+      <li><h3>See</h3><p>A webcam on the robot's chest watches the people in front of it.</p></li>
+      <li><h3>Understand</h3><p>Software on the robot finds each person and works out how far away they are, whether they face the robot and whether they wear green.</p></li>
+      <li><h3>Decide</h3><p>Simple rules decide when to invite someone, when to listen and when to stop: the steps above.</p></li>
+      <li><h3>Talk</h3><p>What the visitor says, with a camera picture, goes to an AI voice model online, which answers out loud through the robot's speaker.</p></li>
+      <li><h3>Check the spot</h3><p>A depth camera in the robot's head checks whether someone is standing on the talk spot, so anyone can start a chat there.</p></li>
+    </ol>
+    <p class="note">Safety and privacy: the program has no movement commands at all, so the robot cannot move its arms or walk. It does not recognise faces, and it only ever talks about clothes and objects.</p>
+  </section>
+
+
+  <section class="sec">
+    <h2>Questions people ask</h2>
+    <p class="note">What the robot does today in awkward situations, taken from the code. "Not yet" lines are things still to test or build.</p>
+    <div class="faq">
+      <details><summary>Who does it invite?</summary><div class="a">
+        <p>Anyone who stops nearby and looks at it. It names something they wear or carry, for example "Hey, love the red scarf!", and invites them over. The original study rule, inviting only people wearing green, is a setting that can be switched back on.</p>
+      </div></details>
+      <details><summary>What if lots of people turn up at once?</summary><div class="a">
+        <p>It invites one person at a time: the nearest person who has stopped and is looking at it (only people in green, if that setting is on). People standing close together and moving together count as one group and get one invitation.</p>
+        <p>If it gets crowded (more than 8 people within 2.5 m, or 3 or more groups), it stops inviting anyone and only answers people who step onto the talk spot.</p>
+        <p>A new person doesn't interrupt a chat. After 2 minutes, if someone has been waiting nearby for 30 seconds, the robot wraps up so they can have a turn.</p>
+        <p class="todo"><b>Not yet:</b> the crowd numbers are estimates and still need testing with real people.</p>
+      </div></details>
+      <details><summary>What if two people wear the same clothes?</summary><div class="a">
+        <p>It tells people apart by how each one moves in the picture, not by their clothes, so matching outfits don't confuse it. Two friends in the same green top standing together get one invitation as a group.</p>
+        <p>If two people cross in front of each other, it can mix them up for a moment. The worst case is inviting the same person twice.</p>
+        <p class="todo"><b>On the day:</b> people working on the stand should stand beside or behind the robot, not in front of it, or it will keep inviting them.</p>
+      </div></details>
+      <details><summary>What if two people talk at the same time?</summary><div class="a">
+        <p>The robot hears through one microphone, so two voices arrive mixed together and it can't tell who said what. Usually it answers the part it understood, or asks them to say it again.</p>
+        <p>The AI is told it may be talking to a group: if two people speak at once, it answers the one question it understood and invites the other person to go next.</p>
+      </div></details>
+      <details><summary>Can you interrupt the robot while it is talking?</summary><div class="a">
+        <p>Not at the moment. While the robot speaks, and for 0.35 s after, it ignores its microphone. Otherwise it would hear its own voice and stop itself. Someone who talks over it has to say it again once it finishes, and it never says more than two short sentences in a row.</p>
+        <p class="todo"><b>Not yet:</b> a setting keeps the microphone open so people can cut in at any point while it speaks (an earlier bug that limited this to the first second or two is fixed). It stays off until the robot has had an echo test.</p>
+      </div></details>
+      <details><summary>What if someone never stops talking?</summary><div class="a">
+        <p>The robot waits for a pause before it answers. If someone talks for 20 seconds without a break, it cuts in politely, answers in one sentence and offers someone else a turn.</p>
+        <p>After about 1½ minutes it starts wrapping up, and when it says goodbye itself, the chat ends. Every chat still ends after 4 minutes at most, sooner after 2 minutes if someone else is waiting. Someone who stays on the spot after the goodbye can't start again straight away.</p>
+      </div></details>
+      <details><summary>Can it answer questions about Durham, like fees or coursework?</summary><div class="a">
+        <p>It is told never to make up facts about the university, and its instructions list what it must never guess: fees, entry requirements, offers, module content, how coursework or exams count, accommodation and funding. It sends those questions to the people on the stand. It has no Durham information and can't look things up, so it hands questions about fees or how much coursework counts to a person.</p>
+        <p>An AI can still sometimes invent a number, so this will be tested before the day with a list of such questions.</p>
+        <p>It doesn't replace student reps. Its job is the first half-minute: getting people to come over and breaking the ice. Then a person takes over.</p>
+      </div></details>
+      <details><summary>Why two cameras? Couldn't the chest webcam do it alone?</summary><div class="a">
+        <p>The chest webcam looks forward at people: who wears green, how far away they are, whether they face the robot. The depth camera in the head points down at the floor and answers one question: is someone standing on the talk spot?</p>
+        <p>The webcam can do that alone, and the software switches to it by itself if the depth camera stops. But the webcam guesses distance from shoulder width, so some people come out wrong:</p>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Who</th><th>Really</th><th>Webcam's guess</th><th>On the spot?</th></tr></thead>
+          <tbody>
+            <tr><td>Adult facing the robot</td><td>1.0 m</td><td>1.00 m</td><td>Yes, right</td></tr>
+            <tr><td>Child (narrower shoulders)</td><td>1.0 m</td><td>1.43 m</td><td>No, wrong</td></tr>
+            <tr><td>Adult turned 45° to a friend</td><td>1.0 m</td><td>1.41 m</td><td>No, wrong</td></tr>
+            <tr><td>Adult with broad shoulders</td><td>1.6 m</td><td>1.39 m</td><td>Yes, wrong</td></tr>
+          </tbody>
+        </table></div>
+        <p>The webcam also doesn't wait for someone to stand still, so a person walking across the spot can count. The depth camera waits 1.5 s and ignores bags and signs.</p>
+        <p>The two cameras don't need their pictures lined up frame by frame. Each makes its own decision, and the software combines the decisions using one clock. Someone has to stand there 1.5 s before it counts, so a few hundredths of a second between the cameras makes no difference. If the depth camera goes quiet for 5 s, the webcam's guess takes over.</p>
+        <p>Both answers are saved side by side in the day's log, so a lab session can measure how often they disagree.</p>
+      </div></details>
+      <details><summary>Could the robot walk around the hall?</summary><div class="a">
+        <p>Not on its own. The software never sends movement commands. Walking among visitors by itself would need navigation and obstacle avoidance, which is a separate project with real safety risk: the robot weighs about 35 kg.</p>
+        <p>The practical way is for a person to walk it with the remote and stop near people. With the walking setting on, the greeter notices when it is being walked (from how fast its leg joints turn), stops inviting people, and starts again once it stands still; walking off during a chat ends it with a goodbye. No laptop needs to be there: everything runs on the robot's own computer, which gets internet from a pocket router strapped to it.</p>
+      </div></details>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Where things stand</h2>
+    <div class="status">
+      <div class="col"><h3>Done</h3><ul>
+        <li>The software is written and passes 170 automated tests on a laptop, with the robot, camera and AI replaced by stand-ins</li>
+        <li>Invites anyone by default; handles groups, long talkers and Durham questions; pauses while being walked</li>
+        <li>Webcam (Logitech Brio 4K) and cable bought</li>
+        <li>Chest bracket designed, checked against the robot's 3D model, and test-printed</li>
+        <li>A head-top camera mount designed and checked against the model: an arch that hangs on the shoulder lifting rings and carries the Brio about 1.37 m up</li>
+        <li>Code and guides on GitHub, with this public page</li>
+      </ul></div>
+      <div class="col"><h3>Next, on the robot</h3><ul>
+        <li>Test the robot's own microphone; decide whether an extra one is needed</li>
+        <li>Install the software on the robot and run its self-test</li>
+        <li>Run a full visit with a lab webcam, then fit the Brio on the bracket</li>
+        <li>Print the head mount's trial ends to check the fit on the rings, then the full arch</li>
+        <li>Test the walking setting with someone steering the robot</li>
+      </ul></div>
+      <div class="col"><h3>Not yet known</h3><ul>
+        <li>How fast it answers and how well it hears in a noisy hall</li>
+        <li>Whether the head's depth camera can be used alongside the robot's own software</li>
+        <li>How visitors react: the paper plan covers this study</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Documents for this meeting</h2>
+    <p class="note">Links on claude.ai open only for people the pages have been shared with.</p>
+    <div class="docs">
+      <a href="https://claude.ai/artifact/YVEeY4ABvZDPSY1kt561YR"><b>Paper plan</b><span>technical paper first, then the field study; ethics checklist</span></a>
+      <a href="https://claude.ai/artifact/LECR4pNGaUQWSydYBFhJeH"><b>Technical deck</b><span>19 slides on the system design</span></a>
+      <a href="https://claude.ai/artifact/UbzZRLt5f9v3JJNA9iPT6v"><b>Literature review and approach</b><span>robots that start conversations, with vision-language models</span></a>
+      <a href="https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html"><b>Mic and camera guide</b><span>what to buy and why, robot ports and power</span></a>
+      <a href="https://jiaxiwang05.github.io/Unitree/g1-lab-day.html"><b>Lab day guide</b><span>3D steps for fitting the bracket, robot setup</span></a>
+      <a href="https://github.com/JiaxiWang05/Unitree/tree/main/hardware/helmet_ring_mount"><b>Head mount trial</b><span>ends of an arch on the shoulder rings, to print and measure</span></a>
+      <a href="https://github.com/JiaxiWang05/Unitree"><b>Code on GitHub</b><span>software, tests, bracket files</span></a>
+    </div>
+  </section>
+
+  <footer>Robot: Unitree's official G1 23-DoF model (unitree_ros), elbows bent so the arms hang. Bracket: the printed STL file. The visitor, the stand and the spoken lines are illustrations; the heights, angles, distances and the order of the steps follow the greeter's code.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>/*SCENE*/</script>
+<script>
+(function () {
+  var S = window.SCENE, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+
+  // ---- the visit, step by step (times in seconds) ----
+  var STATES = [
+    { t: 0, code: 'IDLE', name: 'Watching', led: '#f2f2f2', ledtxt: 'white', say: 'The robot watches the hall through its chest camera. Nobody is close enough yet.', more: 'It finds every person in the camera picture several times a second.' },
+    { t: 1.2, code: 'NOTICED', name: 'Notices someone in green', led: '#78ff78', ledtxt: 'light green', say: 'Someone in green has come within 5 m and is not just walking past. The robot gets its opening line ready.', more: 'It sends a camera picture to the AI voice model, which writes a short greeting about what the person wears.' },
+    { t: 3.4, code: 'BID', name: 'Invites them over', led: '#00d000', ledtxt: 'green', say: 'They are 1.2–2.2 m away and looking at the robot, so it speaks first and names what they wear.', more: 'If the AI’s line is not ready within a second, a recorded "Hey, you in the green!" plays instead.' },
+    { t: 6.4, code: 'OPEN', name: 'Waits for a reply', led: '#00d000', ledtxt: 'green', say: 'The robot listens. Replying, stepping onto the talk spot or keeping looking at it all count as yes.', more: 'If they walk on, it lets them go and won’t call them again for 30 minutes.' },
+    { t: 7.8, code: 'CONVERSE', name: 'Chats', led: '#00d000', ledtxt: 'green, amber while thinking', say: 'They stepped onto the talk spot. The robot listens, thinks for a moment and answers out loud.', more: 'Each time the visitor starts speaking, a fresh camera picture goes to the AI so it can see what they mean.' },
+    { t: 19.0, code: 'CLOSE', name: 'Says goodbye', led: '#00d000', ledtxt: 'green', say: 'After a minute or so, the robot wraps up with one tip about the stand.', more: 'It also stops if they say goodbye, walk away, go quiet for 15 s, or after 4 minutes.' },
+    { t: 21.8, code: 'COOLDOWN', name: 'Short pause', led: '#f2f2f2', ledtxt: 'white', say: 'The chat is over. The robot pauses before looking for the next person.', more: 'It waits at least 8 s between invitations.' }
+  ];
+  var LINES = [
+    { a: 3.4, b: 6.4, who: 'robot', text: 'Hey, green jacket! Come and stand on the green spot and say hi!' },
+    { a: 8.2, b: 10.0, who: 'visitor', text: 'Hi! What does this robot do?' },
+    { a: 10.8, b: 13.8, who: 'robot', text: 'I chat with visitors at the stand. What are you hoping to study?' },
+    { a: 14.0, b: 15.6, who: 'visitor', text: 'Computer science, I think.' },
+    { a: 16.2, b: 19.0, who: 'robot', text: 'Brilliant. The team here can show you the robotics labs.' },
+    { a: 19.0, b: 21.8, who: 'robot', text: 'Enjoy the open day, and keep that green jacket handy!' }
+  ];
+  var THINK = [[10.0, 10.8], [15.6, 16.2]], END = 27, BACK_TO_WATCH = 23.8;
+  function stepAt(t) { var k = 0; STATES.forEach(function (x, i) { if (t >= x.t) k = i; }); return t >= BACK_TO_WATCH ? 0 : k; }
+  function visitorAt(t) {
+    if (t < 3.2) return { x: 5.2 - t, face: 0, v: 1 };
+    if (t < 6.8) return { x: 2.0, face: 0, v: 0 };
+    if (t < 7.8) return { x: 2.0 - (t - 6.8), face: 0, v: 1 };
+    if (t < 21.8) return { x: 1.0, face: 0, v: 0 };
+    if (t < 22.4) return { x: 1.0, face: Math.PI * (t - 21.8) / 0.6, v: 0 };
+    return { x: Math.min(5.6, 1.0 + (t - 22.4)), face: Math.PI, v: t < 27 ? 1 : 0 };
+  }
+
+  // ---- step list ----
+  var stepsEl = document.getElementById('steps');
+  STATES.forEach(function (s, i) {
+    var b = document.createElement('button'); b.className = 'step'; b.type = 'button';
+    b.innerHTML = '<span class="i">' + (i + 1) + '</span><b><i class="dot" style="background:' + s.led + '"></i>' + s.name + ' <code>' + s.code + '</code></b><small>' + s.say + '<span class="more">' + s.more + '</span></small>';
+    b.addEventListener('click', function () { setT(s.t + 0.05); }); stepsEl.appendChild(b); s.btn = b;
+  });
+
+  // ---- 3D ----
+  var three = null, ready = false;
+  function fail(msg) { var l = document.getElementById('loading'); if (l) { l.textContent = msg; l.hidden = false; } }
+  if (!(window.THREE && THREE.OrbitControls && S)) fail('This browser can’t show the 3D scene. The steps and captions still describe the visit.');
+  else if (typeof DecompressionStream === 'undefined') fail('This browser is too old to unpack the 3D model. The steps and captions still describe the visit.');
+  else unpack().then(function (u8) { try { three = init(u8); ready = true; document.getElementById('loading').hidden = true; } catch (e) { console.error(e); fail('The 3D scene could not start on this device. The steps still describe the visit.'); } }, function (e) { console.error(e); fail('The 3D model could not be unpacked.'); });
+
+  function unpack() {
+    var s = atob(S.blob), u = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+    return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+  }
+  function geomOf(u8, h) {
+    var nv = h.nv, nf = h.nf, o = h.off, lo = o, hi = o + 3 * nv, pos = new Float32Array(nv * 3), nrm = new Float32Array(nv * 3);
+    for (var c = 0; c < 3; c++) { var acc = 0; for (var i = 0; i < nv; i++) { var z = u8[lo + c * nv + i] | (u8[hi + c * nv + i] << 8); acc += (z >>> 1) ^ -(z & 1); pos[i * 3 + c] = acc * 0.1; } }
+    var no = o + h.sizes[0];
+    for (i = 0; i < nv; i++) {
+      var x = ((u8[no + i] << 24) >> 24) / 127, y = ((u8[no + nv + i] << 24) >> 24) / 127, zz = 1 - Math.abs(x) - Math.abs(y);
+      if (zz < 0) { var ox = x; x = (1 - Math.abs(y)) * (ox >= 0 ? 1 : -1); y = (1 - Math.abs(ox)) * (y >= 0 ? 1 : -1); }
+      var L = Math.hypot(x, y, zz) || 1; nrm[i * 3] = x / L; nrm[i * 3 + 1] = y / L; nrm[i * 3 + 2] = zz / L;
+    }
+    var io = no + h.sizes[1], n3 = nf * 3, idx = nv > 65535 ? new Uint32Array(n3) : new Uint16Array(n3), a = 0;
+    for (i = 0; i < n3; i++) { var q = u8[io + i] | (u8[io + n3 + i] << 8) | (u8[io + 2 * n3 + i] << 16); a += (q >>> 1) ^ -(q & 1); idx[i] = a; }
+    var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3)); g.setIndex(new THREE.BufferAttribute(idx, 1));
+    return g;
+  }
+
+  function init(u8) {
+    var stage = document.getElementById('stage'), canvas = document.getElementById('cv'), overlay = document.getElementById('overlay');
+    var baseDpr = Math.min(window.devicePixelRatio || 1, 2), dpr = baseDpr;
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(dpr); renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
+    var r2 = new THREE.WebGLRenderer({ canvas: document.getElementById('cv2'), antialias: true });
+    r2.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r2.outputEncoding = THREE.sRGBEncoding; r2.toneMapping = THREE.ACESFilmicToneMapping; r2.shadowMap.enabled = true; r2.shadowMap.autoUpdate = false;
+    var scene = new THREE.Scene();
+    if (THREE.RoomEnvironment) { var pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new THREE.RoomEnvironment(), 0.04).texture; pm.dispose(); }
+    var cam = new THREE.PerspectiveCamera(34, 1.6, 20, 40000); cam.up.set(0, 0, 1);
+    var controls = new THREE.OrbitControls(cam, canvas); controls.enableDamping = true; controls.dampingFactor = 0.1; controls.screenSpacePanning = true; controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 300; controls.maxDistance = 14000;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f99, scene.environment ? 0.25 : 0.7));
+    var front = new THREE.DirectionalLight(0xffffff, 0.55); front.position.set(-1500, -900, 2300); scene.add(front);
+    var sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(2600, -2600, 4400); sun.target.position.set(1000, 0, 0); scene.add(sun, sun.target);
+    sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); var sc = sun.shadow.camera; sc.left = -2400; sc.right = 2400; sc.top = 2400; sc.bottom = -2400; sc.near = 200; sc.far = 11000; sun.shadow.bias = -0.0003; sun.shadow.normalBias = 1.5;
+
+    var C = function (hex) { return new THREE.Color(hex).convertSRGBToLinear(); };
+    function mat(hex, o) { o = o || {}; return new THREE.MeshStandardMaterial({ color: C(hex), roughness: o.r != null ? o.r : 0.5, metalness: o.m || 0, transparent: !!o.op, opacity: o.op || 1, depthWrite: !o.op, side: o.ds ? THREE.DoubleSide : THREE.FrontSide, emissive: o.e ? C(o.e) : new THREE.Color(0), emissiveIntensity: o.ei || 0 }); }
+    function part(name, m) { var x = new THREE.Mesh(geomOf(u8, S.meshes[name]), m); x.castShadow = true; x.receiveShadow = true; return x; }
+
+    var shell = mat('#aeb3bc', { r: 0.36, m: 0.45 }), joint = mat('#3f444d', { r: 0.4, m: 0.55 }), black = mat('#16171b', { r: 0.3, m: 0.2 });
+    [shell, joint].forEach(function (x) { x.envMapIntensity = 0.75; });
+    var robot = new THREE.Group();
+    robot.add(part('limbs', shell), part('torso', shell), part('pelvis', joint), part('head', shell), part('logo', joint));
+    robot.add(part('bracket', mat('#7445d6', { r: 0.75 })), part('camera', black), part('lens', mat('#0b0e16', { r: 0.08, m: 0.6 })), part('plug', mat('#2e3036', { r: 0.4 })));
+    var cablePts = S.pts.cable.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); });
+    var cable = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cablePts), 120, 2.4, 10, false), mat('#18191d', { r: 0.6 })); cable.castShadow = true; robot.add(cable);
+    scene.add(robot);
+
+    // floor, talk spot, zones
+    var floorMat = mat('#d6d9e0', { r: 0.92 });
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(16000, 12000), floorMat); floor.position.set(1500, 0, 0); floor.receiveShadow = true; scene.add(floor);
+    var grid = new THREE.GridHelper(10000, 10, 0x9aa1ad, 0x9aa1ad); grid.rotation.x = Math.PI / 2; grid.position.set(2000, 0, 1); grid.material.transparent = true; grid.material.opacity = 0.3; scene.add(grid);
+    function flat(x0, x1, y0, y1, z, m) { var g = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), m); g.position.set((x0 + x1) / 2, (y0 + y1) / 2, z); g.receiveShadow = true; return g; }
+    var tape = mat('#18a07f', { r: 0.6 }), spotMat = new THREE.MeshBasicMaterial({ color: C('#18a07f'), transparent: true, opacity: 0.12, depthWrite: false });
+    scene.add(flat(600, 1400, -600, 600, 2, spotMat));
+    [[600, 1400, -600, -560], [600, 1400, 560, 600], [600, 640, -600, 600], [1360, 1400, -600, 600]].forEach(function (r) { scene.add(flat(r[0], r[1], r[2], r[3], 3, tape)); });
+    function band(r0, r1, a0, a1, hex, op) { var m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 120, 1, a0, a1 - a0), new THREE.MeshBasicMaterial({ color: C(hex), transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide })); m.position.z = 1.5; return m; }
+    scene.add(band(1200, 2200, -0.75, 0.75, '#e0a030', 0.18), band(4975, 5025, -0.6, 0.6, '#8a909c', 0.6));
+    [1200, 2200].forEach(function (r) { scene.add(band(r - 8, r + 8, -0.75, 0.75, '#d08a1a', 0.75)); });
+
+    // the stand: table with laptop and router, a banner
+    var prop = mat('#b9bec8', { r: 0.7 }), propDark = mat('#4a505b', { r: 0.5, m: 0.3 });
+    function box(w, d, h, x, y, z, m) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, d, h), m); b.position.set(x, y, z + h / 2); b.castShadow = true; b.receiveShadow = true; scene.add(b); return b; }
+    box(800, 1600, 30, -900, 900, 720, prop);
+    [[-1250, 160], [-550, 160], [-1250, 1640], [-550, 1640]].forEach(function (p) { box(40, 40, 720, p[0], p[1], 0, propDark); });
+    box(230, 330, 14, -900, 700, 750, propDark);
+    var lid = new THREE.Group(); lid.position.set(-785, 700, 764); lid.rotation.y = 0.22; scene.add(lid);
+    var lidBack = new THREE.Mesh(new THREE.BoxGeometry(10, 330, 220), propDark); lidBack.position.set(0, 0, 110); lidBack.castShadow = true; lid.add(lidBack);
+    var screen = new THREE.Mesh(new THREE.BoxGeometry(2, 300, 186), mat('#33476e', { r: 0.25, e: '#1b2a4a', ei: 0.7 })); screen.position.set(-6, 0, 114); lid.add(screen);
+    box(110, 70, 25, -850, 1250, 750, mat('#2b2e35', { r: 0.4 }));
+    box(30, 30, 2000, -700, -1100, 0, propDark); box(30, 30, 2000, -700, -300, 0, propDark);
+    box(10, 800, 1500, -700, -700, 450, mat('#5b3bb0', { r: 0.9 })); box(400, 400, 20, -700, -700, 0, propDark);
+
+    // visitor: a simple figure 1.70 m tall, facing -x (the robot)
+    var V = new THREE.Group(), skin = mat('#c9a387', { r: 0.6 }), trousers = mat('#3c4452', { r: 0.8 }), jacket = mat('#2e9b4c', { r: 0.65 }), shoe = mat('#22252b', { r: 0.5 }), hair = mat('#3a2a21', { r: 0.8 });
+    function m(g, mm, x, y, z) { var o = new THREE.Mesh(g, mm); o.position.set(x, y, z); o.castShadow = true; return o; }
+    function limb(len, r0, r1, mm) { var g = new THREE.Group(); var c = m(new THREE.CylinderGeometry(r1, r0, len, 18), mm, 0, 0, -len / 2); c.rotation.x = Math.PI / 2; g.add(c, m(new THREE.SphereGeometry(r0, 16, 10), mm, 0, 0, 0), m(new THREE.SphereGeometry(r1, 16, 10), mm, 0, 0, -len)); return g; }
+    var legs = [], arms = [];
+    [-90, 90].forEach(function (y) { var leg = limb(820, 68, 52, trousers); leg.position.set(0, y, 900); leg.add(m(new THREE.BoxGeometry(250, 100, 70), shoe, -55, 0, -865)); V.add(leg); legs.push(leg); });
+    var bodyProfile = [[0, 0], [150, 0], [165, 120], [178, 330], [182, 460], [160, 530], [0, 560]].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+    var torso = m(new THREE.LatheGeometry(bodyProfile, 28), jacket, 0, 0, 880); torso.rotation.x = Math.PI / 2; torso.scale.set(0.72, 1, 1);
+    var tw = new THREE.Group(); tw.add(torso); tw.rotation.x = 0; V.add(tw);
+    [-205, 205].forEach(function (y) { var arm = limb(590, 48, 40, jacket); arm.position.set(0, y, 1390); arm.add(m(new THREE.SphereGeometry(44, 14, 10), skin, 0, 0, -625)); V.add(arm); arms.push(arm); });
+    var neck = m(new THREE.CylinderGeometry(48, 52, 90, 14), skin, 0, 0, 1480); neck.rotation.x = Math.PI / 2; V.add(neck);
+    var head = m(new THREE.SphereGeometry(100, 28, 18), skin, 0, 0, 1600); head.scale.set(1.05, 0.9, 1.14); V.add(head);
+    var nose = m(new THREE.SphereGeometry(18, 10, 8), skin, -102, 0, 1590); V.add(nose);
+    var cap = m(new THREE.SphereGeometry(106, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), hair, 14, 0, 1622); cap.rotation.x = Math.PI / 2; cap.scale.set(1.04, 1, 0.92); V.add(cap);
+    V.position.set(5200, 120, 0); scene.add(V);
+
+    // what each camera covers
+    function frustum(c, hf, vf, len, hex, op) {
+      var P = new THREE.Vector3().fromArray(c.pos), F = new THREE.Vector3().fromArray(c.fwd).normalize(), U = new THREE.Vector3().fromArray(c.up).normalize(), Rr = new THREE.Vector3().crossVectors(F, U).normalize();
+      var th = Math.tan(hf * Math.PI / 360), tv = Math.tan(vf * Math.PI / 360);
+      var cs = [[1, 1], [-1, 1], [-1, -1], [1, -1]].map(function (s) { var d = F.clone().addScaledVector(Rr, s[0] * th).addScaledVector(U, s[1] * tv).normalize(), L = len; if (d.z < -1e-3) L = Math.min(len, -P.z / d.z); return P.clone().addScaledVector(d, L); });
+      var pos = [], lp = []; for (var k = 0; k < 4; k++) { var a = cs[k], b = cs[(k + 1) % 4]; pos.push(P.x, P.y, P.z, a.x, a.y, a.z, b.x, b.y, b.z); lp.push(P.x, P.y, P.z, a.x, a.y, a.z, a.x, a.y, a.z, b.x, b.y, b.z); }
+      var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      var lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3));
+      var grp = new THREE.Group(); grp.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: C(hex), transparent: true, opacity: op, side: THREE.DoubleSide, depthWrite: false })), new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: C(hex), transparent: true, opacity: 0.5 })));
+      return grp;
+    }
+    var brioCone = frustum(S.brio, S.brio.hfov, S.brio.vfov, 2600, '#7445d6', 0.05), d435Cone = frustum(S.d435, S.d435.hfov, S.d435.vfov, 6000, '#18a07f', 0.045);
+    scene.add(brioCone, d435Cone);
+    var webcam = new THREE.PerspectiveCamera(S.brio.vfov, 4 / 3, 30, 30000);
+    webcam.position.fromArray(S.brio.pos); webcam.up.fromArray(S.brio.up);
+    webcam.lookAt(new THREE.Vector3().fromArray(S.brio.pos).addScaledVector(new THREE.Vector3().fromArray(S.brio.fwd), 1000));
+
+    // labels and speech
+    var LBL = [
+      { at: [S.brio.pos[0] + 40, S.brio.pos[1], S.brio.pos[2] + 30], text: 'Chest camera on a 3D-printed bracket' },
+      { at: [S.d435.pos[0] + 30, S.d435.pos[1], S.d435.pos[2] + 90], text: 'Depth camera in the head' },
+      { at: [1000, -600, 10], text: 'Talk spot' },
+      { at: [2200, 900, 10], text: 'Invite zone' }
+    ].map(function (l) { var d = document.createElement('div'); d.className = 'lbl'; d.textContent = l.text; overlay.appendChild(d); return { el: d, p: new THREE.Vector3().fromArray(l.at) }; });
+    var bR = document.createElement('div'); bR.className = 'bubble'; overlay.appendChild(bR);
+    var bV = document.createElement('div'); bV.className = 'bubble visitor'; overlay.appendChild(bV);
+    var headTop = new THREE.Vector3(S.pts.headTop[0], 0, S.pts.headTop[2] + 120);
+
+    var VIEWS = {
+      overview: function () { return { p: [2500, -3500, 1900], t: [650, 80, 820] }; },
+      side: function () { return { p: [1500, -5200, 1150], t: [1500, 0, 850] }; },
+      chest: function () { return { p: [760, -700, 1260], t: [110, 0, 990] }; },
+      visitor: function () { return { p: [V.position.x - 150, V.position.y, 1600], t: [0, 0, 1050] }; }
+    };
+    var follow = false, tween = null, dirty = true, insetDirty = true;
+    function goView(name) {
+      follow = name === 'visitor'; var v = VIEWS[name]();
+      tween = reduce ? null : { a: { p: cam.position.toArray(), t: controls.target.toArray() }, b: v, t0: performance.now() };
+      if (reduce) { cam.position.fromArray(v.p); controls.target.fromArray(v.t); }
+      document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-view') === name ? 'true' : 'false'); });
+      dirty = true;
+    }
+    var o = VIEWS.overview(); cam.position.fromArray(o.p); controls.target.fromArray(o.t);
+    controls.addEventListener('start', function () { follow = false; tween = null; });
+    controls.addEventListener('change', function () { dirty = true; });
+    var show = { brio: true, d435: true, labels: true, inset: true };
+    document.querySelectorAll('[data-show]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-show'); show[k] = !show[k]; b.setAttribute('aria-pressed', show[k] ? 'true' : 'false'); brioCone.visible = show.brio; d435Cone.visible = show.d435; document.getElementById('inset').hidden = !show.inset; dirty = true; insetDirty = true; }); });
+    document.querySelectorAll('[data-view]').forEach(function (b) { b.addEventListener('click', function () { goView(b.getAttribute('data-view')); }); });
+
+    function size() {
+      var w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+      renderer.setPixelRatio(dpr); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+      var ic = document.getElementById('cv2'); r2.setSize(ic.clientWidth || 160, ic.clientHeight || 120, false);
+      dirty = true; insetDirty = true;
+    }
+    function theme() { var bg = new THREE.Color(css('--stage') || '#e3e6ec'); renderer.setClearColor(bg); r2.setClearColor(bg); floorMat.color.copy(C(css('--floor') || '#d6d9e0')); grid.material.color.set(css('--grid') || '#b9bfca'); dirty = true; insetDirty = true; }
+    new ResizeObserver(size).observe(stage); size(); theme();
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme);
+    new MutationObserver(theme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    // a 4K still for slides
+    document.getElementById('snap').addEventListener('click', function () {
+      var w = stage.clientWidth, h = stage.clientHeight, k = 3840 / w;
+      renderer.setPixelRatio(k); renderer.setSize(w, h, false); renderer.shadowMap.needsUpdate = true; renderer.render(scene, cam);
+      var url = canvas.toDataURL('image/png');
+      renderer.setPixelRatio(dpr); renderer.setSize(w, h, false); dirty = true;
+      var md = document.createElement('div'); md.className = 'modal'; md.setAttribute('role', 'dialog'); md.setAttribute('aria-label', '4K picture');
+      md.innerHTML = '<div><img alt="4K picture of the scene" src="' + url + '"><p>3840 × ' + Math.round(h * k) + ' pixels, without the labels. Right-click or long-press the picture to save or copy it.</p><button class="btn primary" type="button">Close</button></div>';
+      md.addEventListener('click', function (e) { if (e.target === md || e.target.tagName === 'BUTTON') md.remove(); });
+      document.body.appendChild(md); md.querySelector('button').focus();
+    });
+
+    var tmp = new THREE.Vector3(), lastPose = '', costs = [];
+    function place(el, p, dy) { tmp.copy(p).project(cam); var w = stage.clientWidth, h = stage.clientHeight; el.style.left = ((tmp.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - tmp.y) / 2 * h - (dy || 0)) + 'px'; return tmp.z < 1 && Math.abs(tmp.x) < 1.02 && Math.abs(tmp.y) < 1.05; }
+    function setOp(el, on) { var v = on ? '1' : '0'; if (el.style.opacity !== v) el.style.opacity = v; }
+    return {
+      frame: function (t, now) {
+        var vs = visitorAt(t), swing = vs.v ? Math.sin(t * 7.5) * 0.38 : 0;
+        var pose = vs.x.toFixed(3) + '|' + vs.face.toFixed(3) + '|' + swing.toFixed(3);
+        if (pose !== lastPose) {
+          lastPose = pose; V.position.x = vs.x * 1000; V.rotation.z = -vs.face;
+          legs[0].rotation.y = swing; legs[1].rotation.y = -swing; arms[0].rotation.y = -swing * 0.7; arms[1].rotation.y = swing * 0.7;
+          renderer.shadowMap.needsUpdate = true; r2.shadowMap.needsUpdate = true; dirty = true; insetDirty = true;
+        }
+        var onSpot = vs.x >= 0.6 && vs.x <= 1.4, spotOp = onSpot ? 0.34 : 0.12;
+        if (spotMat.opacity !== spotOp) { spotMat.opacity = spotOp; dirty = true; insetDirty = true; }
+        if (tween) { var f = Math.min(1, (now - tween.t0) / 900), e = f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2; cam.position.fromArray(lerp(tween.a.p, tween.b.p, e)); controls.target.fromArray(lerp(tween.a.t, tween.b.t, e)); if (f >= 1) tween = null; dirty = true; }
+        else if (follow) { var v = VIEWS.visitor(); cam.position.fromArray(v.p); controls.target.fromArray(v.t); dirty = true; }
+        controls.update();
+        if (dirty) {
+          var t0 = performance.now(); renderer.render(scene, cam); var cost = performance.now() - t0; dirty = false;
+          costs.push(cost); if (costs.length > 20) costs.shift();
+          var avg = costs.reduce(function (a, b) { return a + b; }, 0) / costs.length;
+          if (costs.length === 20 && avg > 22 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); costs = []; size(); }
+          else if (costs.length === 20 && avg < 7 && dpr < baseDpr) { dpr = Math.min(baseDpr, dpr + 0.25); costs = []; size(); }
+        }
+        if (show.inset && insetDirty) { var bv = brioCone.visible, dv = d435Cone.visible; brioCone.visible = d435Cone.visible = false; r2.render(scene, webcam); brioCone.visible = bv; d435Cone.visible = dv; insetDirty = false; }
+        LBL.forEach(function (l) { setOp(l.el, place(l.el, l.p) && show.labels); });
+        var say = null; LINES.forEach(function (l) { if (t >= l.a && t < l.b) say = l; });
+        var onR = false, onV = false;
+        if (say) {
+          var el = say.who === 'robot' ? bR : bV, html = '<b>' + (say.who === 'robot' ? 'Robot' : 'Visitor') + '</b>' + say.text;
+          if (el.innerHTML !== html) el.innerHTML = html;
+          var ok = place(el, say.who === 'robot' ? headTop : new THREE.Vector3(V.position.x, V.position.y, 1900), 6);
+          if (say.who === 'robot') onR = ok; else onV = ok;
+        }
+        setOp(bR, onR); setOp(bV, onV);
+      }
+    };
+  }
+  function lerp(a, b, f) { return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; }
+
+  // ---- clock, caption and steps ----
+  var tInput = document.getElementById('t'), playBtn = document.getElementById('play'), clock = document.getElementById('clock'), capn = document.getElementById('capn'), capt = document.getElementById('capt');
+  var T = 0, playing = !reduce, last = 0, lastStep = -1, lastThink = null;
+  function setT(v) { T = Math.max(0, Math.min(END, v)); tInput.value = T; }
+  tInput.addEventListener('input', function () { T = +tInput.value; });
+  playBtn.addEventListener('click', function () { playing = !playing; playBtn.textContent = playing ? 'Pause' : 'Play'; });
+  playBtn.textContent = playing ? 'Pause' : 'Play';
+  function ui(t) {
+    var k = stepAt(t), s = STATES[k], think = THINK.some(function (r) { return t >= r[0] && t < r[1]; });
+    if (k !== lastStep || think !== lastThink) {
+      lastStep = k; lastThink = think;
+      capn.textContent = 'Step ' + (k + 1) + ' of 7';
+      capt.textContent = s.name + ': ' + (think ? 'the robot is thinking about its answer (its head light turns amber).' : s.say);
+      STATES.forEach(function (x, i) { x.btn.setAttribute('aria-current', i === k ? 'true' : 'false'); });
+    }
+    clock.textContent = t.toFixed(1) + ' s';
+  }
+  function loop(now) {
+    var dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
+    if (playing) { T += dt; if (T >= END) T = 0; tInput.value = T; }
+    if (three) three.frame(T, now);
+    ui(T);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>

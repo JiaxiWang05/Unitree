@@ -1,0 +1,12 @@
+== 23-DoF rev 1.0 (this robot) (torso_link_23dof_rev_1_0.STL)
+   left  stands 18.8 mm | 21.8 wide front-back | eye 12.0 wide x 12.2 tall | plate 4.3 thick (max 5.0) | centre 71.04 mm from the centre line
+   right stands 19.0 mm | 21.8 wide front-back | eye 12.0 wide x 12.2 tall | plate 4.3 thick (max 5.0) | centre 73.61 mm from the centre line
+== 29-DoF rev 1.0 (torso_link_rev_1_0.STL)
+   left  stands 18.0 mm | 21.8 wide front-back | eye 12.0 wide x 11.2 tall | plate 4.3 thick (max 5.0) | centre 71.03 mm from the centre line
+   right stands 18.0 mm | 21.8 wide front-back | eye 12.0 wide x 11.5 tall | plate 4.3 thick (max 5.0) | centre 73.62 mm from the centre line
+== torso with 2-DoF head (torso_link_with_2dof_head.STL)
+   left  stands 9.0 mm | 20.8 wide front-back | eye 9.8 wide x 2.5 tall | plate 4.3 thick (max 5.0) | centre 71.94 mm from the centre line
+   right stands 8.8 mm | 20.5 wide front-back | eye 9.2 wide x 2.2 tall | plate 4.3 thick (max 5.0) | centre 74.30 mm from the centre line
+== original G1 (torso_link.STL)
+   left  no ring
+   right no ring

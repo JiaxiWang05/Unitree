@@ -33,6 +33,16 @@ design doc.
                                       │ Wi-Fi: pocket 4G/5G router (or a phone hotspot)
 ```
 
+## Pages
+
+Published with GitHub Pages from `docs/` (sources and build in `docs/src/`):
+
+- [Open Day scene](https://jiaxiwang05.github.io/Unitree/g1-open-day-scene.html): one visit in 3D, how it works, common questions, status.
+- [Animation only](https://jiaxiwang05.github.io/Unitree/g1-open-day-animation.html): the same visit full-screen, for meetings.
+- [Lab day guide](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html) (Chinese): fitting the bracket, testing the mic, setting up the robot, parts to buy, the head mount.
+- [Mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html): what to buy and why.
+- [Test results](https://jiaxiwang05.github.io/Unitree/test-results.txt).
+
 ## What the human does
 
 About an hour, once. Claude does everything else over SSH.
@@ -484,7 +494,8 @@ greeter/
   spot_compare.py       depth vs webcam talk-spot comparison from a day's trace
 scripts/                setup-jetson.sh (human, once), deploy.sh + install.sh (Claude), set-api-key.sh,
                         make_test_clip.py, record_mic.py (5 s test recording from the built-in mic)
-hardware/               brio_chest_mount/: 3D-printed chest bracket for the Brio (STL, STEP, CadQuery source)
+docs/                   the GitHub Pages site; docs/src/ has the page templates, mesh exports and build_pages.py
+hardware/               brio_chest_mount/: 3D-printed chest bracket for the Brio (STL, STEP, CadQuery source, checks)
                         helmet_ring_mount/: head-top arch for the Brio on the shoulder lifting rings (trial ends + full arch)
 ```
 

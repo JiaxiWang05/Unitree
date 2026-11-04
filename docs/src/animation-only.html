@@ -1,0 +1,15 @@
+<!-- Injected into the Open Day scene page to make g1-open-day-animation.html (see build_pages.py). -->
+<style id="animation-only">
+/* Animation only: the 3D stage fills the window; every explanation, control and label is hidden. */
+html, body { height: 100%; overflow: hidden; background: var(--stage); }
+.wrap { max-width: none; padding: 0; gap: 0; }
+header, .caption, .timeline, .key, .group, nav.steps, .facts, .sec, footer, .hint, .lbl, .inset span, .modal { display: none !important; }
+.layout { display: block; }
+.stage { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; aspect-ratio: auto; border: 0; border-radius: 0; }
+.inset { width: 26%; right: 16px; bottom: 16px; }
+@media (max-width: 920px) { .stage { aspect-ratio: auto; } .inset { width: 40%; } }
+</style>
+<script>
+// Space pauses and resumes; the hidden Play button keeps its own state.
+addEventListener('keydown', function (e) { if (e.code === 'Space') { e.preventDefault(); document.getElementById('play').click(); } });
+</script>

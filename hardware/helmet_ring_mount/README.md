@@ -220,3 +220,13 @@ the arms: raising them high to the sides could reach the legs.
 - Check all six screws before each session: walking shakes things loose.
 - The greeter was tuned for the chest camera: after moving the Brio to the head, re-run the
   distance calibration (`python -m greeter.robot.calibrate --distance`).
+
+## Tools
+
+- `tools/compare_ring_models.py`: measures the shoulder rings in each of Unitree's G1 torso
+  models (get them with `python docs/src/fetch_g1_model.py g1mesh --extra`). Its output is in
+  `ring_models_output.txt`: the 23-DoF and 29-DoF rev 1.0 rings are the same, the original G1
+  has none.
+- `tools/render_feet.py` and `tools/render_helmet.py`: the preview pictures, drawn with a small
+  z-buffer from the STLs and Unitree's meshes
+  (`python tools/render_helmet.py . <g1mesh folder>`).
