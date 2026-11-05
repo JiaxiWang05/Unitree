@@ -40,6 +40,7 @@ Published with GitHub Pages from `docs/` (sources and build in `docs/src/`):
 - [Open Day scene](https://jiaxiwang05.github.io/Unitree/g1-open-day-scene.html): one visit in 3D, how it works, common questions, status.
 - [Animation only](https://jiaxiwang05.github.io/Unitree/g1-open-day-animation.html): the same visit full-screen, for meetings.
 - [Lab day guide](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html) (Chinese): fitting the bracket, testing the mic, setting up the robot, parts to buy, the head mount.
+- [First robot session](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html) (Chinese): step by step from the network cable to the last test.
 - [Mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html): what to buy and why.
 - [Test results](https://jiaxiwang05.github.io/Unitree/test-results.txt).
 

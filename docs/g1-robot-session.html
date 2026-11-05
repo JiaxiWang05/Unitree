@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>G1 第一次上机</title>
+<meta name="description" content="一步一步：把程序装到 G1 上，再把麦克风、摄像头、对话和新功能都测一遍。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f4f5f8; --surface: #ffffff; --ink: #15171c; --muted: #5b6170; --line: #d9dde5;
+  --accent: #6a3fd0; --accent-soft: #eee8fc; --you: #1f6feb; --you-soft: #e6effd; --me: #0f8a6c; --me-soft: #e2f4ee;
+  --robot: #b4590e; --robot-soft: #fbeedd; --warn: #b42318; --warn-soft: #fdecea; --ok: #1a7f37;
+  --code-bg: #f0f1f5; --term-bg: #15171c; --term-ink: #e6e8ee; --tape: #18a07f;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --body: "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111318; --surface: #1a1d24; --ink: #e8eaf0; --muted: #a1a7b5; --line: #2d323d;
+  --accent: #a58bff; --accent-soft: #2a2342; --you: #6ea8ff; --you-soft: #1b2a44; --me: #4cc9a4; --me-soft: #15322a;
+  --robot: #f0a35c; --robot-soft: #3a2a17; --warn: #ff8a80; --warn-soft: #3d1d1b; --ok: #56d364;
+  --code-bg: #232733; --term-bg: #0b0c10; --term-ink: #e6e8ee; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111318; --surface: #1a1d24; --ink: #e8eaf0; --muted: #a1a7b5; --line: #2d323d;
+  --accent: #a58bff; --accent-soft: #2a2342; --you: #6ea8ff; --you-soft: #1b2a44; --me: #4cc9a4; --me-soft: #15322a;
+  --robot: #f0a35c; --robot-soft: #3a2a17; --warn: #ff8a80; --warn-soft: #3d1d1b; --ok: #56d364;
+  --code-bg: #232733; --term-bg: #0b0c10; --term-ink: #e6e8ee; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.7; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-left)) 64px max(16px, env(safe-area-inset-right)); }
+h1 { font-size: clamp(26px, 5vw, 38px); line-height: 1.2; margin: 6px 0 10px; }
+h2 { font-size: 24px; margin: 0; line-height: 1.3; }
+h3 { font-size: 18px; margin: 0 0 4px; }
+p { margin: 0 0 10px; }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .04em; font-size: 14px; }
+.lede { color: var(--muted); font-size: 17px; max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 14px 0 6px; font-size: 14px; }
+.who { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; padding: 1px 9px; border-radius: 999px; white-space: nowrap; }
+.who.you { color: var(--you); background: var(--you-soft); }
+.who.me { color: var(--me); background: var(--me-soft); }
+.who.robot { color: var(--robot); background: var(--robot-soft); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.timeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 18px 0 8px; }
+.timeline a { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.timeline a:hover { border-color: var(--accent); }
+.timeline .n { font-family: var(--mono); color: var(--accent); font-weight: 600; font-size: 13px; }
+.timeline b { font-size: 15px; line-height: 1.35; }
+.timeline small { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 760px) { .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.warnbox { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 12px; padding: 12px 16px; margin: 16px 0; }
+.warnbox b { color: var(--warn); }
+.note { background: var(--accent-soft); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+section.stage { margin-top: 40px; scroll-margin-top: 16px; }
+.stage-head { display: flex; gap: 14px; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; }
+.stage-head .tag { font-family: var(--mono); font-weight: 600; color: #fff; background: var(--accent); border-radius: 8px; padding: 2px 10px; font-size: 15px; }
+.stage-head .time { color: var(--muted); font-size: 14px; }
+ol.steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: step; }
+ol.steps > li { counter-increment: step; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 14px 58px; position: relative; min-width: 0; }
+ol.steps > li::before { content: counter(step); position: absolute; left: 16px; top: 15px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; display: grid; place-items: center; font-size: 15px; }
+ol.steps > li.done { opacity: .62; }
+.step-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.step-top h3 { flex: 1 1 260px; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.why { color: var(--muted); font-size: 14.5px; margin-top: 6px; }
+.why b { color: var(--ink); }
+.expect { border-left: 3px solid var(--ok); padding: 2px 0 2px 12px; margin: 8px 0; font-size: 15px; }
+.expect b { color: var(--ok); }
+.cmd { position: relative; margin: 8px 0; }
+.cmd pre { margin: 0; background: var(--term-bg); color: var(--term-ink); font-family: var(--mono); font-size: 13.5px; line-height: 1.6; padding: 12px 64px 12px 14px; border-radius: 10px; overflow-x: auto; white-space: pre; }
+.cmd button { position: absolute; top: 8px; right: 8px; font: 500 12px var(--body); color: var(--term-ink); background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+.cmd button:hover { background: rgba(255,255,255,.22); }
+.cmd .where { position: absolute; top: -9px; left: 12px; font: 600 11px var(--body); background: var(--surface); color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 7px; }
+figure { margin: 12px 0 4px; overflow-x: auto; }
+figure svg { width: 100%; height: auto; display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+figcaption { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.tbl-wrap { overflow-x: auto; margin: 8px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-top: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.tests { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 4px; }
+@media (max-width: 760px) { .tests { grid-template-columns: minmax(0, 1fr); } }
+.test { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.test .ic { font-size: 22px; line-height: 1; }
+.test h3 { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.test dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: 14.5px; }
+.test dt { color: var(--muted); font-weight: 600; white-space: nowrap; }
+.test dd { margin: 0; min-width: 0; }
+.log { font-family: var(--mono); font-size: 12.5px; background: var(--code-bg); border-radius: 6px; padding: 2px 6px; overflow-wrap: anywhere; display: inline; }
+@media (max-width: 640px) {
+  figure svg { min-width: 640px; }
+  .cmd pre { padding: 34px 14px 12px; }
+}
+footer { margin-top: 48px; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line); padding-top: 14px; }
+/* svg colours follow the theme */
+.s-line { stroke: var(--line); } .s-ink { fill: var(--ink); } .s-muted { fill: var(--muted); }
+.s-surface { fill: var(--surface); } .s-bg { fill: var(--bg); } .s-accent { fill: var(--accent); } .s-accent-soft { fill: var(--accent-soft); }
+.s-you { fill: var(--you); } .s-you-soft { fill: var(--you-soft); } .s-me-soft { fill: var(--me-soft); } .s-robot-soft { fill: var(--robot-soft); }
+.st-ink { stroke: var(--ink); } .st-muted { stroke: var(--muted); } .st-accent { stroke: var(--accent); } .st-you { stroke: var(--you); } .st-robot { stroke: var(--robot); } .st-tape { stroke: var(--tape); }
+svg text { font-family: var(--body); }
+svg .mono { font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">G1 OPEN DAY GREETER · 第一次上机</div>
+  <h1>一步一步：把程序装上机器人，再把所有东西测一遍</h1>
+  <p class="lede">一共六段，大约两个半小时，其中二十分钟是等安装。每一步都写了谁来做、具体怎么做、做完应该看到什么。做完一步可以勾掉，勾选只保存在你这台电脑的浏览器里。</p>
+  <div class="legend">
+    <span class="who you">你</span><span>在实验室动手</span>
+    <span class="who me">Claude</span><span>我在你的 Mac 上远程操作</span>
+    <span class="who robot">机器人</span><span>它自己在跑</span>
+  </div>
+  <nav class="timeline" aria-label="六段">
+    <a href="#s0"><span class="n">0</span><b>准备</b><small>10 分钟</small></a>
+    <a href="#s1"><span class="n">1</span><b>接网线、跑设置脚本</b><small>20–40 分钟</small></a>
+    <a href="#s2"><span class="n">2</span><b>我来安装</b><small>约 20 分钟，你贴地面胶带</small></a>
+    <a href="#s3"><span class="n">3</span><b>硬件自检</b><small>15 分钟</small></a>
+    <a href="#s4"><span class="n">4</span><b>对话和新功能测试</b><small>45 分钟</small></a>
+    <a href="#s5"><span class="n">5</span><b>收尾：对比、校准、发我</b><small>15 分钟</small></a>
+  </nav>
+  <div class="warnbox"><b>安全：</b>只要机器人通电，就有一个人把遥控器拿在手上。机器人状态不对时，按 <b>L1 + A</b>：它会进入阻尼模式，慢慢倒下（Unitree 说明书的做法），所以旁边要有人扶，或者让它挂在吊架上。走路测试时，周围留出空地。</div>
+</header>
+
+<!-- ================= 0 ================= -->
+<section class="stage" id="s0">
+  <div class="stage-head"><span class="tag">0</span><h2>准备</h2><span class="time">10 分钟</span></div>
+  <ol class="steps">
+    <li data-k="s0a"><div class="step-top"><h3>从工作人员那里拿到 U 盘和机器人的账号密码</h3><span class="who you">你</span></div>
+      <p>U 盘是机器人系统的备份，收好就行，今天用不到。账号一般是 <code>unitree</code>。</p>
+      <p class="why"><b>密码只在终端提示时自己输入。</b>不要发给我，也不要写进任何文件或 GitHub。</p></li>
+    <li data-k="s0b"><div class="step-top"><h3>把这些东西带到机器人旁边</h3><span class="who you">你</span></div>
+      <div class="grid2">
+        <ul style="margin:0;padding-left:20px">
+          <li>实验室的 Ubuntu 电脑（要有网口）和一根网线</li>
+          <li>你的 Mac（我在上面操作），和 Ubuntu 电脑连同一个 Wi-Fi</li>
+          <li>随身路由器：开机，记下 Wi-Fi 名和密码</li>
+          <li>OpenAI API key（脚本里会隐藏输入）</li>
+        </ul>
+        <ul style="margin:0;padding-left:20px">
+          <li>机器人遥控器，电池充满</li>
+          <li>地面胶带和卷尺</li>
+          <li>摄像头：Brio 装在支架上，或者先用实验室的 USB 摄像头</li>
+          <li>再找一两个同学，测"两个人同时说话"要用</li>
+        </ul>
+      </div></li>
+    <li data-k="s0c"><div class="step-top"><h3>机器人通电，坐着或挂在吊架上</h3><span class="who you">你</span></div>
+      <p>前面三段不需要它站起来。摄像头插到脖子后面面板的 USB-C 口。</p></li>
+  </ol>
+</section>
+
+<!-- ================= 1 ================= -->
+<section class="stage" id="s1">
+  <div class="stage-head"><span class="tag">1</span><h2>接网线、跑设置脚本</h2><span class="time">20–40 分钟 · 只做这一次</span></div>
+  <figure>
+    <svg viewBox="0 0 900 270" role="img" aria-label="Ubuntu 电脑用网线连机器人背后的网口；机器人以后通过 Wi-Fi 连随身路由器上网">
+      <rect x="30" y="70" width="210" height="140" rx="14" class="s-you-soft" />
+      <rect x="62" y="92" width="146" height="84" rx="6" class="s-surface st-you" stroke-width="2" />
+      <rect x="110" y="176" width="50" height="10" class="s-you" />
+      <text x="135" y="132" text-anchor="middle" class="s-ink" font-size="17" font-weight="700">Ubuntu 电脑</text>
+      <text x="135" y="156" text-anchor="middle" class="s-muted mono" font-size="13">192.168.123.99</text>
+      <text x="135" y="232" text-anchor="middle" class="s-muted" font-size="13">有线网卡设成手动地址</text>
+      <path d="M240 140 C 330 140, 360 140, 440 140" class="st-you" stroke-width="5" fill="none" stroke-linecap="round" />
+      <text x="340" y="128" text-anchor="middle" class="s-ink" font-size="14" font-weight="600">网线</text>
+      <text x="340" y="165" text-anchor="middle" class="s-muted" font-size="12.5">只用这一次</text>
+      <rect x="440" y="40" width="200" height="200" rx="16" class="s-robot-soft" />
+      <circle cx="540" cy="82" r="26" class="s-surface st-robot" stroke-width="2" />
+      <rect x="500" y="112" width="80" height="88" rx="12" class="s-surface st-robot" stroke-width="2" />
+      <rect x="452" y="128" width="18" height="24" rx="3" class="s-surface st-you" stroke-width="2" />
+      <text x="540" y="148" text-anchor="middle" class="s-ink" font-size="15" font-weight="700">G1</text>
+      <text x="540" y="168" text-anchor="middle" class="s-muted" font-size="11.5">Jetson (PC2)</text>
+      <text x="540" y="222" text-anchor="middle" class="s-muted mono" font-size="13">192.168.123.164</text>
+      <path d="M640 120 q 60 -40 120 0" class="st-muted" stroke-width="2" fill="none" stroke-dasharray="6 6" />
+      <path d="M655 135 q 45 -28 90 0" class="st-muted" stroke-width="2" fill="none" stroke-dasharray="6 6" />
+      <rect x="760" y="92" width="110" height="70" rx="12" class="s-me-soft" />
+      <text x="815" y="124" text-anchor="middle" class="s-ink" font-size="15" font-weight="700">随身路由器</text>
+      <text x="815" y="146" text-anchor="middle" class="s-muted" font-size="12.5">4G 上网</text>
+      <text x="815" y="186" text-anchor="middle" class="s-muted" font-size="12.5">设置脚本之后：</text>
+      <text x="815" y="205" text-anchor="middle" class="s-muted" font-size="12.5">机器人用 Wi-Fi 上网，</text>
+      <text x="815" y="224" text-anchor="middle" class="s-muted" font-size="12.5">你的 Mac 也连这个 Wi-Fi</text>
+    </svg>
+    <figcaption>网线只在这一段用。设置完以后，机器人自己连路由器的 Wi-Fi，我从你的 Mac 通过同一个 Wi-Fi 远程操作。机器人走路时绝对不能拖着网线。</figcaption>
+  </figure>
+  <ol class="steps">
+    <li data-k="s1a"><div class="step-top"><h3>网线一头插 Ubuntu 电脑，一头插机器人背后的网口</h3><span class="who you">你</span></div></li>
+    <li data-k="s1b"><div class="step-top"><h3>把 Ubuntu 的有线网卡设成手动地址</h3><span class="who you">你</span></div>
+      <figure>
+        <svg viewBox="0 0 900 250" role="img" aria-label="Ubuntu 设置：网络 → 有线 → 齿轮 → IPv4 → 手动，填地址 192.168.123.99、子网掩码 255.255.255.0，网关留空">
+          <rect x="20" y="20" width="860" height="210" rx="12" class="s-bg" />
+          <rect x="20" y="20" width="860" height="40" rx="12" class="s-surface" />
+          <text x="40" y="46" class="s-ink" font-size="15" font-weight="700">设置 → 网络 → 有线 → ⚙ → IPv4</text>
+          <text x="40" y="96" class="s-muted" font-size="14">IPv4 方法</text>
+          <rect x="190" y="78" width="120" height="30" rx="15" class="s-surface st-line" stroke-width="1.5" />
+          <text x="250" y="98" text-anchor="middle" class="s-muted" font-size="13.5">自动 (DHCP)</text>
+          <rect x="320" y="78" width="90" height="30" rx="15" class="s-accent" />
+          <text x="365" y="98" text-anchor="middle" fill="#fff" font-size="13.5" font-weight="700">手动</text>
+          <text x="40" y="146" class="s-muted" font-size="14">地址</text>
+          <rect x="190" y="126" width="200" height="32" rx="6" class="s-surface st-accent" stroke-width="2" />
+          <text x="202" y="147" class="s-ink mono" font-size="14">192.168.123.99</text>
+          <text x="410" y="146" class="s-muted" font-size="14">子网掩码</text>
+          <rect x="490" y="126" width="200" height="32" rx="6" class="s-surface st-accent" stroke-width="2" />
+          <text x="502" y="147" class="s-ink mono" font-size="14">255.255.255.0</text>
+          <text x="710" y="146" class="s-muted" font-size="14">网关</text>
+          <rect x="760" y="126" width="100" height="32" rx="6" class="s-surface st-line" stroke-width="1.5" />
+          <text x="772" y="147" class="s-muted" font-size="13">留空</text>
+          <text x="40" y="200" class="s-ink" font-size="14">然后点"应用"，把有线连接关掉再打开。</text>
+        </svg>
+      </figure>
+      <div class="cmd"><span class="where">Ubuntu 终端</span><pre>ping -c 3 192.168.123.164</pre><button type="button">复制</button></div>
+      <p class="expect"><b>应该看到：</b><code>3 packets transmitted, 3 received</code>。没有回应的话，检查网线和刚才填的地址。</p></li>
+    <li data-k="s1c"><div class="step-top"><h3>在 Ubuntu 上下载项目代码</h3><span class="who you">你</span></div>
+      <div class="cmd"><span class="where">Ubuntu 终端</span><pre>git clone https://github.com/JiaxiWang05/Unitree.git
+cd Unitree</pre><button type="button">复制</button></div>
+      <p class="why"><b>为什么：</b>设置脚本 <code>scripts/setup-jetson.sh</code> 在这个项目里，要从电脑上发给机器人运行。</p></li>
+    <li data-k="s1d"><div class="step-top"><h3>让这台电脑以后登录机器人不用再输密码</h3><span class="who you">你</span></div>
+      <div class="cmd"><span class="where">Ubuntu 终端</span><pre>ssh-copy-id unitree@192.168.123.164</pre><button type="button">复制</button></div>
+      <p>它会问一次机器人的密码，你自己输入（输入时屏幕上不显示字）。</p>
+      <p class="why">如果提示 <code>no identities found</code>，先运行 <code>ssh-keygen -t ed25519</code>，连按三次回车，再运行上面这条。</p></li>
+    <li data-k="s1e"><div class="step-top"><h3>运行设置脚本</h3><span class="who you">你</span></div>
+      <div class="cmd"><span class="where">Ubuntu 终端，在 Unitree 文件夹里</span><pre>ssh -t unitree@192.168.123.164 'sudo bash -s' &lt; scripts/setup-jetson.sh</pre><button type="button">复制</button></div>
+      <figure>
+        <svg viewBox="0 0 900 330" role="img" aria-label="设置脚本的四个阶段和它会问的四个问题">
+          <rect x="10" y="10" width="880" height="310" rx="12" fill="#15171c" />
+          <circle cx="34" cy="32" r="6" fill="#ff5f57" /><circle cx="54" cy="32" r="6" fill="#febc2e" /><circle cx="74" cy="32" r="6" fill="#28c840" />
+          <g class="mono" font-size="14" style="white-space:pre">
+            <text x="30" y="70" fill="#9aa4b2">[sudo] password for unitree: <tspan fill="#ffd27a">← 机器人的密码（不显示）</tspan></text>
+            <text x="30" y="98" fill="#e6e8ee">== 1/4 internet over Wi-Fi</text>
+            <text x="30" y="124" fill="#9aa4b2">Wi-Fi name: <tspan fill="#ffd27a">← 路由器的 Wi-Fi 名</tspan></text>
+            <text x="30" y="150" fill="#9aa4b2">Wi-Fi password: <tspan fill="#ffd27a">← 路由器的 Wi-Fi 密码</tspan></text>
+            <text x="30" y="178" fill="#e6e8ee">== 2/4 system packages</text>
+            <text x="30" y="204" fill="#e6e8ee">== 3/4 start at boot, camera and audio access</text>
+            <text x="30" y="230" fill="#e6e8ee">== 4/4 OpenAI API key</text>
+            <text x="30" y="256" fill="#9aa4b2">OpenAI API key: <tspan fill="#ffd27a">← 粘贴 key（不显示）</tspan></text>
+            <text x="30" y="290" fill="#7ee787">done. Jetson Wi-Fi address: 192.168.x.x  (also: ubuntu.local)</text>
+            <text x="30" y="312" fill="#7ee787">tell Claude: the robot is ready at unitree@192.168.x.x</text>
+          </g>
+        </svg>
+        <figcaption>它一共会问四样东西：机器人密码、Wi-Fi 名、Wi-Fi 密码、OpenAI key。都由你自己输入。最后两行是绿色的就成功了。</figcaption>
+      </figure>
+      <p class="why">提示 <code>still no internet</code> 的话：检查路由器有没有信号、Wi-Fi 名和密码对不对，然后重新运行同一条命令。重复运行不会出问题。</p></li>
+    <li data-k="s1f"><div class="step-top"><h3>把最后一行发给我，再让我的 Mac 也能登录</h3><span class="who you">你</span></div>
+      <p>把 <code>tell Claude: the robot is ready at unitree@…</code> 这一行复制给我。然后把你的 Mac 连到同一个路由器的 Wi-Fi，在 Mac 的终端里运行一次（同样会问一次机器人密码）：</p>
+      <div class="cmd"><span class="where">Mac 终端</span><pre>ssh-copy-id unitree@&lt;脚本给出的 Wi-Fi 地址&gt;</pre><button type="button">复制</button></div>
+      <p class="why"><b>为什么：</b>刚才只给 Ubuntu 电脑开了免密登录。我是在你的 Mac 上操作的，Mac 也要能登录机器人。</p></li>
+  </ol>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="stage" id="s2">
+  <div class="stage-head"><span class="tag">2</span><h2>我来安装（你同时贴地面胶带）</h2><span class="time">约 20 分钟</span></div>
+  <ol class="steps">
+    <li data-k="s2a"><div class="step-top"><h3>我部署程序、跑自检、启动服务</h3><span class="who me">Claude</span></div>
+      <p>我在你的 Mac 上运行 <code>scripts/deploy.sh</code>，它会在机器人上：建 Python 环境，装好 CUDA 版的 torch、YOLO、CycloneDDS 和 Unitree SDK，下载人体姿态模型并转成 TensorRT（这一步约 5 分钟），找到胸前摄像头，生成十几句备用语音（包括新的 "Hey there! Come and say hi!"），跑一遍自检，再把服务设成开机自动启动。</p>
+      <p class="why">这段时间你不用盯着，做下面两件事就行。</p></li>
+    <li data-k="s2b"><div class="step-top"><h3>在地上贴出站位区域和距离记号</h3><span class="who you">你</span></div>
+      <figure>
+        <svg viewBox="0 0 900 360" role="img" aria-label="俯视图：机器人在左边，正前方 0.6 到 1.4 米、左右各 0.6 米是站位区域，1、2、3 米处各贴一个记号，1.2 到 2.2 米是邀请区">
+          <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" class="st-muted" stroke-width=".4" fill="none" opacity=".35" /></pattern></defs>
+          <rect x="10" y="10" width="880" height="340" rx="12" fill="url(#grid)" />
+          <!-- robot at x=90 (0 m); scale 200 px per metre -->
+          <path d="M90 180 L 330 70 A 280 280 0 0 1 330 290 Z" fill="#e0a030" opacity=".10" />
+          <path d="M330 70 A 260 260 0 0 1 330 290" class="st-robot" stroke-width="2" fill="none" stroke-dasharray="5 5" opacity=".7" />
+          <path d="M530 0" />
+          <rect x="210" y="60" width="160" height="240" rx="4" class="st-tape" stroke-width="5" fill="#18a07f" fill-opacity=".10" />
+          <text x="290" y="182" text-anchor="middle" class="s-ink" font-size="16" font-weight="700">站位区域</text>
+          <text x="290" y="204" text-anchor="middle" class="s-muted" font-size="13">前方 0.6–1.4 m，左右各 0.6 m</text>
+          <circle cx="90" cy="180" r="30" class="s-robot-soft st-robot" stroke-width="2" />
+          <path d="M120 180 l 16 0" class="st-robot" stroke-width="3" />
+          <text x="90" y="186" text-anchor="middle" class="s-ink" font-size="14" font-weight="700">G1</text>
+          <text x="90" y="232" text-anchor="middle" class="s-muted" font-size="12.5">面朝右</text>
+          <g class="st-ink" stroke-width="4">
+            <path d="M290 315 v 22" /><path d="M490 315 v 22" /><path d="M690 315 v 22" />
+          </g>
+          <text x="290" y="330" text-anchor="end" dx="-8" class="s-ink" font-size="13" font-weight="600">1 m</text>
+          <text x="490" y="330" text-anchor="end" dx="-8" class="s-ink" font-size="13" font-weight="600">2 m</text>
+          <text x="690" y="330" text-anchor="end" dx="-8" class="s-ink" font-size="13" font-weight="600">3 m</text>
+          <path d="M90 348 H 700" class="st-muted" stroke-width="1.5" />
+          <text x="470" y="96" class="s-muted" font-size="13">邀请区 1.2–2.2 m：站在这里看着机器人，它会邀请你</text>
+          <text x="560" y="240" class="s-muted" font-size="13">1、2、3 m 的记号用来校准距离</text>
+        </svg>
+        <figcaption>用平贴的胶带，不要拉绳子：头上的深度相机会把绳子当成"有东西"。距离从机器人身体正下方量起。</figcaption>
+      </figure></li>
+    <li data-k="s2c"><div class="step-top"><h3>把语音助手切到 wake-up 模式，关掉 chat_go</h3><span class="who you">你</span></div>
+      <p>遥控器同时按 <b>L1 + L2</b>，或者在 Unitree app 里：Device → Data → Audio → Voice assistant，确认是 wake-up 模式。再在 app 的 Device → Service Status 里把 <b>chat_go</b> 关掉。</p>
+      <p class="why"><b>为什么：</b>只有 wake-up 模式下，机器人的麦克风才会把声音发出来，否则我们收到的是零。chat_go 是 Unitree 自带的聊天助手，不关的话有人说到它的唤醒词，它会抢着回答。</p></li>
+    <li data-k="s2d"><div class="step-top"><h3>我告诉你"装好了"，并把自检结果发给你</h3><span class="who me">Claude</span></div></li>
+  </ol>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="stage" id="s3">
+  <div class="stage-head"><span class="tag">3</span><h2>硬件自检</h2><span class="time">15 分钟</span></div>
+  <div class="note">下面的命令可以我来跑，也可以你自己跑：先登录机器人，<code>ssh unitree@&lt;Wi-Fi 地址&gt;</code>，然后 <code>cd ~/g1-greeter</code>。测试工具要用摄像头，所以先停掉服务：<code>systemctl --user stop g1-greeter</code>。</div>
+  <ol class="steps">
+    <li data-k="s3a"><div class="step-top"><h3>完整自检，带喇叭测试</h3><span class="who me">Claude</span><span class="who you">你听</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>.venv/bin/python -m greeter --check --check-sound</pre><button type="button">复制</button></div>
+      <figure>
+        <svg viewBox="0 0 900 300" role="img" aria-label="自检输出示例：每项一行，PASS 绿色、WARN 黄色、FAIL 红色">
+          <rect x="10" y="10" width="880" height="280" rx="12" fill="#15171c" />
+          <g class="mono" font-size="13.5" style="white-space:pre">
+            <text x="30" y="44"><tspan fill="#7ee787">PASS</tspan><tspan fill="#e6e8ee">  api key     OPENAI_API_KEY sk-…abcd</tspan></text>
+            <text x="30" y="70"><tspan fill="#7ee787">PASS</tspan><tspan fill="#e6e8ee">  openai      key works and gpt-realtime-2.1 is available</tspan></text>
+            <text x="30" y="96"><tspan fill="#7ee787">PASS</tspan><tspan fill="#e6e8ee">  camera      /dev/v4l/by-id/…Brio…-video-index0: 640x480</tspan></text>
+            <text x="30" y="122"><tspan fill="#7ee787">PASS</tspan><tspan fill="#e6e8ee">  yolo        yolo26n-pose.engine: 38 ms/frame</tspan></text>
+            <text x="30" y="148"><tspan fill="#e3b341">WARN</tspan><tspan fill="#e6e8ee">  depth       head D435i not usable: … </tspan><tspan fill="#9aa4b2">← 可以接受，见下表</tspan></text>
+            <text x="30" y="174"><tspan fill="#7ee787">PASS</tspan><tspan fill="#e6e8ee">  robot sdk   voice service on eth0: GetVolume -> 0</tspan></text>
+            <text x="30" y="200"><tspan fill="#ff7b72">FAIL</tspan><tspan fill="#e6e8ee">  mic         0 bytes in 3 s … muted </tspan><tspan fill="#9aa4b2">← 去切 wake-up 模式</tspan></text>
+            <text x="30" y="226"><tspan fill="#79c0ff">INFO</tspan><tspan fill="#e6e8ee">  speaker     played a short line through PlayStream; did you hear it?</tspan></text>
+            <text x="30" y="262" fill="#9aa4b2">（示例：真实结果里的数字和路径会不一样）</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>哪一项不是 PASS</th><th>一般是什么原因</th><th>怎么办</th></tr></thead>
+        <tbody>
+          <tr><td>api key / openai</td><td>key 没填对，或账户没充值</td><td>在 platform.openai.com 检查账户余额，再告诉我</td></tr>
+          <tr><td>internet</td><td>路由器没信号</td><td>换个位置放路由器，或者先用手机热点</td></tr>
+          <tr><td>camera</td><td>摄像头没插好或没被识别</td><td>拔插一次 USB-C；告诉我，我来改摄像头设置</td></tr>
+          <tr><td>yolo 显示 WARN</td><td>每帧超过 250 ms</td><td>能用，只是反应慢一点；告诉我数字</td></tr>
+          <tr><td>depth 显示 WARN</td><td>头部深度相机被 Unitree 自己的服务占着</td><td>可以接受：程序会改用摄像头估站位区域。告诉我原文</td></tr>
+          <tr><td>mic</td><td>语音助手不在 wake-up 模式</td><td>按 L1 + L2，再跑一次自检</td></tr>
+          <tr><td>speaker</td><td>没听到声音</td><td>在 app 里看音量；告诉我</td></tr>
+        </tbody>
+      </table></div></li>
+    <li data-k="s3b"><div class="step-top"><h3>录 5 秒麦克风，自己听一下</h3><span class="who you">你说话</span></div>
+      <p>站在机器人前面 1 米，命令开始后正常说几句话。</p>
+      <div class="cmd"><span class="where">机器人上</span><pre>python3 scripts/record_mic.py</pre><button type="button">复制</button></div>
+      <div class="cmd"><span class="where">Mac 或 Ubuntu 终端，拷回来听</span><pre>scp unitree@&lt;Wi-Fi 地址&gt;:g1-greeter/mic_test.wav .</pre><button type="button">复制</button></div>
+      <p class="expect"><b>应该听到：</b>你的声音清楚，没有一直嗡嗡响。听不清的话告诉我，我们再考虑加外接麦克风。</p></li>
+    <li data-k="s3c"><div class="step-top"><h3>看摄像头实时看到什么</h3><span class="who you">你走动</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>.venv/bin/python -m greeter.robot.calibrate</pre><button type="button">复制</button></div>
+      <p>每秒打印一行：看到几个人、每个人多远、是否面朝机器人、是否站在站位区域。你分别站到 1、2、3 m 的记号上，再走进站位区域，看数字有没有跟着变。按 <b>Ctrl + C</b> 结束。</p>
+      <p class="expect"><b>应该看到：</b>距离大致对得上记号（差几十厘米正常，第 5 段再校准）；站进站位区域时出现 <code>spot occupied</code>。</p></li>
+  </ol>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="stage" id="s4">
+  <div class="stage-head"><span class="tag">4</span><h2>对话和新功能测试</h2><span class="time">45 分钟</span></div>
+  <ol class="steps">
+    <li data-k="s4a"><div class="step-top"><h3>启动服务，打开实时日志</h3><span class="who me">Claude</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>systemctl --user start g1-greeter
+journalctl --user -u g1-greeter -f</pre><button type="button">复制</button></div>
+      <p class="why">日志里能看到状态变化（<code>state idle -&gt; noticed …</code>）和双方说了什么（<code>visitor:</code> / <code>robot:</code>）。下面每个测试都写了该看哪一行。</p></li>
+    <li data-k="s4b"><div class="step-top"><h3>让机器人站起来</h3><span class="who you">你</span></div>
+      <p>用遥控器让它站起来，遥控器一直拿在手上。站稳以后再开始测。</p></li>
+    <li data-k="s4c"><div class="step-top"><h3>先走一遍正常的来访</h3><span class="who you">你</span><span class="who robot">机器人</span></div>
+      <figure>
+        <svg viewBox="0 0 900 230" role="img" aria-label="一次来访：灯白色呼吸 → 浅绿注意到你 → 邀请 → 绿色听 → 琥珀色在想 → 回答 → 说再见">
+          <g font-size="13.5">
+            <g transform="translate(20,40)"><circle cx="40" cy="40" r="26" fill="#d9dde5" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">等着</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">白灯呼吸</text></g>
+            <g transform="translate(150,40)"><circle cx="40" cy="40" r="26" fill="#9ff09f" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">注意到你</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">浅绿</text></g>
+            <g transform="translate(280,40)"><circle cx="40" cy="40" r="26" fill="#00c83c" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">邀请你</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">说出你穿的东西</text></g>
+            <g transform="translate(410,40)"><circle cx="40" cy="40" r="26" fill="#00ff00" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">听你说</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">绿灯</text></g>
+            <g transform="translate(540,40)"><circle cx="40" cy="40" r="26" fill="#ff8c00" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">在想</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">琥珀色</text></g>
+            <g transform="translate(670,40)"><circle cx="40" cy="40" r="26" fill="#00c83c" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">回答</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">一两句话</text></g>
+            <g transform="translate(790,40)"><circle cx="40" cy="40" r="26" fill="#d9dde5" /><text x="40" y="95" text-anchor="middle" class="s-ink" font-weight="700">再见</text><text x="40" y="115" text-anchor="middle" class="s-muted" font-size="12">回到等着</text></g>
+            <g class="st-muted" stroke-width="2"><path d="M90 80 h 76" /><path d="M220 80 h 76" /><path d="M350 80 h 76" /><path d="M480 80 h 76" /><path d="M610 80 h 76" /><path d="M740 80 h 66" /></g>
+            <path d="M712 66 C 680 10, 480 10, 452 66" class="st-accent" stroke-width="2" fill="none" stroke-dasharray="5 5" />
+            <text x="582" y="26" text-anchor="middle" class="s-muted" font-size="12">聊天时来回几轮</text>
+          </g>
+          <text x="20" y="200" class="s-ink" font-size="14">你：走到 1.5–2 m，面朝机器人站 1 秒以上 → 它邀请你 → 回一句话，或者站进站位区域 → 聊几句 → 说 bye。</text>
+        </svg>
+      </figure>
+      <p class="expect"><b>日志里应该有：</b><span class="log">NOTICED track …</span> → <span class="log">invitation: …</span>（说出你身上的一件东西）→ <span class="log">state open -&gt; converse</span> → 最后 <span class="log">state converse -&gt; close (goodbye)</span>。现在默认谁都邀请，穿什么都行。</p></li>
+    <li data-k="s4d"><div class="step-top"><h3>新功能逐个测（每个测完在日志里找对应的一行）</h3><span class="who you">你和同学</span></div>
+      <div class="tests">
+        <div class="test"><h3><span class="ic">🗣️</span>一个人说个不停</h3><dl>
+          <dt>做什么</dt><dd>开始聊天后，一口气说 25 秒，中间不停顿。</dd>
+          <dt>应该</dt><dd>大约 20 秒时机器人礼貌插话（"Sorry to jump in!"），用一句话回应，再把话头交出去。</dd>
+          <dt>日志</dt><dd><span class="log">visitor has talked for 20 s without a break: cutting in</span></dd></dl></div>
+        <div class="test"><h3><span class="ic">⏱️</span>聊满一分半</h3><dl>
+          <dt>做什么</dt><dd>正常一问一答，聊够 90 秒。</dd>
+          <dt>应该</dt><dd>它开始收尾、自己说再见，说完对话就结束，不会再多说一句。</dd>
+          <dt>日志</dt><dd><span class="log">state converse -&gt; close (robot said goodbye)</span></dd></dl></div>
+        <div class="test"><h3><span class="ic">👥</span>两个人同时说话</h3><dl>
+          <dt>做什么</dt><dd>你和同学一起站在站位区域，同时问两个不同的问题。</dd>
+          <dt>应该</dt><dd>它回答听懂的那个，再请另一个人说。听不清时请你们再说一遍。</dd>
+          <dt>日志</dt><dd>看 <span class="log">visitor:</span> 那一行：两个人的话混在一起是正常的，只有一个麦克风。</dd></dl></div>
+        <div class="test"><h3><span class="ic">🎓</span>问杜伦的具体问题</h3><dl>
+          <dt>做什么</dt><dd>问它："How much are the fees for computer science?"、"How much does coursework count?"</dd>
+          <dt>应该</dt><dd>不报任何数字，说展台上的同事能准确回答。</dd>
+          <dt>日志</dt><dd>看 <span class="log">robot:</span> 那一行有没有出现数字或金额。<b>出现了一定告诉我。</b></dd></dl></div>
+        <div class="test"><h3><span class="ic">🚶</span>边走边用（--roam）</h3><dl>
+          <dt>先改设置</dt><dd>在配置文件里加 <code>GREETER_ROAM=1</code>，重启服务（方法见下一步）。启动日志里要有 <span class="log">walk detection on (rt/lowstate)</span>。</dd>
+          <dt>做什么</dt><dd>一个人用遥控器带它走几步、停下；再在聊天中途带它走开。</dd>
+          <dt>应该</dt><dd>走的时候不邀请人，停下约 1.5 秒后恢复；聊天中走开超过 2 秒，它说一句再见就结束。</dd>
+          <dt>日志</dt><dd><span class="log">robot is walking: no new invitations</span> / <span class="log">robot is standing again</span> / <span class="log">(robot walked on)</span>。如果启动时显示 <span class="log">walk detection off</span>，把那一行发我。</dd></dl></div>
+        <div class="test"><h3><span class="ic">🔊</span>回声测试（--duplex，先测再开）</h3><dl>
+          <dt>先改设置</dt><dd>加 <code>GREETER_DUPLEX=1</code>，重启服务。</dd>
+          <dt>做什么</dt><dd>聊天时问一个它要回答两句话的问题，它说话时你们<b>都不出声</b>。</dd>
+          <dt>应该</dt><dd>它把两句话完整说完。如果它自己说到一半停下（把自己的声音当成有人插话），就说明有回声：改回 <code>GREETER_DUPLEX=0</code>。没问题的话，再试一次故意在它说话时插话，它应该停下来听你说。</dd></dl></div>
+      </div></li>
+    <li data-k="s4e"><div class="step-top"><h3>怎么改设置（上面两个测试要用）</h3><span class="who me">Claude</span><span class="who you">或你</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>nano ~/.config/g1-greeter/greeter.env</pre><button type="button">复制</button></div>
+      <p>在文件最后加一行，比如 <code>GREETER_ROAM=1</code>。按 <b>Ctrl + O</b>、回车保存，<b>Ctrl + X</b> 退出。然后重启服务：</p>
+      <div class="cmd"><span class="where">机器人上</span><pre>systemctl --user restart g1-greeter</pre><button type="button">复制</button></div>
+      <p class="why">这个文件里还有 OpenAI key，别把它发给任何人，也别截图。</p></li>
+  </ol>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="stage" id="s5">
+  <div class="stage-head"><span class="tag">5</span><h2>收尾：对比两个相机、校准距离、发给我</h2><span class="time">15 分钟</span></div>
+  <ol class="steps">
+    <li data-k="s5a"><div class="step-top"><h3>对比深度相机和摄像头对"站位区域有没有人"的判断</h3><span class="who me">Claude</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>.venv/bin/python -m greeter.spot_compare recordings/$(date +%F)/trace.jsonl</pre><button type="button">复制</button></div>
+      <p class="expect"><b>会看到：</b>两边一致的时间占百分之几，各自单独说"有人"的时间，以及每次不一致是几点几分。测试时有人侧身站、有小个子同学站进去，最能看出区别。</p></li>
+    <li data-k="s5b"><div class="step-top"><h3>校准距离（摄像头换了位置就一定要做）</h3><span class="who you">你站</span><span class="who me">Claude 运行</span></div>
+      <p>比如 Brio 从胸前换到头顶的弓形架上，或者换了摄像头。先停服务，你面朝机器人，按提示依次站到 1、2、3 m 的记号上，每个记号测 8 秒，屏幕上有倒计时。</p>
+      <div class="cmd"><span class="where">机器人上</span><pre>systemctl --user stop g1-greeter
+.venv/bin/python -m greeter.robot.calibrate --stand-at 1 2 3
+systemctl --user start g1-greeter</pre><button type="button">复制</button></div>
+      <p class="expect"><b>应该看到：</b>最后一行 <code>GREETER_DIST_K=… saved to …</code>。重启服务后就用新的值。</p></li>
+    <li data-k="s5c"><div class="step-top"><h3>把今天的日志和结果发给我</h3><span class="who you">你</span></div>
+      <div class="cmd"><span class="where">机器人上</span><pre>journalctl --user -u g1-greeter --since today &gt; ~/g1-greeter/today.log</pre><button type="button">复制</button></div>
+      <p>再告诉我：哪些测试正常，哪些不对，大概在几点。我会根据日志和录音调阈值（插话的秒数、走路判断、距离等）。</p></li>
+    <li data-k="s5d"><div class="step-top"><h3>结束</h3><span class="who you">你</span></div>
+      <p>用遥控器让机器人坐下或挂回吊架，再关机。拔下的网线收好；只要机器人要走动，就不能插着线。</p></li>
+  </ol>
+</section>
+
+<footer>
+  这页在 <a href="https://github.com/JiaxiWang05/Unitree">github.com/JiaxiWang05/Unitree</a> 的 <code>docs/g1-robot-session.html</code>。安装背景见 README 的 "What the human does"；支架和头盔见 <a href="https://jiaxiwang05.github.io/Unitree/g1-lab-day.html">lab day 指南</a>。
+  <div style="margin-top:6px"><button type="button" id="reset" style="font:inherit;font-size:13px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:2px 10px;cursor:pointer">清除勾选</button></div>
+</footer>
+</div>
+<script>
+(function () {
+  var KEY = 'g1-robot-session-done';
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { done = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+  document.querySelectorAll('ol.steps > li[data-k]').forEach(function (li) {
+    var k = li.getAttribute('data-k');
+    var top = li.querySelector('.step-top');
+    var label = document.createElement('label'); label.className = 'check';
+    var box = document.createElement('input'); box.type = 'checkbox'; box.checked = !!done[k];
+    label.appendChild(box); label.appendChild(document.createTextNode('做完了'));
+    (top || li).appendChild(label);
+    li.classList.toggle('done', box.checked);
+    box.addEventListener('change', function () { done[k] = box.checked; li.classList.toggle('done', box.checked); save(); });
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    done = {}; save();
+    document.querySelectorAll('ol.steps > li').forEach(function (li) { li.classList.remove('done'); var b = li.querySelector('.check input'); if (b) b.checked = false; });
+  });
+  document.querySelectorAll('.cmd button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentNode.querySelector('pre').textContent;
+      function ok() { btn.textContent = '已复制'; setTimeout(function () { btn.textContent = '复制'; }, 1400); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok, function () {});
+      } else {
+        var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); ok(); } catch (e) {} document.body.removeChild(t);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
