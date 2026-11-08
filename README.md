@@ -50,8 +50,12 @@ About an hour, once. Claude does everything else over SSH.
 
 1. **Webcam.** Bolt a Logitech Brio to the robot's chest with the 3D-printed
    bracket in [`hardware/brio_chest_mount/`](hardware/brio_chest_mount/README.md),
-   facing forward. Not on the head: the face opening is the built-in
-   depth camera's window, and the talk spot needs that camera. Plug the Brio
+   facing forward. Not in the face opening: that is the built-in depth
+   camera's window, and the talk spot needs that camera. For a higher view
+   (about 1.37 m), the Brio can instead ride on a printed arch over the head
+   that hangs on the shoulder lifting rings
+   ([`hardware/helmet_ring_mount/`](hardware/helmet_ring_mount/README.md));
+   after moving it, redo the distance calibration. Plug the Brio
    into a free USB-C port on the panel at the back of the neck with a 1 m
    USB-C to USB-C cable. Any UVC webcam works with the software; the bracket
    holds the Brio with its clip taken off, looking 20° up.
