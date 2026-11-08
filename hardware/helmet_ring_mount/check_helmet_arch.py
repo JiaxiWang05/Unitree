@@ -35,6 +35,25 @@ def need(ok, msg):
         problems.append(msg)
 
 
+THUMB_L, THUMB_HEAD_D, THUMB_HEAD_H = 25.0, 16.0, 9.0   # DIN 464 M5 x 25 knurled thumb screw
+
+
+def thumb_parts(side):
+    """The arch's ring screws: M5 x 25 knurled thumb screws, head on the outer cheek's face, and
+    the DIN 985 nut in the foot's pocket (as check_trial_feet)."""
+    parts, in_face, out_face = ctf.bolt_parts(side)
+    axis = np.array([0.0, -side, 0.0])
+    rot = trimesh.geometry.align_vectors([0, 0, 1], axis)
+    out = {"nut": parts["nut"]}
+    for name, r, start, length in (("thumb screw", ctf.BOLT_D / 2, out_face, THUMB_L),
+                                   ("thumb head", THUMB_HEAD_D / 2, out_face + side * THUMB_HEAD_H, THUMB_HEAD_H)):
+        m = trimesh.creation.cylinder(radius=r, height=length, sections=48)
+        m.apply_transform(rot)
+        m.apply_translation(np.array([tf.RING_X, start, tf.PIN_Z]) + axis * length / 2)
+        out[name] = m
+    return out
+
+
 def ray_hits(meshes, origins, dirs, max_len):
     """True for each ray that hits any mesh within max_len."""
     hit = np.zeros(len(origins), bool)
@@ -66,8 +85,7 @@ def main():
         print("   %-5s foot: ring %.2f mm, shoulder shell %.2f mm" % (name, d_ring, d_shell))
         need(d_ring >= 1.0, "%s foot only %.2f mm from its ring" % (name, d_ring))
         need(d_shell >= 2.0, "%s foot only %.2f mm from the shoulder" % (name, d_shell))
-        parts, _, _ = ctf.bolt_parts(side)
-        for pname, part in parts.items():
+        for pname, part in thumb_parts(side).items():
             dl, ds = ctf.split_clearance(part.sample(20000), t_near, yc)
             print("         %-9s ring %.2f, shoulder %.2f" % (pname, dl, ds))
             need(dl >= 0.8 and ds >= 1.5, "%s %s too close (ring %.2f, shoulder %.2f)" % (name, pname, dl, ds))

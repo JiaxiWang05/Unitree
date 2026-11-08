@@ -1,19 +1,19 @@
 == feet and rings (as check_trial_feet)
-   left  foot: ring 1.19 mm, shoulder shell 2.19 mm
-         bolt      ring 1.41, shoulder 4.66
-         bolt head ring 6.57, shoulder 6.65
-         nut       ring 3.48, shoulder 2.92
-   right foot: ring 1.46 mm, shoulder shell 3.01 mm
-         bolt      ring 1.49, shoulder 5.59
-         bolt head ring 5.92, shoulder 7.26
-         nut       ring 4.18, shoulder 3.78
+   left  foot: ring 1.19 mm, shoulder shell 2.20 mm
+         nut       ring 3.47, shoulder 2.92
+         thumb screw ring 1.42, shoulder 3.46
+         thumb head ring 7.54, shoulder 3.56
+   right foot: ring 1.46 mm, shoulder shell 3.02 mm
+         nut       ring 4.18, shoulder 3.80
+         thumb screw ring 1.49, shoulder 4.42
+         thumb head ring 7.61, shoulder 4.26
 == head
-   crown outside the camera block: 9.00 mm from the head (closest at x 1 y 24 z 492)
-   camera block sides: 2.74 mm from the head
-   saddle underside to head (3 mm foam goes here): min 2.59, median 2.82, 90% 2.98, max 9.95 mm; 1431 mm2 of it within 4 mm
-   left foot to the head 15.30 mm
-   right foot to the head 17.16 mm
-   Brio and plug to the head 24.75 mm
+   crown outside the camera block: 9.03 mm from the head (closest at x 0 y 24 z 492)
+   camera block sides: 2.77 mm from the head
+   saddle underside to head (3 mm foam goes here): min 2.58, median 2.82, 90% 2.98, max 9.97 mm; 1459 mm2 of it within 4 mm
+   left foot to the head 15.31 mm
+   right foot to the head 17.20 mm
+   Brio and plug to the head 24.74 mm
 == Brio view (66 x 52 deg, tilted 10 deg up)
    lens at x 21.5 z 529.0: 1365 mm above the floor; 0 of 1575 view rays blocked
    view edges: 16 deg below to 36 deg above level
@@ -21,17 +21,17 @@
    1275 sight lines, 0 blocked; the arch is never in front of the depth camera (closest 73 mm from a line)
 == head lidar (MID-360, mounted upside down and pitched 2.9 deg: sees -7..+52 deg in its own frame)
    left  side: the leg casts 10.0 deg of new shadow; with the foot, 32.5 deg
-   right side: the leg casts 10.0 deg of new shadow; with the foot, 31.0 deg
+   right side: the leg casts 9.5 deg of new shadow; with the foot, 31.0 deg
    (the feet sit 25-42 deg below the lidar, so their extra shadow falls on the floor 1.4-2.7 m out to
    each side; the arms, which this check doesn't include, already block part of that)
 == mass and balance (printed solid in PETG; infill makes it lighter)
    left foot   18.1 g
    right foot  18.1 g
-   crown       87.9 g
-   printed total 124 g, centre of mass x 4.6 y -1.0 z 446.1
-   with the Brio (about 63 g) the load on the head is about 187 g
+   crown       80.3 g
+   printed total 117 g, centre of mass x 5.2 y -0.7 z 444.4
+   with the Brio (about 63 g) the load on the head is about 180 g
 == printing (bed 256 mm)
-   helmet_crown       135 x 156 x 37 mm, watertight; faces steeper than 45 deg overhang (above 2 mm): 814 mm2
+   helmet_crown       135 x 156 x 37 mm, watertight; faces steeper than 45 deg overhang (above 2 mm): 2163 mm2
    helmet_foot_left   35 x 22 x 68 mm, watertight; faces steeper than 45 deg overhang (above 2 mm): 326 mm2
    helmet_foot_right  35 x 22 x 68 mm, watertight; faces steeper than 45 deg overhang (above 2 mm): 328 mm2
 ALL CLEAR

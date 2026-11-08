@@ -9,9 +9,15 @@ Three printed pieces, bolted together:
   supports, and it fits a 256 mm bed.
 
 Each lap joint takes 2 M3 x 12 socket cap screws (heads on the back) into M3 nuts in hex
-pockets on the front of the foot's half. The feet take the same M5 x 20 screws and DIN 985
-nuts as the trial feet. The arch's weight rests on the head top through a saddle under the
-camera block, lined with 3 mm EVA foam; the ring screws only keep it from lifting or tipping.
+pockets on the front of the foot's half. The feet hang on the rings with M5 x 25 knurled thumb
+screws (DIN 464) into the DIN 985 nuts in the feet's pockets, so the arch comes off by hand
+before the robot is hoisted by its rings. The arch's weight rests on the head top through a
+saddle under the camera block, lined with 3 mm EVA foam; the ring screws only keep it from
+lifting or tipping.
+
+Version 2 takes three ideas from Unitree's own head camera mount (xr_teleoperate): a slot that
+hides the cable (here a channel in the back of each leg, closed by the cable ties), rounded,
+lighter parts, and few, standard screws that come out without tools.
 
 Camera: Brio 4K with its clip removed, tilted 10 degrees up, between front and back lips,
 held from below by a 1/4"-20 x 5/8" screw with one M6 washer (4.0 mm into the camera, as on
@@ -63,6 +69,8 @@ BLOCK_W = 46.0               # seat width, inside the flat middle of the camera'
 LIP_GAP = CAM_D + 1.0
 FRONT_X = None               # set below from the lip
 TIE_W, TIE_H = 3.0, 4.0      # cable-tie tunnels (fits 2.5-3.6 mm ties)
+CH_W, CH_D = 5.0, 4.5        # cable channel in the back of each leg: width across the leg, depth
+CH_Z0 = 413.0                # channel starts above the lap joint; the cable leaves it here
 SPOT_DEPTH = 30.0            # spot face pocket reaches this far below the seat: through the saddle
 
 s, c = math.sin(math.radians(TILT)), math.cos(math.radians(TILT))
@@ -197,7 +205,7 @@ def block():
         (BACK_X, 0, 440))
     below_seat = cq.Workplane(cam_plane()).rect(400, 400).extrude(-200)
     b = box.intersect(below_seat).cut(head_top(FOAM))
-    b = b.edges("|Z").edges(">X").fillet(4.0)
+    b = b.edges("|Z").fillet(4.0)
     for uu in (-(LIP_GAP / 2 + LIP_T / 2), LIP_GAP / 2 + LIP_T / 2):
         lip = cq.Workplane(cam_plane(uu)).rect(BLOCK_W, LIP_T).extrude(LIP_H)
         if uu < 0:   # gap in the back lip for the straight USB-C plug
@@ -217,8 +225,24 @@ def block_cuts():
     return slot.union(spot).union(tunnel)
 
 
-def leg_ties(side=1, heights=(415.0, 455.0, 480.0)):
-    """Cable-tie tunnels across one leg, near its back face, for the camera cable."""
+def cable_channel(side):
+    """Open channel in the back of one leg, from CH_Z0 up over the shoulder of the arch to the
+    middle, where the cable comes down from the plug. Open at the back (the print bed)."""
+    path = [p for p in centreline(side) if p[1] >= CH_Z0]
+    path = path + [(-side * 4.0, path[-1][1])]           # run on just past the middle
+    o, i = offset(path, CH_W / 2), offset(path, -CH_W / 2)
+    pick = lambda p: [p[0]] + p[1:-1:3] + [p[-1]]  # noqa: E731
+    o, i = pick(o), pick(i)
+    band = (
+        cq.Workplane("YZ").moveTo(*o[0]).spline(o[1:], includeCurrent=True)
+        .lineTo(*i[-1]).spline(i[::-1][1:], includeCurrent=True).close()
+    )
+    return band.extrude(CH_D + 1.0).translate((BACK_X - 1.0, 0, 0))
+
+
+def leg_ties(side=1, heights=(422.0, 455.0, 480.0)):
+    """Cable-tie tunnels across one leg, just in front of its cable channel: a tie through one
+    wraps round the back of the leg and holds the cable in the channel."""
     path = centreline(side)
     out = None
     for zt in heights:
@@ -230,7 +254,7 @@ def leg_ties(side=1, heights=(415.0, 455.0, 480.0)):
         t = (
             cq.Workplane("XY").box(TIE_W, T + 6, TIE_H)
             .rotate((0, 0, 0), (1, 0, 0), ang)
-            .translate((BACK_X + 2.5 + TIE_W / 2, (y0 + y1) / 2, (z0 + z1) / 2))
+            .translate((BACK_X + CH_D + 1.0 + TIE_W / 2, (y0 + y1) / 2, (z0 + z1) / 2))
         )
         out = t if out is None else out.union(t)
     return out
@@ -238,7 +262,9 @@ def leg_ties(side=1, heights=(415.0, 455.0, 480.0)):
 
 def crown():
     cr = arch().union(lap(1, front=False)).union(lap(-1, front=False)).union(block())
-    cr = cr.cut(block_cuts()).cut(leg_ties(1)).cut(m3_holes(1)).cut(m3_holes(-1))
+    cr = cr.cut(block_cuts()).cut(m3_holes(1)).cut(m3_holes(-1))
+    for side in (1, -1):
+        cr = cr.cut(cable_channel(side)).cut(leg_ties(side))
     assert len(cr.solids().vals()) == 1, "crown must be one piece"
     return cr
 

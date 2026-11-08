@@ -118,7 +118,7 @@ Not checked, because it needs the real robot:
 - Whether the rings are solid or can move.
 - The arch itself: see "Full arch" below, drawn from Unitree's model.
 
-## Full arch (drawn from Unitree's model)
+## Full arch (drawn from Unitree's model), version 2
 
 The full arch is drawn straight from Unitree's official G1 model, without waiting for the
 trial: the rings in the 23-DoF and 29-DoF rev 1.0 models are identical (eye 12.0 × about
@@ -127,6 +127,36 @@ If the trial feet fit, the arch's feet fit too: they are the same feet.
 
 ![the full arch on Unitree's model: from behind, from the left and from the front](preview_arch_on_robot.png)
 ![the three print pieces](preview_arch_parts.png)
+![details: the cable hidden in the back of the left leg, and the hand-turned ring screw](preview_arch_details.png)
+
+### What we took from Unitree's own head camera mount
+
+Unitree publishes a printed head camera mount for teleoperation (`xr_teleoperate`, Device.md
+section 5.2, "Classic Head (98mm)" and "Renewed Head (88mm)"). Its STEP files show:
+
+- **It goes inside the head.** The mount screws down with 2 × M4 × 16 screws, 98 mm apart on
+  the classic head and 88 mm apart on the renewed head. Unitree's assembly picture shows
+  the camera inside the head's top cap, behind a printed cover plate with two lens holes, so
+  the head has to be opened to fit it.
+- **It looks down.** The camera plate is tilted 49° down (Unitree's D435i is at 47.6°), to
+  watch the hands during teleoperation. That is where the head depth camera looks, which the
+  greeter needs for the talk spot, and it is the wrong way for faces.
+- **It is made for a thin stereo camera board**; its cover is about 89 × 27 mm. The Brio is a
+  102 × 27 × 27 mm box, wider and much deeper, so it would not fit in the same place.
+
+So the official mount can't carry the Brio here, and the shoulder rings remain the only
+strong points outside the head. Version 2 keeps the ring arch and takes three ideas from
+Unitree's design:
+
+1. **A slot that hides the cable.** Each leg now has a 5 × 4.5 mm channel down its back, open
+   towards the robot's back. The camera cable lies in the left one; the three cable ties pass
+   through tunnels just in front of the channel and wrap round the back of the leg, closing it.
+   The right channel is empty (for a second cable later) and keeps the two sides alike.
+2. **Rounder, lighter parts.** All four upright corners of the camera block are rounded
+   (4 mm), and the channels take 6 cm³ out of the crown: 80 g instead of 88 g.
+3. **Few standard screws, no tools.** The feet now hang on the rings with M5 knurled thumb
+   screws, so the arch comes off by hand in seconds before the robot is hoisted by its rings.
+   The nuts stay captive in the feet.
 
 **How it works.** Two feet hang on the rings with their M5 screws. A crown bolts onto them
 with a lap joint on each leg, arches over the head and carries the Brio on top, tilted 10° up.
@@ -150,22 +180,23 @@ foam. The ring screws only keep the arch from lifting or tipping. The lens is ab
 | Part | Notes |
 |---|---|
 | The three printed pieces | PETG (not PLA: it creeps under load and softens in a warm hall) |
-| 2× M5 × 20 socket cap screws, 2× M5 nylon-insert nuts, 2× M5 washers | ISO 4762, DIN 985, ISO 7089, A2 stainless. Feet to rings, as on the trial feet |
+| 2× M5 × 25 knurled thumb screws and 2× M5 nylon-insert nuts | DIN 464 and DIN 985, A2 stainless. Feet to rings, turned by hand; the nuts sit in the feet's hex pockets. (The trial feet can use them too.) |
 | 4× M3 × 12 socket cap screws and 4× M3 nuts | ISO 4762 and ISO 4032, A2. Two per lap joint: heads at the back, nuts in the hex pockets on the front of the feet |
 | 1× ¼"-20 UNC × 5/8" socket cap screw and 1× M6 washer | ASME B18.3 and ISO 7089. Holds the Brio from below, 4.0 mm into its thread, as on the chest bracket |
 | 3 mm adhesive EVA foam, about 50 × 50 mm | On the saddle under the camera block. Cut a hole for the screw pocket |
-| 4 cable ties, 2.5–3.6 mm wide | One holds the USB-C plug down at the back lip, three hold the cable on the left leg |
-| Hex keys 2.5 mm, 4 mm and 3/16", 8 mm spanner | For the M3, M5 and ¼" screws and the M5 nuts |
+| 4 cable ties, 2.5–3.6 mm wide | One holds the USB-C plug down at the back lip, three close the cable channel on the left leg |
+| Hex keys 2.5 mm and 3/16" | For the M3 and ¼" screws |
 
 ### Printing
 
 - **Crown:** lying on its flat back (the side facing the back of the robot), no supports. It is
-  135 × 156 × 37 mm, so it fits a 256 mm bed. The only real overhang is the roof of the screw
-  pocket under the camera, a 16 mm bridge.
+  135 × 156 × 37 mm, so it fits a 256 mm bed. The cable channels open onto the bed, so their
+  floors print as 5 mm bridges; the longest bridge is the roof of the screw pocket under the
+  camera, 16 mm.
 - **Feet:** standing as they sit on the robot, like the trial feet, no supports. 35 × 22 × 68 mm each.
-- PETG, 0.2 mm layers, 4 walls, 30–40 % gyroid infill. Solid, the three pieces weigh 124 g
-  (crown 88 g, feet 18 g each); with infill they come out lighter. With the Brio (about 63 g),
-  the head carries under 190 g.
+- PETG, 0.2 mm layers, 4 walls, 30–40 % gyroid infill. Solid, the three pieces weigh 117 g
+  (crown 80 g, feet 18 g each); with infill they come out lighter. With the Brio (about 63 g),
+  the head carries about 180 g.
 
 ### Assembly
 
@@ -178,21 +209,24 @@ Do it with the robot sitting or lying down, powered off and **not** hanging from
    hand about three turns (4 mm), then just snug it. If it stops sooner, take it out and add a
    second washer.
 3. Fit the feet on the rings as for the trial: L on the left shoulder, R on the right, arrows
-   forward, M5 × 20 screw with a washer from the outside, nut in the pocket on the neck side.
-   Snug, not tight.
+   forward. Push the nut into the pocket on the neck side, then turn the M5 thumb screw in from
+   the outside by hand until it is snug.
 4. Lower the crown over the head so its legs' back halves sit behind the feet's front halves
    and the saddle rests on the head. Push the M3 × 12 screws in from the back through both
    halves into the nuts in the front pockets, and tighten gently.
 5. Plug in the USB-C cable. Tie the plug down with a cable tie through the tunnel under the back
-   lip. Run the cable down the back of the head to the left leg, tie it at the three tunnels near
-   the leg's back face, and on to a USB-C port at the back of the neck. Leave some slack.
+   lip. Press the cable into the channel at the top of the arch and down the back of the left
+   leg, and close the channel with a cable tie through each of the three tunnels, round the back
+   of the leg. The cable leaves the channel just above the lap joint; run it on to a USB-C port
+   at the back of the neck and leave some slack.
 6. Check that the saddle rests on the foam, the arch doesn't rock, and nothing else touches the
    head.
 
 ### What was checked (`check_arch_output.txt`)
 
 - **Rings and shoulders:** the same numbers as the trial feet: at least 1.19 mm from the rings,
-  2.2 mm from the shoulder shell; the screws and nuts at least 1.4 mm from the rings.
+  2.2 mm from the shoulder shell. The thumb screws and nuts are at least 1.42 mm from the rings
+  and 2.9 mm from the shell; the thumb screws' heads (16 mm across) at least 3.5 mm from it.
 - **Head:** the arch is at least 9 mm from the head outside the camera block. The saddle sits
   2.6–3.0 mm above the head top (median 2.8 mm), right for 3 mm foam. The feet are at least 15 mm
   from the head, the Brio and its plug 25 mm.
@@ -200,7 +234,7 @@ Do it with the robot sitting or lying down, powered off and **not** hanging from
   arch or the head. The view reaches 16° below level and 36° above.
 - **Head depth camera:** none of its 1,275 sight lines to the talk spot (0.6–1.4 m ahead,
   ±0.6 m, floor to thigh height) is blocked; the arch is at least 73 mm from all of them.
-- **Head lidar:** each leg casts a new 10° shadow in the lidar's all-round view. The feet sit
+- **Head lidar:** each leg casts a new 9.5–10° shadow in the lidar's all-round view. The feet sit
   25–42° below the lidar, so their extra shadow falls on the floor 1.4–2.7 m out to each side,
   where the arms already block part of the view.
 - **Lens:** 529 mm above the torso origin, about 1.365 m above the floor.
@@ -213,8 +247,8 @@ the arms: raising them high to the sides could reach the legs.
 
 ### Cautions for the full arch
 
-- **Take the arch off before hoisting the robot by its rings.** Undo the two M5 screws; the
-  arch lifts off in one piece.
+- **Take the arch off before hoisting the robot by its rings.** Unscrew the two thumb screws
+  by hand; the arch lifts off in one piece.
 - The legs shade about 10° of the head lidar's view on each side; anything that relies on the
   lidar (walking on its own, obstacle avoidance) should be tested with the arch on.
 - Check all six screws before each session: walking shakes things loose.
@@ -227,6 +261,6 @@ the arms: raising them high to the sides could reach the legs.
   models (get them with `python docs/src/fetch_g1_model.py g1mesh --extra`). Its output is in
   `ring_models_output.txt`: the 23-DoF and 29-DoF rev 1.0 rings are the same, the original G1
   has none.
-- `tools/render_feet.py` and `tools/render_helmet.py`: the preview pictures, drawn with a small
-  z-buffer from the STLs and Unitree's meshes
+- `tools/render_feet.py`, `tools/render_helmet.py` and `tools/render_details.py`: the preview
+  pictures, drawn with a small z-buffer from the STLs and Unitree's meshes
   (`python tools/render_helmet.py . <g1mesh folder>`).
