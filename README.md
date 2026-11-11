@@ -1,5 +1,7 @@
 # G1 proactive greeter
 
+> **New here, or a new chat?** Start with [`HANDOVER.md`](HANDOVER.md): status, next steps and decisions as of 11 Nov 2026.
+
 A Unitree G1 EDU (23 DoF) notices open-day visitors, invites them over by
 naming something they wear, and chats with them. By default it invites anyone
 who looks interested; `--invite green` brings back the original rule of inviting

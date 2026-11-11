@@ -1,0 +1,266 @@
+diff -ru -x .pytest_cache -x __pycache__ orig/greeter/cli.py work/greeter/cli.py
+--- orig/greeter/cli.py	2026-11-01 03:40:44
++++ work/greeter/cli.py	2026-11-03 20:36:39
+@@ -135,6 +135,8 @@
+     d = p.add_argument_group("dialogue")
+     d.add_argument("--max-visit", type=float, default=float(env("GREETER_MAX_VISIT", 240.0)), help="seconds")
+     d.add_argument("--silence", type=float, default=float(env("GREETER_SILENCE", 15.0)), help="close after this much silence (0 = never)")
++    d.add_argument("--conditions", default=env("GREETER_CONDITIONS", "personal"), help="study: opener arms drawn per visitor, e.g. personal,generic")
++    d.add_argument("--seed", type=int, default=env("GREETER_SEED"), help="randomisation seed (default: different every run)")
+     d.add_argument("--no-transcripts", action="store_true", default=env("GREETER_TRANSCRIPTS") == "0", help="don't print what is said")
+ 
+     rec = p.add_argument_group("recording (for tuning)")
+@@ -260,8 +262,13 @@
+ 
+ def dialogue_config(args: argparse.Namespace):
+     from greeter.dialogue.machine import DialogueConfig
++    from greeter.dialogue.prompts import OPENER_CONDITIONS
+ 
+-    return DialogueConfig(max_visit_s=args.max_visit, silence_s=args.silence)
++    conditions = tuple(c.strip() for c in args.conditions.split(",") if c.strip())
++    if not conditions or not set(conditions) <= set(OPENER_CONDITIONS):
++        raise SystemExit("--conditions: a comma-separated list of %s" % ", ".join(OPENER_CONDITIONS))
++    seed = int(args.seed) if args.seed is not None else None
++    return DialogueConfig(max_visit_s=args.max_visit, silence_s=args.silence, conditions=conditions, seed=seed)
+ 
+ 
+ def make_app(link, args):
+diff -ru -x .pytest_cache -x __pycache__ orig/greeter/clips.py work/greeter/clips.py
+--- orig/greeter/clips.py	2026-10-17 11:36:28
++++ work/greeter/clips.py	2026-11-03 20:36:39
+@@ -23,6 +23,7 @@
+ 
+ LINES: Dict[str, str] = {
+     "hey_green": "Hey, you in the green! Come and say hi!",
++    "hey_there": "Hi there! Come and stand on the green spot and say hi!",
+     "hello": "Hello! Lovely to meet you.",
+     "step_closer": "Come and stand on the green spot in front of me.",
+     "say_again": "Sorry, it's a bit noisy in here. Could you say that again?",
+diff -ru -x .pytest_cache -x __pycache__ orig/greeter/dialogue/app.py work/greeter/dialogue/app.py
+--- orig/greeter/dialogue/app.py	2026-10-17 20:39:07
++++ work/greeter/dialogue/app.py	2026-11-03 20:36:39
+@@ -107,6 +107,7 @@
+         self.providers: List[Provider] = list(providers)
+         self.provider_index = 0
+         self.dialogue = Dialogue(dialogue_cfg)
++        self.dialogue.on_transition = lambda record: self.recorder.trace("state", record)  # day-long funnel log
+         self.transcripts = transcripts
+         self.recorder = recorder or NullRecorder()
+         self.clips = clips or {}
+@@ -297,7 +298,7 @@
+             self.recorder.event("robot_clip", text)
+             await self._play(pcm)
+             self._job(lambda b, t=text: b.commit_opener(t))
+-        elif name == "hey_green":
++        elif name in ("hey_green", "hey_there"):
+             self._job(lambda b: b.speak_opener())  # no clip rendered: say the invitation live
+ 
+     # --- backend -------------------------------------------------------------
+@@ -320,6 +321,7 @@
+         self.stats["visits"] += 1
+         label = "track%s" % self.dialogue.target_id if self.dialogue.target_id is not None else "spot"
+         self.recorder.start_visit(label)
++        self.recorder.event("visit", {"visit": self.dialogue.visit_no, "condition": self.dialogue.condition})
+         if action.jpeg:
+             self.recorder.frame(action.jpeg, "notice")
+         backend = self._make_backend()
+diff -ru -x .pytest_cache -x __pycache__ orig/greeter/dialogue/machine.py work/greeter/dialogue/machine.py
+--- orig/greeter/dialogue/machine.py	2026-10-27 21:37:57
++++ work/greeter/dialogue/machine.py	2026-11-03 20:36:39
+@@ -22,10 +22,11 @@
+ from __future__ import annotations
+ 
+ import logging
++import random
+ import re
+ from dataclasses import dataclass
+ from enum import Enum
+-from typing import Any, Dict, List, Optional, Tuple
++from typing import Any, Callable, Dict, List, Optional, Tuple
+ 
+ from greeter.dialogue import prompts
+ from greeter.vision import iou
+@@ -137,6 +138,8 @@
+     cooldown_s: float = 2.0
+     reacquire_iou: float = 0.3
+     spot_accept_margin_s: float = 0.5  # spot filled from just before the invitation began = they accepted
++    conditions: Tuple[str, ...] = ("personal",)  # opener arms drawn per noticed visitor (prompts.OPENER_CONDITIONS)
++    seed: Optional[int] = None  # randomisation seed (None: different every run)
+ 
+ 
+ class Dialogue:
+@@ -169,6 +172,11 @@
+         self.session_ended_at = float("-inf")
+         self.end_reason = ""
+         self._led = ""
++        self.visit_no = 0
++        self.condition = ""  # opener arm of the current visit ("" for talk-spot chats)
++        self.rng = random.Random(self.cfg.seed)
++        self._deck: List[str] = []
++        self.on_transition: Optional[Callable[[Dict[str, Any]], None]] = None  # the runner logs these
+ 
+     # --- helpers -------------------------------------------------------------
+     def speaking(self, now: float) -> bool:
+@@ -177,6 +185,13 @@
+     def _people(self) -> List[Dict[str, Any]]:
+         return list(self.snapshot.get("people", []))
+ 
++    def _draw_condition(self) -> str:
++        """Shuffled blocks: within every 2 x len(conditions) visitors, each arm comes up equally often."""
++        if not self._deck:
++            self._deck = list(self.cfg.conditions) * 2
++            self.rng.shuffle(self._deck)
++        return self._deck.pop()
++
+     def _led_mode(self, mode: str) -> List[Action]:
+         if mode == self._led:
+             return []
+@@ -186,6 +201,8 @@
+     def _enter(self, state: State, now: float, reason: str = "", **kw) -> List[Action]:
+         log.info("state %s -> %s%s", self.state.value, state.value, " (%s)" % reason if reason else "")
+         self.transitions.append((self.state.value, state.value, reason))
++        if self.on_transition is not None:
++            self.on_transition({"visit": self.visit_no, "condition": self.condition, "from": self.state.value, "to": state.value, "reason": reason})
+         self.state, self.entered_at = state, now
+         a: List[Action] = []
+         if state is State.IDLE:
+@@ -197,7 +214,7 @@
+             self.speech_until, self.turn_done, self.thinking = 0.0, False, False
+             note = prompts.scene_note(kw.get("distance"), self.group_size)
+             a += [EnableTriggers(False)] + self._led_mode("noticed")
+-            a += [OpenSession(kw["jpeg"], note), PrepareOpener(kw["jpeg"], prompts.opener_instruction(self.group_size))]
++            a += [OpenSession(kw["jpeg"], note), PrepareOpener(kw["jpeg"], prompts.opener_instruction(self.group_size, self.condition))]
+         elif state is State.BID:
+             self.last_bid = now
+             self.bid_audio_seen = False
+@@ -219,7 +236,8 @@
+             if not kw.get("spoken", True):
+                 return a + self._enter(State.COOLDOWN, now, reason)
+             self.turn_done = False
+-            a += [Stream(mic=False, video=False), SendText(prompts.CLOSE_INSTRUCTION)] + self._led_mode("speaking")
++            close = prompts.CLOSE_INSTRUCTION_GENERIC if self.condition == "generic" else prompts.CLOSE_INSTRUCTION
++            a += [Stream(mic=False, video=False), SendText(close)] + self._led_mode("speaking")
+         elif state is State.COOLDOWN:
+             self.session_ended_at = now
+             self.speech_until = now  # StopAudio cuts whatever was still playing
+@@ -287,6 +305,9 @@
+         self.target_id, self.target_box, self.target_seen = tid, tuple(event.get("bbox") or (0, 0, 0, 0)), now
+         self.group_size = int(event.get("group_size") or 1)
+         self.target = {"id": tid, "distance": event.get("distance"), "facing_for": 0.0}
++        self.visit_no += 1
++        self.condition = self._draw_condition()
++        log.info("visit %d: %s opener", self.visit_no, self.condition)
+         return self._enter(State.NOTICED, now, "green at %.1f m" % (event.get("distance") or 0), jpeg=jpeg, distance=event.get("distance"))
+ 
+     def on_tracks(self, snapshot: Dict[str, Any], now: float) -> List[Action]:
+@@ -340,6 +361,8 @@
+         if target is not None:
+             self.target_id, self.target_box, self.target = int(target["id"]), tuple(target["bbox"]), target
+         self.target_seen = now
++        self.visit_no += 1
++        self.condition = ""  # not invited: no opener arm
+         return [OpenSession(None, prompts.SPOT_NOTE)] + self._enter(State.CONVERSE, now, "talk-spot speech")
+ 
+     def on_opener_ready(self, now: float) -> List[Action]:
+@@ -415,7 +438,7 @@
+         elif state is State.BID:
+             if not self.bid_played and in_state >= cfg.opener_wait_s:
+                 self.bid_played = True
+-                return [PlayClip("hey_green")]
++                return [PlayClip("hey_there" if self.condition == "generic" else "hey_green")]
+             # a live (non pre-generated) invitation takes a moment to start: wait for its audio
+             done = self.bid_audio_seen and in_state > 0.3 and not self.speaking(now)
+             if self.bid_played and (done or in_state >= 6.0):
+diff -ru -x .pytest_cache -x __pycache__ orig/greeter/dialogue/prompts.py work/greeter/dialogue/prompts.py
+--- orig/greeter/dialogue/prompts.py	2026-11-01 10:09:55
++++ work/greeter/dialogue/prompts.py	2026-11-03 20:36:39
+@@ -38,8 +38,17 @@
+     return "(Camera frame: %s%s is the nearest visitor.)" % (who, where)
+ 
+ 
+-def opener_instruction(group_size: int = 1) -> str:
++OPENER_CONDITIONS = ("personal", "generic")  # study arms; "personal" alone is the normal behaviour
++
++
++def opener_instruction(group_size: int = 1, condition: str = "personal") -> str:
+     who = "the group" if group_size > 1 else "them"
++    if condition == "generic":
++        return (
++            "Invite %s over now, before they speak. At most 15 words. Do not mention their clothing, colours or "
++            "anything else about them: give a friendly general invitation to stand on the green talk spot and "
++            "say hi." % who
++        )
+     return (
+         "Invite %s over now, before they speak. At most 15 words. Name the green item you can see "
+         "(for example \"Hey, green beanie!\") and invite them to stand on the green talk spot and say hi. "
+@@ -57,4 +66,9 @@
+ CLOSE_INSTRUCTION = (
+     "Wrap up now in one short line: one highlight of the stand worth seeing, plus a playful callback to the "
+     "green item you mentioned earlier, then say goodbye. Do not ask a question."
++)
++
++CLOSE_INSTRUCTION_GENERIC = (
++    "Wrap up now in one short line: one highlight of the stand worth seeing, then say goodbye. "
++    "Do not ask a question."
+ )
+diff -ru -x .pytest_cache -x __pycache__ orig/tests/test_dialogue.py work/tests/test_dialogue.py
+--- orig/tests/test_dialogue.py	2026-10-27 21:38:11
++++ work/tests/test_dialogue.py	2026-11-03 20:36:39
+@@ -102,6 +102,42 @@
+     assert "the group" in prompts.opener_instruction(3)
+ 
+ 
++def test_generic_arm_never_names_clothing():
++    d = Dialogue(DialogueConfig(conditions=("generic",)))
++    d.start(0.0)
++    a = d.on_notice(NOTICE, b"jpeg", 1.0)
++    assert d.condition == "generic" and PrepareOpener(b"jpeg", prompts.opener_instruction(1, "generic")) in a
++    assert "Do not mention their clothing" in prompts.opener_instruction(1, "generic")
++    ticks(d, 1.0, 1.3, snap(p()))
++    assert d.state is State.BID
++    assert PlayClip("hey_there") in ticks(d, 1.4, 2.2, snap(p()))  # opener late: neutral fallback
++
++
++def test_generic_arm_closes_without_a_clothing_callback():
++    d = conversing(DialogueConfig(conditions=("generic",)))
++    a = d.on_user_text("thanks, bye", 4.0)
++    assert d.state is State.CLOSE and SendText(prompts.CLOSE_INSTRUCTION_GENERIC) in a
++
++
++def test_conditions_are_drawn_in_shuffled_blocks_and_logged():
++    d = Dialogue(DialogueConfig(conditions=("personal", "generic"), seed=7))
++    records = []
++    d.on_transition = records.append
++    d.start(0.0)
++    arms, t = [], 1.0
++    for i in range(8):
++        d.on_notice(dict(NOTICE, track_id=10 + i), b"j", t)
++        arms.append(d.condition)
++        d.tick(t + 3.5)  # they walked off: back to idle
++        assert d.state is State.IDLE
++        t += 5.0
++    assert arms[:4].count("generic") == 2 and arms[4:].count("generic") == 2
++    noticed = [r for r in records if r["to"] == "noticed"]
++    assert [r["condition"] for r in noticed] == arms and [r["visit"] for r in noticed] == list(range(1, 9))
++    same = Dialogue(DialogueConfig(conditions=("personal", "generic"), seed=7))
++    assert [same._draw_condition() for _ in range(8)] == arms  # the seed reproduces the sequence
++
++
+ def test_notice_while_busy_is_released():
+     d = noticed()
+     assert d.on_notice(dict(NOTICE, track_id=9), b"j", 2.0) == [Release(9)]
+diff -ru -x .pytest_cache -x __pycache__ orig/tests/test_e2e.py work/tests/test_e2e.py
+--- orig/tests/test_e2e.py	2026-10-27 21:38:11
++++ work/tests/test_e2e.py	2026-11-03 20:36:39
+@@ -175,7 +175,10 @@
+     assert any(f.name.endswith("notice.jpg") for f in visit.iterdir())
+     events = [json.loads(line) for line in (visit / "events.jsonl").read_text().splitlines()]
+     assert any(e["kind"] == "robot" for e in events)
+-    assert (day / "trace.jsonl").stat().st_size > 0
++    assert events[0] == dict(events[0], kind="visit", data={"visit": 1, "condition": "personal"})
++    trace = [json.loads(line) for line in (day / "trace.jsonl").read_text().splitlines()]
++    funnel = [(r["data"]["from"], r["data"]["to"]) for r in trace if r["kind"] == "state"]
++    assert funnel[: len(FULL_VISIT)] == FULL_VISIT
+ 
+ 
+ def test_visitor_walks_away_mid_conversation():
