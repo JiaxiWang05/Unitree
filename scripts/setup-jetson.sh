@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # The only script the human runs (once). From the laptop, with an Ethernet cable to the robot:
 #
-#   ssh -t unitree@192.168.123.164 'sudo bash -s' < scripts/setup-jetson.sh
+#   scp scripts/setup-jetson.sh unitree@192.168.123.164:~ && ssh -t unitree@192.168.123.164 'sudo bash ~/setup-jetson.sh'
+#
+# (Copy it over first: piping it into `ssh -t` leaves sudo and the prompts without a terminal.)
 #
 # It asks for three things: the sudo password, the Wi-Fi name + password (a pocket 4G/5G
 # router with a data SIM, or a phone hotspot), and the OpenAI API key (hidden). It then:

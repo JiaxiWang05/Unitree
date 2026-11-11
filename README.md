@@ -98,7 +98,7 @@ About an hour, once. Claude does everything else over SSH.
       stored in the code:
 
       ```bash
-      ssh -t unitree@192.168.123.164 'sudo bash -s' < scripts/setup-jetson.sh
+      scp scripts/setup-jetson.sh unitree@192.168.123.164:~ && ssh -t unitree@192.168.123.164 'sudo bash ~/setup-jetson.sh'
       ```
 
    Then tell Claude *"the Jetson is set up"*. Claude deploys with

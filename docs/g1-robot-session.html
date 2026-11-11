@@ -127,7 +127,7 @@ svg .mono { font-family: var(--mono); }
     <a href="#s4"><span class="n">4</span><b>对话和新功能测试</b><small>45 分钟</small></a>
     <a href="#s5"><span class="n">5</span><b>收尾：对比、校准、发我</b><small>15 分钟</small></a>
   </nav>
-  <div class="warnbox"><b>安全：</b>只要机器人通电，就有一个人把遥控器拿在手上。机器人状态不对时，按 <b>L1 + A</b>：它会进入阻尼模式，慢慢倒下（Unitree 说明书的做法），所以旁边要有人扶，或者让它挂在吊架上。走路测试时，周围留出空地。</div>
+  <div class="warnbox"><b>安全：</b>只要机器人通电，就有一个人把遥控器拿在手上。机器人状态不对时，按 <b>L2 + B</b>：它会进入阻尼模式，慢慢倒下（遥控器上按键表的 ① Damping），所以旁边要有人扶，或者让它挂在吊架上。走路测试时，周围留出空地。</div>
 </header>
 
 <!-- ================= 0 ================= -->
@@ -225,7 +225,7 @@ cd Unitree</pre><button type="button">复制</button></div>
       <p>它会问一次机器人的密码，你自己输入（输入时屏幕上不显示字）。</p>
       <p class="why">如果提示 <code>no identities found</code>，先运行 <code>ssh-keygen -t ed25519</code>，连按三次回车，再运行上面这条。</p></li>
     <li data-k="s1e"><div class="step-top"><h3>运行设置脚本</h3><span class="who you">你</span></div>
-      <div class="cmd"><span class="where">Ubuntu 终端，在 Unitree 文件夹里</span><pre>ssh -t unitree@192.168.123.164 'sudo bash -s' &lt; scripts/setup-jetson.sh</pre><button type="button">复制</button></div>
+      <div class="cmd"><span class="where">Ubuntu 终端，在 Unitree 文件夹里</span><pre>scp scripts/setup-jetson.sh unitree@192.168.123.164:~ &amp;&amp; ssh -t unitree@192.168.123.164 'sudo bash ~/setup-jetson.sh'</pre><button type="button">复制</button></div>
       <figure>
         <svg viewBox="0 0 900 330" role="img" aria-label="设置脚本的四个阶段和它会问的四个问题">
           <rect x="10" y="10" width="880" height="310" rx="12" fill="#15171c" />

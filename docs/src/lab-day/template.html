@@ -255,7 +255,7 @@ footer { color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--lin
       <span class="who-tag">你做（只做一次）</span>
       <ol class="proc">
         <li><div class="body"><h3>设置免密登录</h3><div class="cmd"><pre>ssh-copy-id unitree@192.168.123.164</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>输入一次机器人密码，之后我部署和自检时就不用再问你密码。</p></div></li>
-        <li><div class="body"><h3>运行配置脚本</h3><p>在 Unitree 文件夹里运行。它会问 sudo 密码、机器人要连的 Wi-Fi 名和密码、OpenAI API key（输入时屏幕上不显示）。</p><div class="cmd"><pre>ssh -t unitree@192.168.123.164 'sudo bash -s' &lt; scripts/setup-jetson.sh</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>装系统包、深度相机的权限规则、联网都需要 sudo。key 只存在机器人上的配置文件里，不会写进代码，也不会经过我。</p></div></li>
+        <li><div class="body"><h3>运行配置脚本</h3><p>在 Unitree 文件夹里运行。它会问 sudo 密码、机器人要连的 Wi-Fi 名和密码、OpenAI API key（输入时屏幕上不显示）。</p><div class="cmd"><pre>scp scripts/setup-jetson.sh unitree@192.168.123.164:~ &amp;&amp; ssh -t unitree@192.168.123.164 'sudo bash ~/setup-jetson.sh'</pre><button type="button">复制</button></div><p class="why-line"><b>为什么：</b>装系统包、深度相机的权限规则、联网都需要 sudo。key 只存在机器人上的配置文件里，不会写进代码，也不会经过我。</p></div></li>
         <li><div class="body"><h3>告诉我"Jetson 配好了"</h3></div></li>
       </ol>
     </div>
