@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>G1 Lab Commands</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column of steps; each command is a terminal-like block with a copy button */
+:root {
+  --bg: #f4f6f8; --fg: #1b2128; --muted: #5b6672; --card: #ffffff; --line: #d9dfe5;
+  --term: #1e252d; --term-fg: #e6edf3; --accent: #0f7b6c; --robot: #8a4b08; --robot-bg: #fbeedd; --ubu: #0f5c9e; --ubu-bg: #e3eefa;
+  --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161b; --fg: #e3e8ed; --muted: #95a1ad; --card: #1a2027; --line: #2b333c;
+  --term: #0b0f13; --term-fg: #e6edf3; --accent: #3cc1ab; --robot: #f0b26a; --robot-bg: #3a2a16; --ubu: #7fb6ec; --ubu-bg: #16283a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161b; --fg: #e3e8ed; --muted: #95a1ad; --card: #1a2027; --line: #2b333c;
+  --term: #0b0f13; --term-fg: #e6edf3; --accent: #3cc1ab; --robot: #f0b26a; --robot-bg: #3a2a16; --ubu: #7fb6ec; --ubu-bg: #16283a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 760px; margin: 0 auto; display: grid; gap: 22px; }
+h1 { font-size: 1.6rem; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--muted); }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.where { display: inline-block; font-size: .78rem; font-weight: 600; letter-spacing: .04em; padding: 2px 8px; border-radius: 99px; }
+.robot { color: var(--robot); background: var(--robot-bg); }
+.ubu { color: var(--ubu); background: var(--ubu-bg); }
+.cmd { position: relative; background: var(--term); color: var(--term-fg); border-radius: 8px; min-width: 0; }
+.cmd pre { margin: 0; padding: 12px 84px 12px 14px; font-family: var(--mono); font-size: .88rem; overflow-x: auto; white-space: pre; }
+.cmd button { position: absolute; top: 8px; right: 8px; font: 600 .8rem var(--sans); padding: 5px 10px; border-radius: 6px; border: 0; cursor: pointer; background: var(--accent); color: #fff; }
+.cmd button:focus-visible { outline: 2px solid var(--term-fg); outline-offset: 2px; }
+.note { color: var(--muted); font-size: .9rem; }
+code { font-family: var(--mono); font-size: .88em; }
+ul { margin: 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:grid;gap:6px">
+    <h1>G1 Lab Commands</h1>
+    <p class="lead">Click <b>Copy</b>, then paste in the Ubuntu terminal with <b>Ctrl + Shift + V</b>. Run one block at a time. The tag on each step says where it runs: <span class="where ubu">UBUNTU</span> prompt is your laptop user, e.g. <code>you@laptop</code>, <span class="where robot">ROBOT</span> prompt is <code>unitree@ubuntu</code>.</p>
+    <p class="note">Robot login password: the robot computer's <code>unitree</code> user (ask the lab; it is not the Unitree app account). When it asks <code>ros:foxy(1) noetic(2) ?</code> type <code>1</code>. The robot stays hanging; nothing here makes it move.</p>
+  </header>
+
+  <section>
+    <h2>1. Log in to the robot</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>ssh unitree@192.168.123.164</pre><button type="button">Copy</button></div>
+  </section>
+
+  <section>
+    <h2>2. Backup on the robot</h2>
+    <span class="where robot">ROBOT</span>
+    <div class="cmd"><pre>sudo tar czf /tmp/g1-etc.tgz /etc 2&gt;/dev/null; dpkg -l &gt; /tmp/g1-packages.txt; pip3 list &gt; /tmp/g1-pip.txt 2&gt;/dev/null</pre><button type="button">Copy</button></div>
+    <div class="cmd"><pre>tar czf /tmp/g1-home.tgz -C ~ . 2&gt;/dev/null; ls -lh /tmp/g1-*</pre><button type="button">Copy</button></div>
+    <p class="note">The second block takes a minute or two. You should see 4 files: g1-etc.tgz, g1-home.tgz, g1-packages.txt, g1-pip.txt.</p>
+  </section>
+
+  <section>
+    <h2>3. Camera test on the robot</h2>
+    <span class="where robot">ROBOT</span>
+    <div class="cmd"><pre>ls /dev/v4l/by-id/</pre><button type="button">Copy</button></div>
+    <div class="cmd"><pre>python3 - &lt;&lt;'EOF'
+import cv2, glob
+for p in sorted(glob.glob('/dev/v4l/by-id/*index0')):
+    c = cv2.VideoCapture(p); ok, f = c.read(); c.release()
+    print(p, 'OK %dx%d' % (f.shape[1], f.shape[0]) if ok else 'no frame')
+    if ok: cv2.imwrite('/tmp/' + p.split('/')[-1] + '.jpg', f)
+EOF</pre><button type="button">Copy</button></div>
+    <p class="note">Look for a line with <b>Trust</b> and <code>OK 640x480</code> (or similar). RealSense lines are the head depth camera. Then leave the robot:</p>
+    <div class="cmd"><pre>exit</pre><button type="button">Copy</button></div>
+  </section>
+
+  <section>
+    <h2>4. Copy backup and photos to Ubuntu</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>mkdir -p ~/g1-backup &amp;&amp; scp 'unitree@192.168.123.164:/tmp/g1-*' 'unitree@192.168.123.164:/tmp/*.jpg' ~/g1-backup/</pre><button type="button">Copy</button></div>
+    <div class="cmd"><pre>ls -lh ~/g1-backup &amp;&amp; xdg-open ~/g1-backup</pre><button type="button">Copy</button></div>
+    <p class="note">If scp hangs or says <code>protocol error</code>, press Ctrl + C and tell Claude. Afterwards copy the <code>g1-backup</code> folder to a USB stick or your Mac.</p>
+  </section>
+
+  <section>
+    <h2>5. Microphone test</h2>
+    <ul>
+      <li>On the remote press <b>L1 + L2</b> together (wake-up mode). Without it the mic sends only zeros.</li>
+      <li>In the Unitree app: Device → Service Status → switch off <b>chat_go</b>.</li>
+    </ul>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>cd ~ &amp;&amp; git clone https://github.com/JiaxiWang05/Unitree.git; scp ~/Unitree/scripts/record_mic.py unitree@192.168.123.164:~</pre><button type="button">Copy</button></div>
+    <p class="note">Stand 1 m in front of the robot. Run this, then talk normally for 5 seconds:</p>
+    <div class="cmd"><pre>ssh unitree@192.168.123.164 'python3 record_mic.py'</pre><button type="button">Copy</button></div>
+    <div class="cmd"><pre>scp unitree@192.168.123.164:mic_test.wav ~/g1-backup/ &amp;&amp; aplay ~/g1-backup/mic_test.wav</pre><button type="button">Copy</button></div>
+    <p class="note">Good: your voice is clear, no constant hum. <code>No audio</code> or <code>All zeros</code>: press L1 + L2 again and record again.</p>
+  </section>
+
+  <section>
+    <h2>6. Log in without a password from now on</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>ls ~/.ssh/id_* 2&gt;/dev/null || ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519; ssh-copy-id unitree@192.168.123.164</pre><button type="button">Copy</button></div>
+    <p class="note">Asks for the robot password once. Test: <code>ssh unitree@192.168.123.164 hostname</code> should print a name without asking for a password.</p>
+  </section>
+
+  <section>
+    <h2>7. Internet for the robot through Ubuntu</h2>
+    <p class="note">Ubuntu shares its Wi-Fi with the robot over the cable (the laptop's Wi-Fi must be its default route; the wired port has no gateway). Asks for the <b>Ubuntu</b> password. It all resets when either machine reboots.</p>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>sudo sysctl -w net.ipv4.ip_forward=1 &amp;&amp; sudo iptables -t nat -A POSTROUTING -s 192.168.123.164 -o $(ip route | awk '/^default/ {print $5; exit}') -j MASQUERADE &amp;&amp; sudo iptables -I FORWARD -s 192.168.123.164 -j ACCEPT &amp;&amp; sudo iptables -I FORWARD -d 192.168.123.164 -j ACCEPT</pre><button type="button">Copy</button></div>
+    <div class="cmd"><pre>ssh -t unitree@192.168.123.164 'sudo ip route add default via 192.168.123.99; date; ping -c 2 8.8.8.8 &amp;&amp; ping -c 2 google.com'</pre><button type="button">Copy</button></div>
+    <p class="note">The robot password again, for sudo. Both pings should answer. If <code>8.8.8.8</code> answers but <code>google.com</code> fails, run this, then ping again:</p>
+    <div class="cmd"><pre>ssh -t unitree@192.168.123.164 'echo nameserver 8.8.8.8 | sudo tee /etc/resolv.conf'</pre><button type="button">Copy</button></div>
+  </section>
+
+  <section>
+    <h2>8. One-time setup script (10–20 min)</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>scp ~/Unitree/scripts/setup-jetson.sh unitree@192.168.123.164:~ &amp;&amp; ssh -t unitree@192.168.123.164 'sudo bash ~/setup-jetson.sh'</pre><button type="button">Copy</button></div>
+    <ul>
+      <li><code>[sudo] password</code>: the robot password</li>
+      <li>It should say <code>already online</code> and skip the Wi-Fi questions</li>
+      <li><code>OpenAI API key</code>: just press <b>Enter</b> to skip</li>
+      <li>Done when it prints <code>tell Claude: the robot is ready at ...</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>9. Install the program (about 20–30 min)</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>cd ~/Unitree &amp;&amp; git pull &amp;&amp; scripts/deploy.sh unitree@192.168.123.164 --no-service</pre><button type="button">Copy</button></div>
+    <p class="note">Leave it running. The TensorRT step alone takes about 5 minutes with little output. At the end a <code>still to do</code> list mentioning <code>OPENAI_API_KEY is empty</code> is expected. Photograph the last 30 lines for Claude.</p>
+  </section>
+
+  <section>
+    <h2>10. Robot speaker test</h2>
+    <span class="where ubu">UBUNTU</span>
+    <div class="cmd"><pre>ssh unitree@192.168.123.164 'cd ~/g1-greeter &amp;&amp; LD_LIBRARY_PATH=$HOME/cyclonedds/install/lib .venv/bin/python -m greeter --check --check-sound --scripted'</pre><button type="button">Copy</button></div>
+    <p class="note">Listen to the robot: near the end it plays a short beep from its own speaker. Photograph the PASS / WARN / FAIL lines for Claude.</p>
+  </section>
+</main>
+<script>
+document.querySelectorAll('.cmd button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var text = b.parentElement.querySelector('pre').textContent;
+    var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(b.parentElement.querySelector('pre'));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Ctrl+C';
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
