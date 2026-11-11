@@ -18,7 +18,8 @@ robot.** No face recognition.
 | What | Where |
 |---|---|
 | Code and tests | `greeter/`, `tests/` (170 tests, `pytest`), `scripts/` (setup, deploy, API key) |
-| How to run it | `README.md`; first robot session step by step: [g1-robot-session.html](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html) |
+| How to run it | `README.md`; first robot session step by step: [g1-robot-session.html](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html); lab commands: [g1-lab-commands.html](https://jiaxiwang05.github.io/Unitree/g1-lab-commands.html) |
+| **Live to-do list** | [`docs/TODO.md`](docs/TODO.md): the detailed checklist from the first robot session. Keep it up to date |
 | Pages (GitHub Pages from `docs/`) | [Open Day scene](https://jiaxiwang05.github.io/Unitree/g1-open-day-scene.html), [animation only](https://jiaxiwang05.github.io/Unitree/g1-open-day-animation.html), [lab day guide (Chinese)](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html), [mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html), [head arch install animation (Chinese)](https://jiaxiwang05.github.io/Unitree/head-arch-install.html). Sources and rebuild: `docs/src/` |
 | Chest bracket for the Brio | `hardware/brio_chest_mount/` (test print done in PLA) |
 | Head arch for the Brio (v2) | `hardware/helmet_ring_mount/`: trial feet `trial_feet_plate.stl` (PLA, fit check), then `helmet_crown.stl` + `helmet_foot_left.stl` + `helmet_foot_right.stl` (PETG). Parts and assembly in its README |
@@ -38,7 +39,8 @@ a person walks the robot with the remote (read-only leg-speed detection).
 - The robot was reached by cable from the lab Ubuntu laptop: laptop `192.168.123.99`, Jetson
   `192.168.123.164`, login `unitree`. A backup of the robot was made to `~/g1-backup` on the
   Ubuntu laptop.
-- A lab USB webcam works at 640 × 480, and its microphone records.
+- A lab USB webcam (Trust, AONI chip, through a USB-C hub on the neck panel) works at
+  640 × 480 but points at the floor; its microphone records clearly.
 - **The robot's built-in mic multicast sent only zeros**, even in wake-up mode. Unsolved:
   use a USB mic (`--mic-device`) if it stays that way. The robot's speaker is untested.
 - Nothing is installed on the Jetson yet. No OpenAI API credit yet.
@@ -51,6 +53,10 @@ USB-C to USB-C cable (check both arrived). The head arch v2 is ready to print bu
 or fitted.
 
 ## Next steps, in order
+
+The detailed checklist, with the problems found on 11 Nov (no `sounddevice` in `install.sh`,
+the service crash-looping without a key, `--scripted` only chiming), is in
+[`docs/TODO.md`](docs/TODO.md). In short:
 
 1. Give the Jetson internet (phone hotspot, or share the Ubuntu laptop's connection), run
    `setup-jetson.sh` as above, then `scripts/deploy.sh unitree@<ip> --no-service`.
