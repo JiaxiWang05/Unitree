@@ -511,3 +511,13 @@ Ideas reused from:
 - [pipecat](https://github.com/pipecat-ai/pipecat): the Gemini 3.x
   realtime-input nudge.
 - [OpenMind OM1](https://github.com/OpenMind/OM1): the greeting flow.
+- [Project Babis](https://github.com/GeoZach08/UnitreeG1-Autonomous-Edge-AI-Voice-Interaction-for-Unitree-G1)
+  by GeoZach08: greeting a nearby person on the G1 and resetting when nobody is
+  there. The repo has no licence file; the author has given permission for its
+  code to be used in this project.
+
+## Author
+
+Jiaxi Wang, Durham University, supervised by Dr Amir Atapour-Abarghouei and
+Dr Chris Chen. [Research profile](https://adaptive-intelligence.co.uk/jiaxi-wang/) ·
+[website](https://jiaxiwang05.github.io/).
