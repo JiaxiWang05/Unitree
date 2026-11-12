@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G1 camera mounts in 3D</title>
+<style>
+:root{--bg:#eceef2;--ink:#15171c;--muted:#5b6170;--line:#d5d9e0;--chip:#ffffff;--accent:#7a52d6}
+@media (prefers-color-scheme:dark){:root{--bg:#111318;--ink:#eef0f4;--muted:#a3a8b5;--line:#30343d;--chip:#1d2027;--accent:#9d7cf0}}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden}
+#view{position:absolute;inset:0;touch-action:none}
+#view canvas{display:block;width:100%;height:100%;cursor:grab}#view canvas:active{cursor:grabbing}
+.tabs{position:absolute;left:8px;top:8px;right:8px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.tabs button{pointer-events:auto;font:inherit;font-weight:600;padding:6px 11px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs .sp{flex:1}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cap{position:absolute;left:10px;right:10px;bottom:8px;display:flex;gap:10px;align-items:flex-end;justify-content:space-between;pointer-events:none}
+.cap p{margin:0;max-width:44em;background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.cap b{color:var(--accent)}
+.cap a{pointer-events:auto;white-space:nowrap;color:var(--accent);background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:6px 10px;text-decoration:none;font-weight:600}
+.load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);pointer-events:none}
+.load[hidden]{display:none}
+/* inside a small card on another page: keep the model clear */
+@media (max-height:380px){.cap p{display:none}}
+@media (max-width:520px){.tabs button{padding:4px 8px;font-size:12px}.cap a{padding:4px 8px;font-size:12px}}
+</style></head><body>
+<div id="view"><div class="load" id="load">Loading…</div></div>
+<div class="tabs" id="tabs"></div>
+<div class="cap"><p id="cap"></p><a id="more" href="camera-mounts.html" target="_blank" rel="noopener">Details</a></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script>
+(function(){
+  var zh=/[?&]lang=zh/.test(location.search);document.documentElement.lang=zh?'zh':'en';
+  var T=zh?{load:'正在加载模型…',fail:'模型没有加载成功，请刷新。',reset:'复位',more:'详细说明',drag:'拖动旋转，滚轮缩放。'}
+          :{load:'Loading…',fail:'The model did not load. Please refresh.',reset:'Reset',more:'Details',drag:'Drag to turn, scroll to zoom.'};
+  var M=[
+   {key:'arch',name:zh?'① 头盔架':'1 Head arch',parts:'robot_upper.stl:robot,arch_crown.stl:part,arch_foot_left.stl:part,arch_foot_right.stl:part,arch_brio.stl:cam',c:[10,0,400],r:215,az:150,el:12,
+    cap:zh?'<b>现在选用。</b>挂在肩膀吊环上，镜头高约 1.37 m。不挡自带深度相机；头部雷达左右各挡约 10°。':'<b>Chosen.</b> Hangs on the shoulder lifting rings, lens about 1.37 m up. Clear of the built-in depth camera; shades about 10° of the head lidar on each side.'},
+   {key:'chest',name:zh?'② 胸前支架':'2 Chest bracket',parts:'robot_upper.stl:robot,chest_mount.stl:part,chest_brio.stl:cam',c:[40,0,250],r:240,az:35,el:14,
+    cap:zh?'<b>备用。</b>拧在胸口两个 M6 孔上，镜头高约 0.98 m。深度相机和雷达都不挡；位置低。':'<b>Fallback.</b> Bolts to the two chest M6 holes, lens about 0.98 m up. Blocks neither the depth camera nor the lidar; sits low.'},
+   {key:'head',name:zh?'③ 头部内支架':'3 Inside the head',parts:'head_mount.stl:part,head_brio.stl:cam',c:[58,0,112],r:90,az:145,el:20,
+    cap:zh?'<b>试装件。</b>照 Unitree 的双目相机支架改，没装过；可能挡住自带深度相机。只显示支架和摄像头。':'<b>Trial part.</b> Based on the Unitree stereo camera mount, not fitted yet; may block the built-in depth camera. Shown without the robot.'}];
+  var box=document.getElementById('view'),loadEl=document.getElementById('load'),cap=document.getElementById('cap');
+  loadEl.textContent=T.load;document.getElementById('more').textContent=T.more;if(zh)document.title='G1 摄像头支架 3D 模型';
+  if(!window.THREE||!THREE.STLLoader||!THREE.OrbitControls){loadEl.textContent=T.fail;return}
+  var dark=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
+  var COL={part:dark?0x9d7cf0:0x7a52d6,cam:0x1c1e22,robot:dark?0x5a606c:0xa4a9b3};
+  var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));box.insertBefore(renderer.domElement,box.firstChild);
+  var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,1,1,6000);cam.up.set(0,0,1);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x555a66,0.95));var key=new THREE.DirectionalLight(0xffffff,0.75);scene.add(key);
+  var ctl=new THREE.OrbitControls(cam,renderer.domElement);ctl.enableDamping=true;ctl.dampingFactor=0.12;ctl.enablePan=false;
+  var cur=null,need=false,groups={},loader=new THREE.STLLoader(),cache={};
+  function draw(){if(!need){need=true;requestAnimationFrame(function(){need=false;ctl.update();if(cur)key.position.copy(cam.position).add(new THREE.Vector3(0,0,cur.r*2));renderer.render(scene,cam)})}}
+  function size(){var w=box.clientWidth,h=box.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();draw()}
+  function home(){var m=cur,a=m.az*Math.PI/180,e=m.el*Math.PI/180,d=m.r*(cam.aspect<1?5.6:4.2);ctl.target.set(m.c[0],m.c[1],m.c[2]);ctl.minDistance=m.r*1.2;ctl.maxDistance=m.r*9;
+    cam.position.set(m.c[0]+d*Math.cos(e)*Math.cos(a),m.c[1]+d*Math.cos(e)*Math.sin(a),m.c[2]+d*Math.sin(e));ctl.update();draw()}
+  function geo(name){return cache[name]||(cache[name]=new Promise(function(ok,bad){loader.load('stl/'+name,function(g){g.computeVertexNormals();ok(g)},undefined,bad)}))}
+  function group(m){return groups[m.key]||(groups[m.key]=Promise.all(m.parts.split(',').map(function(p){var a=p.split(':');return geo(a[0]).then(function(g){
+    return new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:COL[a[1]],roughness:a[1]==='cam'?0.5:0.75,metalness:0.05}))})})).then(function(meshes){var G=new THREE.Group();meshes.forEach(function(x){G.add(x)});G.visible=false;scene.add(G);return G}))}
+  function show(m){cur=m;cap.innerHTML=m.cap+' '+T.drag;
+    [].forEach.call(document.querySelectorAll('#tabs button[data-key]'),function(b){b.setAttribute('aria-pressed',b.dataset.key===m.key?'true':'false')});
+    loadEl.hidden=false;loadEl.textContent=T.load;
+    group(m).then(function(G){if(cur!==m)return;Object.keys(groups).forEach(function(k){groups[k].then(function(g){g.visible=(k===m.key)&&cur===m;draw()})});loadEl.hidden=true;size();home()})
+      .catch(function(){loadEl.textContent=T.fail})}
+  var tabs=document.getElementById('tabs');
+  M.forEach(function(m){var b=document.createElement('button');b.type='button';b.textContent=m.name;b.dataset.key=m.key;b.addEventListener('click',function(){show(m)});tabs.appendChild(b)});
+  var sp=document.createElement('span');sp.className='sp';tabs.appendChild(sp);
+  var rb=document.createElement('button');rb.type='button';rb.textContent=T.reset;rb.addEventListener('click',function(){if(cur)home()});tabs.appendChild(rb);
+  ctl.addEventListener('change',draw);window.addEventListener('resize',size);
+  var want=(location.hash||'').replace('#','');show(M.filter(function(m){return m.key===want})[0]||M[0]);
+})();
+</script>
+</body></html>
