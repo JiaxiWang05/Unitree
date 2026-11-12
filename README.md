@@ -44,6 +44,7 @@ Published with GitHub Pages from `docs/` (sources and build in `docs/src/`):
 - [Lab day guide](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html) (Chinese): fitting the bracket, testing the mic, setting up the robot, parts to buy, the head mount.
 - [First robot session](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html) (Chinese): step by step from the network cable to the last test.
 - [Lab commands](https://jiaxiwang05.github.io/Unitree/g1-lab-commands.html): copy-paste commands for the next session (backup, camera and mic checks, internet through the laptop, install, speaker test).
+- [Test plan](docs/TEST-PLAN.md) (Chinese): what to test, step by step, before 5 December.
 - [To do](docs/TODO.md): status after the first robot session and what comes next.
 - [Head Brio bracket install](https://jiaxiwang05.github.io/Unitree/head-brio-install.html) (Chinese): step-by-step animation for the trial bracket inside the renewed head, and how to use it afterwards.
 - [Mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html): what to buy and why.

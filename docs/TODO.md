@@ -1,5 +1,7 @@
 # To do
 
+**Dated plan to 5 December: [TEST-PLAN.md](TEST-PLAN.md)** (Chinese): four robot sessions, each step with a pass mark.
+
 Status after the first robot session (11 November 2026). No OpenAI API key yet. The robot hung on the gantry the whole time and never moved.
 
 ## Done on 11 November

@@ -19,6 +19,7 @@ robot.** No face recognition.
 |---|---|
 | Code and tests | `greeter/`, `tests/` (170 tests, `pytest`), `scripts/` (setup, deploy, API key) |
 | How to run it | `README.md`; first robot session step by step: [g1-robot-session.html](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html); lab commands: [g1-lab-commands.html](https://jiaxiwang05.github.io/Unitree/g1-lab-commands.html) |
+| **Test plan to 5 Dec 2026** | [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md) (Chinese): four robot sessions with pass marks; the last is a dress rehearsal on 3 Dec |
 | **Live to-do list** | [`docs/TODO.md`](docs/TODO.md): the detailed checklist from the first robot session. Keep it up to date |
 | Pages (GitHub Pages from `docs/`) | [Open Day scene](https://jiaxiwang05.github.io/Unitree/g1-open-day-scene.html), [animation only](https://jiaxiwang05.github.io/Unitree/g1-open-day-animation.html), [lab day guide (Chinese)](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html), [mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html), [head arch install animation (Chinese)](https://jiaxiwang05.github.io/Unitree/head-arch-install.html). Sources and rebuild: `docs/src/` |
 | Chest bracket for the Brio | `hardware/brio_chest_mount/` (test print done in PLA) |
