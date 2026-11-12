@@ -46,6 +46,7 @@ Published with GitHub Pages from `docs/` (sources and build in `docs/src/`):
 - [Lab commands](https://jiaxiwang05.github.io/Unitree/g1-lab-commands.html): copy-paste commands for the next session (backup, camera and mic checks, internet through the laptop, install, speaker test).
 - [Test plan](docs/TEST-PLAN.md) (Chinese): what to test, step by step, before 5 December.
 - [To do](docs/TODO.md): status after the first robot session and what comes next.
+- [Camera mounts](https://jiaxiwang05.github.io/Unitree/camera-mounts.html) (Chinese): the three ways to mount the Brio (head arch, chest bracket, bracket inside the head), each as a 3D model you can drag to turn, with what each blocks and the print files.
 - [Head Brio bracket install](https://jiaxiwang05.github.io/Unitree/head-brio-install.html) (Chinese): step-by-step animation for the trial bracket inside the renewed head, and how to use it afterwards.
 - [Mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html): what to buy and why.
 - [Test results](https://jiaxiwang05.github.io/Unitree/test-results.txt).

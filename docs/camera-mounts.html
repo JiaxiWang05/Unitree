@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G1 摄像头的三种装法</title>
+<style>
+:root{--bg:#f6f7f9;--card:#ffffff;--ink:#15171c;--muted:#5b6170;--line:#dfe2e8;--accent:#7a52d6;--ok:#1d7a4f;--warn:#a25b00;--bad:#b3261e;--view:#eceef2}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--card:#1d2027;--ink:#eef0f4;--muted:#a3a8b5;--line:#30343d;--accent:#9d7cf0;--ok:#57c995;--warn:#e7a44a;--bad:#f0857d;--view:#111318}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:20px;margin:0 0 4px}
+p{margin:6px 0}.lead{color:var(--muted);max-width:70ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:22px 0;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media (max-width:760px){.card{grid-template-columns:minmax(0,1fr)}}
+.view{position:relative;background:var(--view);min-height:340px;touch-action:none}
+.view canvas{display:block;width:100%;height:100%;cursor:grab}.view canvas:active{cursor:grabbing}
+.hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.load[hidden]{display:none}
+.load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.tools{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+.tools button{font:13px system-ui;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.tools button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.body{padding:16px 18px;min-width:0}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid currentColor;margin-bottom:6px}
+.t-ok{color:var(--ok)}.t-warn{color:var(--warn)}.t-muted{color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin:8px 0}
+td{padding:4px 0;vertical-align:top;border-top:1px solid var(--line)}td:first-child{color:var(--muted);width:6.2em;padding-right:8px}
+.g{color:var(--ok)}.w{color:var(--warn)}.b{color:var(--bad)}
+ul.dl{list-style:none;padding:0;margin:8px 0 0;font-size:14.5px}ul.dl li{margin:3px 0}
+a{color:var(--accent)}code{font:13.5px ui-monospace,Menlo,monospace}
+.cmp{overflow-x:auto}.cmp table td,.cmp table th{padding:6px 10px;border-top:1px solid var(--line);text-align:left;font-size:14.5px;white-space:nowrap}
+.cmp th{color:var(--muted);font-weight:600}.cmp td:first-child{width:auto;color:var(--ink)}
+.note{color:var(--muted);font-size:14px}
+</style></head><body><div class="wrap">
+<h1>G1 摄像头的三种装法</h1>
+<p class="lead">迎宾机器人用一个 Logitech Brio 看访客。下面是把它装到 Unitree G1 上的三种支架，都可以 3D 打印。每个模型都能<b>用鼠标或手指拖动旋转</b>，滚轮或双指缩放。紫色是打印件，黑色是摄像头，灰色是机器人。</p>
+
+<section class="card" id="arch">
+  <div class="view" data-parts="robot_upper.stl:robot,arch_crown.stl:part,arch_foot_left.stl:part,arch_foot_right.stl:part,arch_brio.stl:cam" data-focus="arch" data-az="150" data-el="12"><div class="load">正在加载模型…</div><div class="tools"><button type="button" data-act="robot">隐藏机器人</button><button type="button" data-act="reset">复位</button></div><div class="hint">拖动旋转 · 滚轮缩放</div></div>
+  <div class="body">
+    <span class="tag t-ok">现在选用的方案</span>
+    <h2>① 头盔架：挂在肩膀吊环上</h2>
+    <p>一个弓形架子跨过头顶，两只脚卡在肩膀的两个钢吊环上，摄像头在头顶上方。</p>
+    <table>
+      <tr><td>镜头高度</td><td>约 1.37 m</td></tr>
+      <tr><td>自带深度相机</td><td class="g">不挡（在模型上检查过）</td></tr>
+      <tr><td>头部雷达</td><td class="w">左右各挡约 10°</td></tr>
+      <tr><td>要注意</td><td>占用吊环，机器人挂在吊架上时要先拆下</td></tr>
+      <tr><td>状态</td><td>已设计，还没打印</td></tr>
+    </table>
+    <ul class="dl">
+      <li>打印件：<a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/helmet_ring_mount/helmet_crown.stl">弓形主体</a> · <a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/helmet_ring_mount/helmet_foot_left.stl">左脚</a> · <a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/helmet_ring_mount/helmet_foot_right.stl">右脚</a> · <a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/helmet_ring_mount/trial_feet_plate.stl">试装脚</a></li>
+      <li><a href="https://github.com/JiaxiWang05/Unitree/tree/main/hardware/helmet_ring_mount">说明和零件清单</a> · <a href="head-arch-install.html">安装动画</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="chest">
+  <div class="view" data-parts="robot_upper.stl:robot,chest_mount.stl:part,chest_brio.stl:cam" data-focus="chest" data-az="35" data-el="14"><div class="load">正在加载模型…</div><div class="tools"><button type="button" data-act="robot">隐藏机器人</button><button type="button" data-act="reset">复位</button></div><div class="hint">拖动旋转 · 滚轮缩放</div></div>
+  <div class="body">
+    <span class="tag t-muted">备用方案</span>
+    <h2>② 胸前支架：拧在胸口的 M6 孔上</h2>
+    <p>支架拧在 Unitree 留给配件的两个胸前 M6 螺纹孔上，摄像头朝前、向上仰 20°。</p>
+    <table>
+      <tr><td>镜头高度</td><td>约 0.98 m</td></tr>
+      <tr><td>自带深度相机</td><td class="g">不挡（在模型上检查过）</td></tr>
+      <tr><td>头部雷达</td><td class="g">不挡</td></tr>
+      <tr><td>要注意</td><td>位置低，人多时前排的人会挡住后面的人</td></tr>
+      <tr><td>状态</td><td>已用 PLA 试打印</td></tr>
+    </table>
+    <ul class="dl">
+      <li>打印件：<a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/brio_chest_mount/brio_chest_mount.stl">胸前支架</a></li>
+      <li><a href="https://github.com/JiaxiWang05/Unitree/tree/main/hardware/brio_chest_mount">说明和零件清单</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="head">
+  <div class="view" data-parts="head_mount.stl:part,head_brio.stl:cam" data-focus="head" data-az="145" data-el="20"><div class="load">正在加载模型…</div><div class="tools"><button type="button" data-act="reset">复位</button></div><div class="hint">拖动旋转 · 滚轮缩放</div></div>
+  <div class="body">
+    <span class="tag t-warn">试装件，没装过</span>
+    <h2>③ 头部内支架：照 Unitree 的双目支架改</h2>
+    <p>后半段直接用 Unitree 官方双目相机支架（新款头，两个 M4 孔相距 88 mm），前面换成水平的 Brio 托座。这里只显示支架和摄像头：没有新款头内部的模型，没法把它画在机器人上。</p>
+    <table>
+      <tr><td>镜头高度</td><td>约 1.3 m</td></tr>
+      <tr><td>自带深度相机</td><td class="b">可能挡，没法在模型上检查</td></tr>
+      <tr><td>头部雷达</td><td class="g">不挡</td></tr>
+      <tr><td>要注意</td><td>要直角 USB-C 转接头；头里要有那两个 M4 螺纹孔</td></tr>
+      <tr><td>状态</td><td>已设计，没打印，没装过</td></tr>
+    </table>
+    <ul class="dl">
+      <li>打印件：<a href="https://github.com/JiaxiWang05/Unitree/raw/main/hardware/head_brio_mount/head_brio_mount_print.stl">头部内支架</a></li>
+      <li><a href="https://github.com/JiaxiWang05/Unitree/tree/main/hardware/head_brio_mount">说明和零件清单</a> · <a href="head-brio-install.html">安装动画</a></li>
+    </ul>
+  </div>
+</section>
+
+<h2 style="margin-top:30px">放在一起比</h2>
+<div class="cmp"><table>
+  <tr><th>方案</th><th>镜头高度</th><th>自带深度相机</th><th>头部雷达</th><th>状态</th></tr>
+  <tr><td>① 头盔架</td><td>1.37 m</td><td class="g">不挡</td><td class="w">左右各挡约 10°</td><td>已设计</td></tr>
+  <tr><td>② 胸前支架</td><td>0.98 m</td><td class="g">不挡</td><td class="g">不挡</td><td>已试打印</td></tr>
+  <tr><td>③ 头部内支架</td><td>约 1.3 m</td><td class="b">可能挡</td><td class="g">不挡</td><td>试装件</td></tr>
+</table></div>
+<p class="note">2026 年 11 月 12 日定下用头盔架：外接的 Brio 和机器人自带的深度相机可以同时用。头盔架打印好之前，测试时先用蓝丁胶把摄像头粘在头顶（只限机器人不走动时）。页面上的模型为了加载快做了简化，要打印请用上面的下载链接。机器人模型来自 Unitree 公开的 G1 模型。项目在 <a href="https://github.com/JiaxiWang05/Unitree">github.com/JiaxiWang05/Unitree</a>。</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script>
+(function(){
+  if(!window.THREE||!THREE.STLLoader||!THREE.OrbitControls){document.querySelectorAll('.load').forEach(function(e){e.textContent='3D 库没有加载成功，请检查网络后刷新。'});return}
+  var dark=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
+  var COL={part:dark?0x9d7cf0:0x7a52d6,cam:0x1c1e22,robot:dark?0x5a606c:0xa4a9b3};
+  // where to look, in each model's own millimetres (x forward, y left, z up)
+  var FOCUS={arch:{c:[10,0,400],r:215},chest:{c:[40,0,250],r:240},head:{c:[58,0,112],r:90}};
+  var loader=new THREE.STLLoader(),cache={};
+  function load(name){return cache[name]||(cache[name]=new Promise(function(ok,bad){loader.load('stl/'+name,ok,undefined,bad)}))}
+  function setup(box){
+    var f=FOCUS[box.dataset.focus],az0=+box.dataset.az*Math.PI/180,el0=+box.dataset.el*Math.PI/180;
+    var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+    box.insertBefore(renderer.domElement,box.firstChild);
+    var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,1,1,5000);cam.up.set(0,0,1);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x555a66,0.95));
+    var key=new THREE.DirectionalLight(0xffffff,0.75);scene.add(key);
+    var ctl=new THREE.OrbitControls(cam,renderer.domElement);ctl.enableDamping=true;ctl.dampingFactor=0.12;ctl.enablePan=false;
+    ctl.target.set(f.c[0],f.c[1],f.c[2]);ctl.minDistance=f.r*1.2;ctl.maxDistance=f.r*9;
+    function home(){var d=f.r*4.2;cam.position.set(f.c[0]+d*Math.cos(el0)*Math.cos(az0),f.c[1]+d*Math.cos(el0)*Math.sin(az0),f.c[2]+d*Math.sin(el0));ctl.update();draw()}
+    var need=false;function draw(){if(!need){need=true;requestAnimationFrame(function(){need=false;ctl.update();key.position.copy(cam.position).add(new THREE.Vector3(0,0,f.r*2));renderer.render(scene,cam)})}}
+    function size(){var w=box.clientWidth,h=Math.max(340,box.clientHeight);renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();draw()}
+    ctl.addEventListener('change',draw);window.addEventListener('resize',size);
+    var robot=[];
+    Promise.all(box.dataset.parts.split(',').map(function(p){var a=p.split(':');return load(a[0]).then(function(g){
+      g.computeVertexNormals();
+      var m=new THREE.MeshStandardMaterial({color:COL[a[1]],roughness:a[1]==='cam'?0.5:0.75,metalness:0.05,});
+      var mesh=new THREE.Mesh(g,m);scene.add(mesh);if(a[1]==='robot')robot.push(mesh)})}))
+    .then(function(){box.querySelector('.load').hidden=true;size();home()})
+    .catch(function(){box.querySelector('.load').textContent='模型没有加载成功，请刷新页面。'});
+    box.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){
+      if(b.dataset.act==='reset')home();
+      else{var show=!robot[0]||!robot[0].visible;robot.forEach(function(r){r.visible=show});b.textContent=show?'隐藏机器人':'显示机器人';draw()}})});
+    size();
+  }
+  document.querySelectorAll('.view').forEach(setup);
+})();
+</script>
+</body></html>
