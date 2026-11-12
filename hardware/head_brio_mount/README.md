@@ -30,6 +30,8 @@ tilted 49° down for the stereo board.
 The camera looks straight ahead, not 49° down: it has to see visitors' faces and shoulders, not
 the robot's hands.
 
+![Unitree's mount, this bracket, and this bracket with the camera, from behind and from the side](preview_compare.png)
+
 ## Files
 
 | File | |
@@ -38,6 +40,7 @@ the robot's hands.
 | `head_brio_mount.stl`, `.step` | The part as it sits in the head (x forward, z up) |
 | `brio_dummy.stl` | The bare camera and 20 mm of plug, for looking at the fit |
 | `head_brio_mount.py` | Draws the part (CadQuery). Downloads Unitree's zip once, 480 kB |
+| `render_compare.py`, `preview_compare.png` | Unitree's mount and this bracket drawn from the same angles |
 | `check_head_brio_mount.py`, `check_output.txt` | The checks and their result |
 
 ## Parts
