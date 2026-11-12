@@ -46,7 +46,18 @@ Commands: [`g1-lab-commands.html`](https://jiaxiwang05.github.io/Unitree/g1-lab-
 - [ ] Print `head_brio_mount_print.stl` in PLA and hold it in the head: arms under the ring's top bar, seat in front of the ring, nothing touching.
 - [ ] Buy a right-angle USB-C adapter or cable (a straight plug does not fit behind the camera).
 - [ ] With the Brio fitted, run `--check` and read the `depth` line: does the head D435i still see the floor?
-- [ ] Then choose between this bracket and the head arch, and redo the distance calibration.
+- [x] Choice made on 12 November: **use the head arch** (`hardware/helmet_ring_mount`), because the Brio and the built-in depth camera can then both be used. This bracket stays as a backup; the steps above are only needed if it is ever tried.
+
+## Head arch for the Brio (chosen 12 November)
+
+[`hardware/helmet_ring_mount`](../hardware/helmet_ring_mount/README.md), [install animation](https://jiaxiwang05.github.io/Unitree/head-arch-install.html).
+
+- [ ] Print `trial_feet_plate.stl` in PLA and fit the two feet on the shoulder rings. Are the rings fixed, or do they swivel or wobble?
+- [ ] If the feet fit: print `helmet_crown.stl`, `helmet_foot_left.stl` and `helmet_foot_right.stl` in PETG.
+- [ ] Buy the screws, nuts and foam in the arch's parts list.
+- [ ] The arch sits on the rings the gantry hooks use: take it off before hanging the robot, or fit it only when the robot stands or sits.
+- [ ] After fitting: `--check` (camera and depth lines), then `calibrate --stand-at 1 2 3`.
+- [ ] Known cost: each leg shades about 10° of the head lidar to the left and right. Test before any use of the lidar for walking or mapping.
 
 ## Guide fixes still to make
 
