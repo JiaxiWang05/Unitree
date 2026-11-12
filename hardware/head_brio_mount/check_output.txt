@@ -1,0 +1,18 @@
+== solid
+   watertight True, one body True, volume 34.5 cm3, 44 g in PETG
+   size 101.8 x 107.9 x 40.4 mm
+== head screws (Unitree: 2 x M4, 88 mm apart)
+   hole 4.5 mm at x 14.3 y 44.0, z 90.6..99.1
+   hole 4.5 mm at x 14.4 y -44.0, z 90.6..99.1
+   back half (x < 44) differs from Unitree's part by at most 0.022 mm
+== camera
+   Brio and plug points inside the bracket: 0 of 30000
+   camera above the lips: 0.51 mm clear of the bracket
+   tripod screw at x 89.5 (slot +/-3 mm), plastic under the camera 10.3 mm
+   camera: back face x 75.0, lens face x 102.0, underside z 116.0, top z 143.0
+   Unitree's tray reached x 79.1, z 118.2; this bracket reaches x 106.0, z 120.0 (without the camera)
+== load
+   bracket 44 g + Brio 63 g = 107 g, centre of mass 67 mm in front of the M4 screws
+   bridge at x 30 under 3 g: 1.1 MPa (PETG yields near 45 MPa)
+== wrote preview_part.png
+ALL CLEAR

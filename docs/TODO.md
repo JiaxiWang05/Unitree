@@ -38,6 +38,16 @@ Commands: [`g1-lab-commands.html`](https://jiaxiwang05.github.io/Unitree/g1-lab-
 - [ ] Section 4 of the [session guide](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html): a real visit, long talker, 90 s wrap-up, two people at once, Durham questions, `--roam`, the `--duplex` echo test.
 - [ ] Section 5: compare the two cameras (`greeter.spot_compare`), save the day's log, tune the thresholds.
 
+## Head bracket for the Brio (trial, added 12 November)
+
+[`hardware/head_brio_mount`](../hardware/head_brio_mount/README.md): Unitree's renewed-head stereo camera mount with the tray replaced by a level Brio seat.
+
+- [ ] Confirm the robot has the renewed head (88 mm) and find the two M4 threads Unitree's mount uses.
+- [ ] Print `head_brio_mount_print.stl` in PLA and hold it in the head: arms under the ring's top bar, seat in front of the ring, nothing touching.
+- [ ] Buy a right-angle USB-C adapter or cable (a straight plug does not fit behind the camera).
+- [ ] With the Brio fitted, run `--check` and read the `depth` line: does the head D435i still see the floor?
+- [ ] Then choose between this bracket and the head arch, and redo the distance calibration.
+
 ## Guide fixes still to make
 
 - [ ] Add the no-API path and the "internet through the laptop" option to `g1-robot-session.html`.

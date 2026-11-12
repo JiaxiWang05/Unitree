@@ -506,6 +506,7 @@ scripts/                setup-jetson.sh (human, once), deploy.sh + install.sh (C
 docs/                   the GitHub Pages site; docs/src/ has the page templates, mesh exports and build_pages.py
 hardware/               brio_chest_mount/: 3D-printed chest bracket for the Brio (STL, STEP, CadQuery source, checks)
                         helmet_ring_mount/: head-top arch for the Brio on the shoulder lifting rings (trial ends + full arch)
+                        head_brio_mount/: trial bracket for the Brio inside the renewed head, after Unitree's stereo camera mount
 ```
 
 Ideas reused from:

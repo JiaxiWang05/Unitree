@@ -10,3 +10,5 @@ __pycache__/
 recordings/
 models/
 .DS_Store
+# Unitree's STEP, downloaded by hardware/head_brio_mount/head_brio_mount.py
+hardware/head_brio_mount/unitree_ref/

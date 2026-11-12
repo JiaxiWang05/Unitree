@@ -23,6 +23,7 @@ robot.** No face recognition.
 | Pages (GitHub Pages from `docs/`) | [Open Day scene](https://jiaxiwang05.github.io/Unitree/g1-open-day-scene.html), [animation only](https://jiaxiwang05.github.io/Unitree/g1-open-day-animation.html), [lab day guide (Chinese)](https://jiaxiwang05.github.io/Unitree/g1-lab-day.html), [mic and camera guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html), [head arch install animation (Chinese)](https://jiaxiwang05.github.io/Unitree/head-arch-install.html). Sources and rebuild: `docs/src/` |
 | Chest bracket for the Brio | `hardware/brio_chest_mount/` (test print done in PLA) |
 | Head arch for the Brio (v2) | `hardware/helmet_ring_mount/`: trial feet `trial_feet_plate.stl` (PLA, fit check), then `helmet_crown.stl` + `helmet_foot_left.stl` + `helmet_foot_right.stl` (PETG). Parts and assembly in its README |
+| Brio bracket inside the head (trial, 12 Nov) | `hardware/head_brio_mount/`: Unitree's renewed-head (88 mm) stereo mount with its tray swapped for a level Brio seat. Print `head_brio_mount_print.stl` in PLA and try it. Not printed or fitted; the depth camera's view past it and the room around the seat are unchecked (its README) |
 | One-download bundle | [Release v0.6](https://github.com/JiaxiWang05/Unitree/releases/tag/v0.6), `g1-greeter.zip` (made before the v2 arch and the robot-session fixes; prefer `git clone`) |
 | History and research notes | `notes/` (build log, head-mount notes, paper plan files) |
 
