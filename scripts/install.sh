@@ -97,6 +97,9 @@ pinned --no-deps "ultralytics>=8.4.0" # its other dependencies are listed above
 # head D435i depth for the talk spot (2.55.1 is the last release with a Python 3.8 aarch64 wheel)
 if [ "$PYV" -lt 39 ]; then RS="pyrealsense2==2.55.1.6486"; else RS="pyrealsense2"; fi
 pinned "$RS" || TODO+=("pyrealsense2 not installed: the talk spot falls back to the webcam estimate")
+# USB microphone or speaker (GREETER_MIC_DEVICE / GREETER_SPEAKER_DEVICE), e.g. the webcam's own mic
+{ pinned "sounddevice>=0.5" && "$PY" -c 'import sounddevice' 2>/dev/null; } ||
+  TODO+=("sounddevice not usable (PortAudio missing?): the human re-runs scripts/setup-jetson.sh, which installs libportaudio2. Only needed for a USB mic or speaker")
 [ -f /etc/udev/rules.d/99-realsense-libusb.rules ] ||
   TODO+=("RealSense udev rules missing: the human re-runs scripts/setup-jetson.sh (sudo) so the greeter can open the head D435i")
 
@@ -193,6 +196,7 @@ OPENAI_API_KEY=
 # GREETER_DIST_K=160            # set by: python -m greeter.robot.calibrate --stand-at 1 2 3
 # GEMINI_API_KEY=               # optional hot standby (needs Python 3.10+)
 # GREETER_RECORD=0              # stop recording audio/frames/transcripts for tuning
+# GREETER_MIC_DEVICE=webcam     # a USB mic instead of the robot's: part of its name in `.venv/bin/python -m sounddevice`
 EOF
   )
 fi
@@ -205,12 +209,15 @@ fi
 set_default GREETER_YOLO_MODEL "$YOLO_MODEL"
 [ "$CPU_TORCH" = 1 ] && set_default GREETER_IMGSZ 416
 [ "$WITH_LOCAL" = 1 ] && [ "$PYV" -ge 310 ] && set_default GREETER_VLM qwen3-vl:2b-instruct
-grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q '^GREETER_BACKEND=local' "$ENVF" ||
+grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted)' "$ENVF" ||
   TODO+=("OPENAI_API_KEY is empty: the human runs scripts/set-api-key.sh $USER@<jetson> on the laptop")
 
 if grep -q '^OPENAI_API_KEY=.' "$ENVF"; then
   step "pre-recorded fallback lines (OpenAI TTS, once)"
   (set -a; . "$ENVF"; set +a; "$PY" -m greeter.clips --render) || TODO+=("could not render the fallback clips (the robot will speak them live)")
+else
+  step "stand-in voice lines without a key (espeak-ng), for --scripted and the speaker test"
+  "$PY" -m greeter.clips --render-offline || echo "skipped: --scripted will chime instead of speaking"
 fi
 
 step "self-test"
@@ -233,13 +240,15 @@ Environment=LD_LIBRARY_PATH=$EXTRA_LD
 ExecStart=$PY -m greeter
 Restart=always
 RestartSec=5
+# 78 = no API key or another setting missing: wait for the human instead of restarting every 5 s
+RestartPreventExitStatus=78
 
 [Install]
 WantedBy=default.target
 EOF
   systemctl --user daemon-reload
   systemctl --user enable g1-greeter >/dev/null
-  if grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q '^GREETER_BACKEND=local' "$ENVF"; then
+  if grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted)' "$ENVF"; then
     systemctl --user restart g1-greeter
     sleep 3
     systemctl --user --no-pager --lines=5 status g1-greeter || true

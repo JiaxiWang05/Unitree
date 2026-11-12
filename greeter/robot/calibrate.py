@@ -78,6 +78,10 @@ def measure_marks(camera: Camera, detector: PersonDetector, marks, seconds: floa
 
 
 def main(argv=None) -> None:
+    if argv is None:
+        from greeter import libpath
+
+        libpath.ensure("greeter.robot.calibrate")
     load_env_file()  # same camera / model settings as the service
     p = argparse.ArgumentParser(prog="python -m greeter.robot.calibrate", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--seconds", type=float, default=0, help="stop after this long (0 = until Ctrl-C)")

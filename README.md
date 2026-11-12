@@ -207,6 +207,11 @@ So check it in this order:
    exposes PulseAudio devices) and point `GREETER_MIC_DEVICE` /
    `GREETER_SPEAKER_DEVICE` at them.
 
+**Without an API key** the service stops with exit status 78 and systemd leaves it stopped
+(no restart loop). `install.sh` then makes stand-in voice lines with `espeak-ng`, so
+`python -m greeter --scripted` and `--check --check-sound` speak instead of chiming. The first
+install with a key replaces them with the real voice.
+
 **Settings** live in `~/.config/g1-greeter/greeter.env` (mode 600, `KEY=value`).
 Keys are never kept in the code.
 
@@ -224,7 +229,7 @@ Keys are never kept in the code.
 | `GREETER_DUPLEX` | off | `1` keeps the mic open while the robot talks (barge-in) |
 | `GREETER_MAX_VISIT` | `240` | seconds |
 | `GREETER_RECORD` | on | `0` stops recording |
-| `GREETER_MIC_DEVICE` / `GREETER_SPEAKER_DEVICE` | — | Tier 1 USB mic / DAC |
+| `GREETER_MIC_DEVICE` / `GREETER_SPEAKER_DEVICE` | — | USB mic / DAC instead of the robot's own: part of the device's name as listed by `.venv/bin/python -m sounddevice` (for example `webcam`) |
 
 ## The interaction ladder
 
@@ -461,7 +466,7 @@ No webcam? Build a test clip: a visitor in red, then green, then gone.
 .venv/bin/python -m pytest
 ```
 
-170 tests:
+174 tests:
 
 | file | covers |
 |---|---|
@@ -473,7 +478,7 @@ No webcam? Build a test clip: a visitor in red, then green, then gone.
 | `test_gemini_backend.py` | Speaks first, session resumption after a drop |
 | `test_local_backend.py` | The local cascade's glue, with stub models |
 | `test_e2e.py` | The full ladder in one process (with recording), visitor walking away, the apology clip not cut off by the cooldown, the WebSocket split, token, LED, spot trigger over hall noise |
-| `test_setup.py` | Env file, camera auto-detect and control lock (50 Hz, fixed frame rate, focus), CLI defaults, provider chain, a scan proving no motion API is used, recorder, clips |
+| `test_setup.py` | Offline voice clips, the scripted backend speaking them, stopping without a key (exit 78, no restart), the library path for hand-typed commands; env file, camera auto-detect and control lock (50 Hz, fixed frame rate, focus), CLI defaults, provider chain, a scan proving no motion API is used, recorder, clips |
 | `test_g1_io.py` | Mic multicast warnings: stream stopped, or arriving all zeros (wrong voice-assistant mode) |
 | `test_audio_protocol.py` | Resampler, muted-mic detection, wire format |
 | `test_depth_spot.py` | Head-D435i talk spot on rendered depth: floor at zero, floor fit recovers lean and height, 1.5 s dwell, whole footprint, outside and bystanders ignored, fast and slow walkers ignored, bags ignored, release, still object vs quiet visitor, a visitor joining an object, USB 2 mode, the visit timeline, OPEN acceptance (early in a long invitation; not a lingering visitor; not a depth stall), depth-only chats, no restart by the same visitor, recovery after a USB drop, bad env values, end to end |

@@ -177,7 +177,8 @@ def check_robot(args) -> None:
         report("FAIL", "robot sdk", "unitree_sdk2py not importable: %s" % exc)
         return
     try:
-        io = G1RobotIO(iface=args.iface, local_ip=args.local_ip, volume=None)
+        io = G1RobotIO(iface=args.iface, local_ip=args.local_ip, volume=None,
+                       mic_device=args.mic_device, speaker_device=args.speaker_device)
         code, data = io.audio.GetVolume()
         report("PASS" if code == 0 else "FAIL", "robot sdk", "voice service on %s: GetVolume -> %s %s" % (args.iface, code, data or ""))
         if io.status():
@@ -189,16 +190,28 @@ def check_robot(args) -> None:
     from greeter.robot.g1_io import WAKE_UP_HINT
 
     got = bytearray()
-    io.start(got.extend)
+    try:
+        io.start(got.extend)
+    except Exception as exc:  # a USB device that is missing, busy or has no PortAudio
+        report("FAIL", "mic", "cannot open %s: %s" % (args.mic_device or args.speaker_device, exc))
+        io.close()
+        return
     time.sleep(3.0)
     level = rms_dbfs(bytes(got)) if got else -120.0
+    if args.mic_device:
+        source, fix = "USB mic '%s'" % args.mic_device, "check GREETER_MIC_DEVICE against `python -m sounddevice`"
+    else:
+        source, fix = "239.168.123.161:5555", "%s, see README" % WAKE_UP_HINT
     if not got:
-        hint = " (no audio: %s, see README)" % WAKE_UP_HINT
+        hint = " (no audio: %s)" % fix
     elif is_flat(bytes(got)):
-        hint = " (all zeros, the mic is muted: %s, see README)" % WAKE_UP_HINT
+        hint = " (all zeros, the mic is muted: %s)" % fix
+    elif level > -3.0:
+        hint = " (clipping: turn the capture level down, e.g. with alsamixer)"
     else:
         hint = ""
-    report("FAIL" if hint else "PASS", "mic", "%d bytes in 3 s from 239.168.123.161:5555, level %.0f dBFS%s" % (len(got), level, hint))
+    status = "PASS" if not hint else ("WARN" if "clipping" in hint else "FAIL")
+    report(status, "mic", "%d bytes in 3 s from %s, level %.0f dBFS%s" % (len(got), source, level, hint))
     io.led((255, 255, 255))
     if args.check_sound:
         from greeter import clips

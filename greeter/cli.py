@@ -210,7 +210,8 @@ def providers(args: argparse.Namespace):
     if backend == "scripted":
         from greeter.backends.scripted import ScriptedBackend
 
-        return [("scripted", ScriptedBackend)]
+        loaded = clips.load()  # with clips on disk it speaks; without, it chimes
+        return [("scripted", lambda: ScriptedBackend(clips=loaded, texts=clips.LINES))]
     chain = []
     if backend == "local":
         from greeter.backends.local import LocalBackend
@@ -329,7 +330,23 @@ async def run_remote(app) -> None:
     app_task.cancel()
 
 
+EX_CONFIG = 78  # sysexits.h: configuration error; the service unit does not restart on it
+
+
+def require_providers(args: argparse.Namespace) -> None:
+    """Stop before the camera and the robot are opened if no conversation backend can run."""
+    try:
+        providers(args)
+    except SystemExit as exc:
+        print(exc, file=sys.stderr)
+        raise SystemExit(EX_CONFIG)
+
+
 def main(argv=None) -> None:
+    if argv is None:
+        from greeter import libpath
+
+        libpath.ensure("greeter")
     pre = argparse.ArgumentParser(add_help=False)
     pre.add_argument("--env-file", default=str(DEFAULT_ENV_FILE))
     known, _ = pre.parse_known_args(argv)
@@ -362,5 +379,6 @@ def main(argv=None) -> None:
         return
     from greeter.dialogue.links import InProcessLink
 
+    require_providers(args)
     core = build_core(args, make_io(args))
     asyncio.run(run_all_in_one(core, make_app(InProcessLink(core), args)))

@@ -20,12 +20,12 @@
 - [ ] **风险评估**：机器人要在访客中间站立或走动之前，更新风险评估。第 3 次上机前要批下来。
 - [ ] **约人**：第 2、3、4 次上机各需要 1–2 个同学当访客。
 
-Claude 在第 1 次上机前要改好的代码（告诉我一声我就做）：
+Claude 在第 1 次上机前要改好的代码（11 月 12 日已改完，174 个测试通过；都还没在机器人上跑过）：
 
-- [ ] `install.sh` 装上 `sounddevice`，这样才能用摄像头的麦克风
-- [ ] 没有 API key 时不要让开机自启的服务反复崩溃
-- [ ] `--scripted` 模式用本机生成的语音说话，代替提示音
-- [ ] 确认手动运行命令时要不要设置库路径
+- [x] `install.sh` 装上 `sounddevice`，设置脚本装上 `libportaudio2`，这样才能用摄像头的麦克风
+- [x] 没有 API key 时程序在打开摄像头之前就退出，服务不再反复重启
+- [x] `--scripted` 模式和喇叭测试用机器人本机生成的语音说话（espeak-ng，声音比较机械），代替提示音
+- [x] 手动运行命令时自动设置库路径
 
 ## 第 1 次上机：装程序，测硬件（11 月 16–20 日，不需要 API key）
 
@@ -38,15 +38,15 @@ Claude 在第 1 次上机前要改好的代码（告诉我一声我就做）：
 | 1.3 | 机器人借 Ubuntu 上网（第 7 步，第一条在 **Ubuntu** 上跑） | 两个 ping 都通；`date` 显示的时间正确 |
 | 1.4 | 设置脚本（第 8 步），API key 处按回车 | 最后出现 `tell Claude: the robot is ready` |
 | 1.5 | 装程序（第 9 步），`--no-service` | 结尾只剩 `OPENAI_API_KEY is empty` 这一条待办 |
-| 1.6 | 自检加喇叭（第 10 步） | camera、yolo、robot sdk 是 PASS；**听到机器人喇叭响** |
+| 1.6 | 自检加喇叭（第 10 步） | camera、yolo、robot sdk 是 PASS；**听到机器人喇叭说 "Hello! Lovely to meet you."**（机械音） |
 | 1.7 | 记下 `depth` 那一行的原文 | PASS 最好；WARN 也行，但要把原文发给 Claude |
 | 1.8 | 再录一次自带麦克风（`record_mic.py`） | 记录结果。还是全 0 就确定用摄像头麦克风 |
-| 1.9 | 把麦克风设成摄像头的（Claude 给命令），重跑自检 | `mic` 是 PASS，音量不是顶满 |
+| 1.9 | `.venv/bin/python -m sounddevice` 列出设备；在 `~/.config/g1-greeter/greeter.env` 里加一行 `GREETER_MIC_DEVICE=webcam`（用列表里摄像头名字的一部分）；重跑自检 | `mic` 是 PASS。显示 clipping 就把采集音量调低 |
 | 1.10 | 拍一张测试照片 | 画面是正前方，站在 1.5–2 m 的人从头到腰都在里面 |
 | 1.11 | 贴地面胶带：站位区域和 1、2、3 m 记号 | 从机器人正下方量起 |
 | 1.12 | `greeter.robot.calibrate`，依次站到 1、2、3 m | 数字跟着变；站进区域出现 `spot occupied` |
 | 1.13 | `calibrate --stand-at 1 2 3` | 最后一行 `GREETER_DIST_K=… saved` |
-| 1.14 | `--scripted` 走一遍完整来访 | 灯变色，邀请，回应，安静 15 秒后收尾 |
+| 1.14 | `--scripted` 走一遍完整来访 | 灯变色，说 "Hey there! Come and say hi!"，你说话后它回 "Thank you!"，安静 15 秒后说再见 |
 
 第 1 次做完，就知道：喇叭好不好，深度相机能不能用，麦克风用哪个。这三件事决定后面怎么走。
 

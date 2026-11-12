@@ -53,7 +53,7 @@ nmcli con mod "$(nmcli -t -f NAME,TYPE con show --active | awk -F: '$2 ~ /wirele
 echo "== 2/4 system packages"
 apt-get update
 apt-get install -y --no-install-recommends \
-  git cmake build-essential python3-dev curl zstd v4l-utils espeak-ng libopenblas-dev libopenmpi-dev avahi-daemon
+  git cmake build-essential python3-dev curl zstd v4l-utils espeak-ng libopenblas-dev libopenmpi-dev avahi-daemon libportaudio2
 
 echo "== 3/4 start at boot, camera and audio access"
 loginctl enable-linger "$U"

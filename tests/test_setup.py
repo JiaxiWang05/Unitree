@@ -202,3 +202,66 @@ def test_clips_load_only_valid_wavs(tmp_path):
     loaded = clips.load(tmp_path)
     assert list(loaded) == ["hey_green"] and len(loaded["hey_green"]) == 320
     assert len(clips.LINES) >= 15 and "Hey, you in the green" in clips.LINES["hey_green"]
+
+
+def test_offline_clips_are_marked_and_replaced_later(tmp_path, monkeypatch):
+    """Without a key the lines are spoken by the machine's own program, at 16 kHz mono."""
+    import sys
+
+    from greeter import clips
+
+    writer = ("import sys, wave; w = wave.open(sys.argv[1], 'wb'); w.setnchannels(2); w.setsampwidth(2); "
+              "w.setframerate(22050); w.writeframes(b'\\x10\\x00' * 2 * 22050); w.close()")
+    monkeypatch.setattr(clips, "offline_command", lambda text, out: [sys.executable, "-c", writer, str(out)])
+    assert clips.render_offline(tmp_path) == len(clips.LINES)
+    loaded = clips.load(tmp_path)
+    assert set(loaded) == set(clips.LINES)
+    assert abs(len(loaded["hello"]) - 32000) < 400  # 1 s of stereo 22.05 kHz became 1 s of mono 16 kHz
+    assert (tmp_path / clips.OFFLINE_MARK).exists()
+    assert clips.render_offline(tmp_path) == 0  # nothing missing: nothing redone
+
+    monkeypatch.setattr(clips, "offline_command", lambda text, out: None)
+    with pytest.raises(RuntimeError):
+        clips.render_offline(tmp_path / "empty")
+
+
+def test_scripted_backend_speaks_clips_when_present():
+    import asyncio
+
+    from greeter.backends.scripted import OPENER, ScriptedBackend
+
+    async def opener(backend):
+        await backend.prepare_opener(b"", "invite")
+        async for event in backend.events():
+            if event.kind == "opener_ready":
+                return event.data
+
+    clip = b"\x01\x00" * 800
+    spoken = asyncio.run(opener(ScriptedBackend(opener_delay_s=0, clips={"hey_there": clip}, texts={"hey_there": "Hey there!"})))
+    assert spoken == {"pcm": clip, "rate": 16000, "text": "Hey there!"}
+    chimed = asyncio.run(opener(ScriptedBackend(opener_delay_s=0)))
+    assert chimed["rate"] == 24000 and chimed["text"] == OPENER
+
+
+def test_no_key_stops_before_the_camera_and_does_not_restart(monkeypatch, capsys):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GREETER_BACKEND", raising=False)
+    args = cli.parse_args(["--env-file", "/nonexistent/greeter.env"])
+    with pytest.raises(SystemExit) as exc:
+        cli.require_providers(args)
+    assert exc.value.code == cli.EX_CONFIG == 78
+    assert "OPENAI_API_KEY" in capsys.readouterr().err
+    cli.require_providers(cli.parse_args(["--scripted"]))  # needs no key
+    install = (Path(__file__).resolve().parent.parent / "scripts" / "install.sh").read_text()
+    assert "RestartPreventExitStatus=78" in install and "sounddevice" in install
+    assert "libportaudio2" in (Path(__file__).resolve().parent.parent / "scripts" / "setup-jetson.sh").read_text()
+
+
+def test_library_path_only_adds_folders_that_exist(tmp_path):
+    from greeter import libpath
+
+    assert libpath.missing(tmp_path, "") == []
+    lib = tmp_path / "cyclonedds" / "install" / "lib"
+    lib.mkdir(parents=True)
+    assert libpath.missing(tmp_path, "/usr/lib") == [str(lib)]
+    assert libpath.missing(tmp_path, "/usr/lib:%s" % lib) == []

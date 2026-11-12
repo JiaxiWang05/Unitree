@@ -17,7 +17,7 @@ robot.** No face recognition.
 
 | What | Where |
 |---|---|
-| Code and tests | `greeter/`, `tests/` (170 tests, `pytest`), `scripts/` (setup, deploy, API key) |
+| Code and tests | `greeter/`, `tests/` (174 tests, `pytest`), `scripts/` (setup, deploy, API key) |
 | How to run it | `README.md`; first robot session step by step: [g1-robot-session.html](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html); lab commands: [g1-lab-commands.html](https://jiaxiwang05.github.io/Unitree/g1-lab-commands.html) |
 | **Test plan to 5 Dec 2026** | [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md) (Chinese): four robot sessions with pass marks; the last is a dress rehearsal on 3 Dec |
 | **Live to-do list** | [`docs/TODO.md`](docs/TODO.md): the detailed checklist from the first robot session. Keep it up to date |
@@ -30,7 +30,7 @@ robot.** No face recognition.
 
 ## Status
 
-**Software (laptop):** 170 tests pass with the robot, camera and AI replaced by stand-ins.
+**Software (laptop):** 174 tests pass with the robot, camera and AI replaced by stand-ins.
 Features: invite anyone or green; groups and two people talking at once; Durham fees and
 assessment questions handed to staff; polite cut-in after 20 s of non-stop talk; wrap-up at
 90 s; the robot's own goodbye ends a chat; `--duplex` barge-in (off by default); both

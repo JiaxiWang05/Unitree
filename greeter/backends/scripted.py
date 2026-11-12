@@ -1,6 +1,8 @@
 """Backends that need no model.
 
-* :class:`ScriptedBackend`: canned lines + a chime, for plumbing tests (``--scripted``).
+* :class:`ScriptedBackend`: canned lines, for plumbing tests (``--scripted``). It speaks the
+  pre-recorded clips when they are on disk (``python -m greeter.clips --render-offline`` makes
+  them without any API key) and plays a chime otherwise.
 * :class:`CannedBackend`: the last rung of the provider chain when every cloud
   provider is down: plays pre-rendered clips (``greeter.clips``) in the same voice.
 
@@ -61,9 +63,11 @@ class ScriptedBackend(Backend):
     name = "scripted"
     supports_opener = True
 
-    def __init__(self, opener_delay_s: float = 0.2) -> None:
+    def __init__(self, opener_delay_s: float = 0.2, clips: Optional[Dict[str, bytes]] = None,
+                 texts: Optional[Dict[str, str]] = None) -> None:
         super().__init__()
         self.opener_delay_s = opener_delay_s
+        self.clips, self.texts = clips or {}, texts or {}
         self.frames = 0
         self.audio_bytes = 0
         self.committed = []
@@ -76,12 +80,23 @@ class ScriptedBackend(Backend):
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
 
-    async def _say(self, text: str, notes) -> None:
+    def _line(self, clip: str, text: str, notes):
+        """(text, pcm, rate): the clip if it is on disk, else the canned text and a chime."""
+        pcm = self.clips.get(clip)
+        if pcm:
+            return self.texts.get(clip, text), pcm, 16000
+        return text, chime(notes), RATE
+
+    async def _say(self, text: str, notes, clip: str = "") -> None:
         self._busy = True
         try:
             await asyncio.sleep(0.3)  # "thinking"
+            text, pcm, rate = self._line(clip, text, notes)
             self._emit("bot_text", text)
-            pcm = chime(notes)
+            if rate != RATE:  # a clip: one piece, like CannedBackend
+                self._emit("audio", pcm, rate)
+                self._emit("turn_complete")
+                return
             step = RATE // 10 * 2  # 100 ms chunks, faster than real time like the cloud models
             for i in range(0, len(pcm), step):
                 self._emit("audio", pcm[i : i + step], RATE)
@@ -102,7 +117,8 @@ class ScriptedBackend(Backend):
 
         async def ready() -> None:
             await asyncio.sleep(self.opener_delay_s)
-            self._emit("opener_ready", {"pcm": chime((660.0, 880.0)), "rate": RATE, "text": OPENER})
+            text, pcm, rate = self._line("hey_there", OPENER, (660.0, 880.0))
+            self._emit("opener_ready", {"pcm": pcm, "rate": rate, "text": text})
 
         self._spawn(ready())
 
@@ -111,7 +127,7 @@ class ScriptedBackend(Backend):
 
     async def begin(self, instruction: Optional[str]) -> None:
         if instruction:
-            self._spawn(self._say(BEGIN, (740.0,)))
+            self._spawn(self._say(BEGIN, (740.0,), "hello"))
 
     async def send_audio(self, pcm: bytes) -> None:
         self.audio_bytes += len(pcm)
@@ -121,13 +137,13 @@ class ScriptedBackend(Backend):
         elif heard == "end" and not self._busy:
             self._emit("user_turn_end")
             self._emit("user_text", "(speech)")
-            self._spawn(self._say(REPLY, (880.0,)))
+            self._spawn(self._say(REPLY, (880.0,), "thanks"))
 
     async def send_frame(self, jpeg: bytes) -> None:
         self.frames += 1
 
     async def send_text(self, text: str) -> None:
-        self._spawn(self._say(CLOSE, (880.0, 660.0)))
+        self._spawn(self._say(CLOSE, (880.0, 660.0), "goodbye"))
 
     async def close(self) -> None:
         for task in list(self._tasks):
