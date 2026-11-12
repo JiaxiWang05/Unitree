@@ -61,6 +61,8 @@ the robot's hands.
 
 ## Fitting
 
+Step-by-step animation (Chinese): [head-brio-install.html](https://jiaxiwang05.github.io/Unitree/head-brio-install.html).
+
 1. Find where Unitree's mount goes: two M4 threads 88 mm apart inside the renewed head, behind
    the top of the face ring. Unitree's picture shows the head's top cap off. If your head has
    no such holes, stop: this bracket cannot be fitted.
