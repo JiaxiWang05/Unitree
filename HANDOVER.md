@@ -79,7 +79,7 @@ the service crash-looping without a key, `--scripted` only chiming), is in
 - Invite anyone by default; `--invite green` keeps the original study rule.
 - The program sends no motion commands; walking is only ever a person with the remote.
 - Half duplex by default (mic muted while the robot speaks) until the echo test.
-- Brio on the head arch hung from the two shoulder lifting rings (confirmed again on 12 Nov after a trial bracket inside the head was drawn: the arch keeps both the Brio and the built-in depth camera usable; its legs shade about 10° of the lidar on each side). Unitree's own head camera
+- Brio on the head arch hung from the two shoulder lifting rings (confirmed again on 12 Nov after a trial bracket inside the head was drawn: the arch keeps both the Brio and the built-in depth camera usable; its legs shade about 10° of the lidar on each side). Until the arch is printed, the camera is stuck on top of the head with Blu Tack for standing tests only (docs/TODO.md). Unitree's own head camera
   mount sits inside the head and points 49° down where the depth camera looks, so it can't
   carry the Brio. The chest bracket remains the fallback.
 - Buy the Brio 4K for Business 960-001746, not the "New version" 960-001718 (the brackets

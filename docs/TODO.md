@@ -48,6 +48,16 @@ Commands: [`g1-lab-commands.html`](https://jiaxiwang05.github.io/Unitree/g1-lab-
 - [ ] With the Brio fitted, run `--check` and read the `depth` line: does the head D435i still see the floor?
 - [x] Choice made on 12 November: **use the head arch** (`hardware/helmet_ring_mount`), because the Brio and the built-in depth camera can then both be used. This bracket stays as a backup; the steps above are only needed if it is ever tried.
 
+## Camera on the head with Blu Tack (stop-gap, 12 November)
+
+Until the arch is printed, the camera can sit on top of the head, held with Blu Tack. Both the camera and the built-in depth camera stay usable, and nothing has to be printed.
+
+- [ ] Use it only while the robot stands still, sits or hangs. Blu Tack is not enough when the robot walks.
+- [ ] Clean, dry head top; a walnut-sized lump pressed flat under the camera; lens level and pointing straight ahead.
+- [ ] Tape the cable to the back of the head a few centimetres behind the camera, so the cable's weight doesn't pull the camera off.
+- [ ] Keep the face opening clear (depth camera and lidar look out through it).
+- [ ] Take a test photo (the camera test in the lab commands page), then `calibrate --stand-at 1 2 3` once the program is installed. Recalibrate whenever the camera is moved.
+
 ## Head arch for the Brio (chosen 12 November)
 
 [`hardware/helmet_ring_mount`](../hardware/helmet_ring_mount/README.md), [install animation](https://jiaxiwang05.github.io/Unitree/head-arch-install.html).
