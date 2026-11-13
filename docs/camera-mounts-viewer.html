@@ -39,8 +39,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
     cap:zh?'<b>现在选用。</b>挂在肩膀吊环上，镜头高约 1.37 m。不挡自带深度相机；头部雷达左右各挡约 10°。':'<b>Chosen.</b> Hangs on the shoulder lifting rings, lens about 1.37 m up. Clear of the built-in depth camera; shades about 10° of the head lidar on each side.'},
    {key:'chest',name:zh?'② 胸前支架':'2 Chest bracket',parts:'robot_upper.stl:robot,chest_mount.stl:part,chest_brio.stl:cam',c:[40,0,250],r:240,az:35,el:14,
     cap:zh?'<b>备用。</b>拧在胸口两个 M6 孔上，镜头高约 0.98 m。深度相机和雷达都不挡；位置低。':'<b>Fallback.</b> Bolts to the two chest M6 holes, lens about 0.98 m up. Blocks neither the depth camera nor the lidar; sits low.'},
-   {key:'head',name:zh?'③ 头部内支架':'3 Inside the head',parts:'head_mount.stl:part,head_brio.stl:cam',c:[58,0,112],r:90,az:145,el:20,
-    cap:zh?'<b>试装件。</b>照 Unitree 的双目相机支架改，没装过；可能挡住自带深度相机。只显示支架和摄像头。':'<b>Trial part.</b> Based on the Unitree stereo camera mount, not fitted yet; may block the built-in depth camera. Shown without the robot.'}];
+   {key:'head',name:zh?'③ 头部内支架':'3 Inside the head',parts:'robot_upper.stl:robot,head_mount.stl:part,head_brio.stl:cam',c:[45,0,425],r:120,az:38,el:10,
+    cap:zh?'<b>试装件，没装过。</b>固定在 Unitree 双目支架的位置，从额头下面绕过深度相机的窗口，镜头高约 1.29 m。在公开模型里不挡深度相机，也不挡雷达；位置是推算的。':'<b>Trial part, not fitted.</b> Screws on where the Unitree stereo mount goes and passes round the depth camera window; lens about 1.29 m up. In the public model it blocks neither the depth camera nor the lidar; its position there is worked out, not measured.'}];
   var box=document.getElementById('view'),loadEl=document.getElementById('load'),cap=document.getElementById('cap');
   loadEl.textContent=T.load;document.getElementById('more').textContent=T.more;if(zh)document.title='G1 摄像头支架 3D 模型';
   if(!window.THREE||!THREE.STLLoader||!THREE.OrbitControls){loadEl.textContent=T.fail;return}

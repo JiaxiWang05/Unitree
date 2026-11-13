@@ -4,9 +4,10 @@ own stereo camera mount (xr_teleoperate, Device.md section 5.2.1).
 The back half IS Unitree's part: the flange with the two vertical M4 holes 88 mm apart, the thin
 bridge and the two arms that hook under the top of the face ring. That half is known to fit the
 renewed head, and the public G1 model has no detail there to draw it from. Only the front changes:
-Unitree's tilted tray for the stereo board (49 deg down) is cut off and replaced by two struts
-along the same line and a level seat for the bare Brio (clip removed, one 1/4" screw from below,
-as on the chest bracket).
+Unitree's tilted tray for the stereo board (49 deg down) covers the built-in depth camera's
+window. It is cut off and replaced by a crossbar under the brow, a plate up each side of that
+window and a level seat above it for the bare Brio (clip removed, one 1/4" screw from below, as
+on the chest bracket), so the depth camera keeps its view of the talk spot.
 
 Frame used here (mm): X forward, Y left, Z up. It is Unitree's STEP frame turned 180 deg about Z.
 
@@ -37,13 +38,29 @@ CAM_W, CAM_D, CAM_H = 102.0, 27.0, 27.0
 THREAD_FROM_BACK = 14.5      # tripod thread centre to the camera's back face (+/-1)
 USB_Z, PLUG_W, PLUG_T = 7.0, 13.0, 7.0
 
-# ---- new front ----
-ARM_Y0, ARM_Y1 = 6.0, 16.0   # Unitree's arms sit at |y| 6..16; the struts continue them
-SEAT_Z = 116.0               # camera underside; Unitree's tray reached z 118 at its top edge
+# ---- where this sits in Unitree's public G1 model (torso frame = this frame + HEAD_SHIFT) ----
+# Found by sliding Unitree's own mount inside head_link.STL until it stops against the head
+# without cutting into it: it fits in one place only, 0.4 mm clear (check_head_brio_mount.py).
+HEAD_SHIFT = (0.5, 0.0, 317.0)
+DEPTH_CAM = (57.6235, 17.53, 429.87)   # URDF d435_joint, torso frame; looks 47.6 deg down
+DEPTH_BASELINE = 50.0                  # the D435i's two infrared imagers, 50 mm apart
+
+# ---- new front (version 2) ----
+# Version 1 put two struts and the seat straight in front of the brow, where the depth camera's
+# window is: the camera's back and plug cut 11 mm into the head and 41% of the depth camera's
+# sight lines to the talk spot were blocked. Version 2 goes round the window: a crossbar below
+# and behind the lens, a plate up each side of the view, and the seat above the lens height.
+ARM_Y1 = 16.0                # Unitree's arms end at |y| 6..16
+BAR_X0, BAR_X1 = 51.5, 59.0  # crossbar: in front of the face ring's sides, behind the steepest depth ray
+BAR_X0_MID, BAR_MID_Y = 46.0, 30.0   # ... and further back between the arms, to join them
+BAR_Z0, BAR_Z1 = 81.0, 90.0
+PLATE_Y0, PLATE_Y1 = 52.0, 58.0      # side plates: outside the head's widest point in front (49-53)
+SEAT_Z = 126.0               # camera underside = 443 in the torso frame, 13 mm above the depth lens
 SCREW_L, WASHER_T, SCREW_IN = 15.875, 1.6, 4.0   # 1/4"-20 x 5/8", one M6 washer, depth in the camera
-SHELF_T = SCREW_L - WASHER_T - SCREW_IN           # 10.3 mm: the screw head sits on the underside
-SHELF_X0 = 72.0              # back of the shelf; Unitree's tray ended at x 79
-SHELF_W = 46.0
+SHELF_T = SCREW_L - WASHER_T - SCREW_IN           # 10.3 mm under the screw: its head sits on the underside
+SHELF_THIN = 5.0             # the rest of the shelf
+SHELF_X0 = 90.5              # back of the shelf: the camera's back face is 16 mm in front of the forehead
+SHELF_MID_W = 46.0           # thick middle of the shelf
 LIP_T, LIP_H = 3.0, 4.0
 LIP_GAP = CAM_D + 1.0
 BACK_LIP_GAP = 20.0          # the USB-C plug leaves through this gap
@@ -51,8 +68,9 @@ SLOT_W, SLOT_PLAY = 7.0, 6.0
 TIE_W, TIE_L = 2.5, 6.0      # cable-tie slots through the shelf, one each side
 SHELF_X1 = SHELF_X0 + 2 * LIP_T + LIP_GAP
 SHELF_Z0 = SEAT_Z - SHELF_T
-STRUT = [(46.0, 88.0), (50.0, 100.0), (SHELF_X0, SEAT_Z), (SHELF_X0 + 4.0, SEAT_Z),
-         (SHELF_X0 + 4.0, SHELF_Z0), (52.0, 82.0)]   # XZ outline; upper edge = the back of Unitree's tray
+PLATE = [(BAR_X0, BAR_Z0), (BAR_X1, BAR_Z0), (SHELF_X0 + 14.0, SEAT_Z - SHELF_THIN), (SHELF_X0 + 14.0, SEAT_Z),
+         (SHELF_X0 - 2.0, SEAT_Z), (BAR_X0, BAR_Z1)]   # XZ outline of each side plate
+ADAPTER_L = 13.0             # right-angle USB-C adapter: how far it stands off the camera's back
 
 
 def unitree_step(cache: Path) -> Path:
@@ -78,35 +96,41 @@ def unitree_back(step: Path):
     return part
 
 
+def box(x0, x1, y0, y1, z0, z1):
+    return cq.Workplane("XY").box(x1 - x0, y1 - y0, z1 - z0, centered=False).translate((x0, y0, z0))
+
+
 def front():
-    out = None
+    # crossbar under the brow
+    out = box(BAR_X0, BAR_X1, -PLATE_Y1, PLATE_Y1, BAR_Z0, BAR_Z1)
+    out = out.union(box(BAR_X0_MID, BAR_X1, -BAR_MID_Y, BAR_MID_Y, BAR_Z0, BAR_Z1))
+    # a plate up each side of the depth camera's view
     for side in (1, -1):
-        y0 = ARM_Y0 if side == 1 else -ARM_Y1
-        s = cq.Workplane("XZ", origin=(0, y0 + (ARM_Y1 - ARM_Y0), 0)).polyline(STRUT).close().extrude(ARM_Y1 - ARM_Y0)
-        out = s if out is None else out.union(s)
-    shelf = (cq.Workplane("XY").workplane(offset=SHELF_Z0)
-             .center((SHELF_X0 + SHELF_X1) / 2, 0).rect(SHELF_X1 - SHELF_X0, SHELF_W).extrude(SHELF_T)
-             .edges("|Z").fillet(3))
-    out = out.union(shelf)
-    top = cq.Workplane("XY").workplane(offset=SEAT_Z - 0.5)
-    out = out.union(top.center(SHELF_X1 - LIP_T / 2, 0).rect(LIP_T, SHELF_W - 8).extrude(LIP_H + 0.5))
-    w = (SHELF_W - 8 - BACK_LIP_GAP) / 2
+        y = PLATE_Y1 if side == 1 else -PLATE_Y0
+        out = out.union(cq.Workplane("XZ", origin=(0, y, 0)).polyline(PLATE).close().extrude(PLATE_Y1 - PLATE_Y0))
+    # shelf between the plates: thin, with a thick middle for the screw
+    out = out.union(box(SHELF_X0, SHELF_X1, -PLATE_Y1, PLATE_Y1, SEAT_Z - SHELF_THIN, SEAT_Z))
+    out = out.union(box(SHELF_X0, SHELF_X1, -SHELF_MID_W / 2, SHELF_MID_W / 2, SHELF_Z0, SEAT_Z))
+    # lips: full width in front, two pieces behind with a gap for the plug
+    out = out.union(box(SHELF_X1 - LIP_T, SHELF_X1, -PLATE_Y1, PLATE_Y1, SEAT_Z - 0.5, SEAT_Z + LIP_H))
     for side in (1, -1):
-        out = out.union(top.center(SHELF_X0 + LIP_T / 2, side * (BACK_LIP_GAP + w) / 2).rect(LIP_T, w).extrude(LIP_H + 0.5))
+        y0, y1 = (BACK_LIP_GAP / 2, PLATE_Y1) if side == 1 else (-PLATE_Y1, -BACK_LIP_GAP / 2)
+        out = out.union(box(SHELF_X0, SHELF_X0 + LIP_T, y0, y1, SEAT_Z - 0.5, SEAT_Z + LIP_H))
     cx = SHELF_X0 + LIP_T + THREAD_FROM_BACK
     out = out.cut(cq.Workplane("XY").workplane(offset=SHELF_Z0 - 5).center(cx, 0)
                   .slot2D(SLOT_W + SLOT_PLAY, SLOT_W).extrude(SHELF_T + 10))
     for side in (1, -1):
-        out = out.cut(cq.Workplane("XY").workplane(offset=SHELF_Z0 - 1)
-                      .center(SHELF_X0 + 14.0, side * (SHELF_W / 2 - 4.0)).rect(TIE_L, TIE_W).extrude(SHELF_T + 2))
+        out = out.cut(cq.Workplane("XY").workplane(offset=SEAT_Z - SHELF_THIN - 1)
+                      .center(SHELF_X0 + 14.0, side * (SHELF_MID_W / 2 + 8.0)).rect(TIE_L, TIE_W).extrude(SHELF_THIN + 2))
     return out
 
 
 def brio_dummy():
-    """The bare camera on the seat, against the back lip, plus 20 mm of plug behind it."""
+    """The bare camera on the seat, against the back lip, with a right-angle USB-C adapter
+    behind it (the cable leaves sideways)."""
     x0 = SHELF_X0 + LIP_T
     cam = cq.Workplane("XY").box(CAM_D, CAM_W, CAM_H, centered=(False, True, False)).translate((x0, 0, SEAT_Z))
-    plug = cq.Workplane("XY").box(20, PLUG_W, PLUG_T, centered=(False, True, True)).translate((x0 - 20, 0, SEAT_Z + USB_Z))
+    plug = cq.Workplane("XY").box(ADAPTER_L, PLUG_W, PLUG_T + 3, centered=(False, True, True)).translate((x0 - ADAPTER_L, 0, SEAT_Z + USB_Z))
     return cam.union(plug)
 
 

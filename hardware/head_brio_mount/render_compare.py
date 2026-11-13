@@ -35,7 +35,7 @@ def main():
     ours = trimesh.load(HERE / "head_brio_mount.stl")
     brio = trimesh.load(HERE / "brio_dummy.stl")
     cols = (("Unitree's mount (stereo board tray, 49° down)", [(official, "#4a4e57", 1.0)]),
-            ("This bracket (level Brio seat)", [(ours, "#7a52d6", 1.0)]),
+            ("This bracket (seat above the depth camera)", [(ours, "#7a52d6", 1.0)]),
             ("This bracket with the Brio", [(ours, "#7a52d6", 1.0), (brio, "#1c1e22", 0.85)]))
     views = (("from behind, as in Unitree's picture", 24, 152), ("from the left side; front is to the right", 0, -90))
     fig = plt.figure(figsize=(18, 11))
@@ -44,8 +44,8 @@ def main():
             ax = fig.add_subplot(2, 3, r * 3 + i + 1, projection="3d")
             for mesh, colour, alpha in parts:
                 add(ax, mesh, colour, alpha)
-            ax.set_xlim(0, 112); ax.set_ylim(-56, 56); ax.set_zlim(64, 150)
-            ax.set_box_aspect((112, 112, 86), zoom=1.08)
+            ax.set_xlim(0, 130); ax.set_ylim(-65, 65); ax.set_zlim(60, 160)
+            ax.set_box_aspect((130, 130, 100), zoom=1.08)
             ax.view_init(elev, azim)
             ax.set_title(title + "\n" + vname, fontsize=12)
             ax.set_axis_off()

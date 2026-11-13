@@ -25,7 +25,7 @@ robot.** No face recognition.
 | The three camera mounts compared, with 3D viewers | [camera-mounts.html](https://jiaxiwang05.github.io/Unitree/camera-mounts.html) (`docs/camera-mounts.html`, simplified models in `docs/stl/`) |
 | Chest bracket for the Brio | `hardware/brio_chest_mount/` (test print done in PLA) |
 | Head arch for the Brio (v2) | `hardware/helmet_ring_mount/`: trial feet `trial_feet_plate.stl` (PLA, fit check), then `helmet_crown.stl` + `helmet_foot_left.stl` + `helmet_foot_right.stl` (PETG). Parts and assembly in its README |
-| Brio bracket inside the head (trial, 12 Nov) | `hardware/head_brio_mount/`: Unitree's renewed-head (88 mm) stereo mount with its tray swapped for a level Brio seat. Print `head_brio_mount_print.stl` in PLA and try it. Not printed or fitted; the depth camera's view past it and the room around the seat are unchecked (its README) |
+| Brio bracket inside the head (trial, v2 of 12 Nov) | `hardware/head_brio_mount/`: Unitree's renewed-head (88 mm) stereo mount with its tray swapped for a crossbar, two side plates and a level Brio seat above the depth camera's window. Placed in the public head model (position worked out by fitting Unitree's own mount, about 1 mm) it clears the head and blocks none of the depth camera's talk-spot sight lines; Unitree's own tray blocks all of them. Not printed or fitted. Backup to the arch |
 | One-download bundle | [Release v0.6](https://github.com/JiaxiWang05/Unitree/releases/tag/v0.6), `g1-greeter.zip` (made before the v2 arch and the robot-session fixes; prefer `git clone`) |
 | History and research notes | `notes/` (build log, head-mount notes, paper plan files) |
 

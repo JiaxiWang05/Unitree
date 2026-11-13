@@ -58,14 +58,14 @@ pre{background:var(--code);padding:10px 12px;border-radius:8px;overflow-x:auto;f
 </svg>
 <div class="cap" id="capt"></div>
 <div class="bar"><button id="prev">上一步</button><button id="play">暂停</button><button id="next">下一步</button><div class="dots" id="dots"></div></div>
-<p class="note">这是示意图，头部内部画得很简化。支架是<b>试装件</b>，还没在机器人上装过。先用 PLA 打一个比一下。机器人<b>关机</b>，坐着或挂在吊架上。</p>
+<p class="note">这是示意图，头部内部画得很简化，支架画的是大致形状；准确的样子见 <a href="camera-mounts.html#head">可以转动的 3D 模型</a>。支架是<b>试装件</b>，还没在机器人上装过。先用 PLA 打一个比一下。机器人<b>关机</b>，坐着或挂在吊架上。</p>
 
 <h2>要准备的东西</h2>
 <ul>
 <li>打印好的支架：<code>head_brio_mount_print.stl</code>（先 PLA 试装，正式用 PETG）</li>
 <li>2 颗 M4×16 螺丝</li>
 <li>1 颗 ¼"-20 × 5/8" 内六角螺丝 + 1 个 M6 垫片，3/16" 内六角扳手</li>
-<li>直角 USB-C 转接头或直角线（直插头有 35 mm 长，相机后面放不下）</li>
+<li>直角 USB-C 转接头，凸出相机背面不超过 13 mm（直插头有 35 mm 长，相机后面放不下）</li>
 <li>2 根小扎带</li>
 </ul>
 
@@ -86,11 +86,11 @@ pre{background:var(--code);padding:10px 12px;border-radius:8px;overflow-x:auto;f
 const S=[
  '<b>第 1 步</b>：机器人关机。按 Unitree 的做法打开<b>头顶盖</b>，找到头里面两个间距 88 mm 的 <b>M4 螺纹孔</b>（黄圈）。没有这两个孔就装不了。',
  '<b>第 2 步</b>：把 Brio 的<b>夹子直着拔下来</b>（稍微晃一晃，不要拧）。相机底部会露出一个 ¼" 螺纹孔。',
- '<b>第 3 步</b>：把<b>支架</b>从脸部开口伸进去：两条臂从面部环顶的<b>下面</b>穿过，后端的固定座对准两个 M4 孔，托座留在环的前面。',
+ '<b>第 3 步</b>：把<b>支架</b>从脸部开口伸进去：两条臂从额头的<b>下面</b>穿出来，后端的固定座对准两个 M4 孔。横梁贴在额头下方，两块侧板从深度相机窗口的两边绕上去，托座在额头前上方。',
  '<b>第 4 步</b>：拧上<b>两颗 M4×16 螺丝</b>，拧紧即可。方向以头里的螺纹孔为准，和 Unitree 原装支架一样。',
  '<b>第 5 步</b>：把 Brio 放到托座上，<b>镜头朝前</b>，卡在前后两道挡边之间。',
  '<b>第 6 步</b>：从托座<b>下面</b>穿上 ¼" 螺丝和垫片，拧进相机底部。<b>别拧太紧</b>，相机的螺纹很浅。',
- '<b>第 7 步</b>：插上<b>直角 USB-C 转接头</b>，线用扎带固定在托座侧面的槽上，再绕过头顶走到脖子后面的 USB-C 口。盖回头顶盖。',
+ '<b>第 7 步</b>：插上<b>直角 USB-C 转接头</b>（凸出不超过 13 mm，线朝侧面出），线用扎带固定在托座的槽上，再绕过头顶走到脖子后面的 USB-C 口。盖回头顶盖。',
  '<b>第 8 步</b>：开机。相机<b>水平朝前</b>看访客。跑自检，再重新校准距离（见下面"装好以后怎么用"）。'
 ];
 const $=id=>document.getElementById(id);let i=0,timer=null,playing=true;

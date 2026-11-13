@@ -40,15 +40,17 @@ Commands: [`g1-lab-commands.html`](https://jiaxiwang05.github.io/Unitree/g1-lab-
 - [ ] Section 4 of the [session guide](https://jiaxiwang05.github.io/Unitree/g1-robot-session.html): a real visit, long talker, 90 s wrap-up, two people at once, Durham questions, `--roam`, the `--duplex` echo test.
 - [ ] Section 5: compare the two cameras (`greeter.spot_compare`), save the day's log, tune the thresholds.
 
-## Head bracket for the Brio (trial, added 12 November)
+## Head bracket for the Brio (trial, version 2 of 12 November)
 
-[`hardware/head_brio_mount`](../hardware/head_brio_mount/README.md): Unitree's renewed-head stereo camera mount with the tray replaced by a level Brio seat.
+[`hardware/head_brio_mount`](../hardware/head_brio_mount/README.md): Unitree's renewed-head stereo camera mount with the tray replaced by a crossbar under the brow, a plate up each side of the depth camera's window, and a level Brio seat above it. Backup to the head arch.
+
+Version 1 was wrong: once Unitree's own mount could be placed in the public head model (it fits in one spot only), version 1's camera cut 11 mm into the forehead and blocked 41% of the depth camera's sight lines to the talk spot. Version 2 clears the head by 3.1 mm and blocks none, in the model. Unitree's own tray blocks all of them.
 
 - [ ] Confirm the robot has the renewed head (88 mm) and find the two M4 threads Unitree's mount uses.
-- [ ] Print `head_brio_mount_print.stl` in PLA and hold it in the head: arms under the ring's top bar, seat in front of the ring, nothing touching.
-- [ ] Buy a right-angle USB-C adapter or cable (a straight plug does not fit behind the camera).
-- [ ] With the Brio fitted, run `--check` and read the `depth` line: does the head D435i still see the floor?
-- [x] Choice made on 12 November: **use the head arch** (`hardware/helmet_ring_mount`), because the Brio and the built-in depth camera can then both be used. This bracket stays as a backup; the steps above are only needed if it is ever tried.
+- [ ] Print `head_brio_mount_print.stl` in PLA and hold it in the head: arms out under the brow, crossbar just below it, plates either side of the face ring, nothing touching.
+- [ ] Buy a right-angle USB-C adapter that stands at most 13 mm off the camera.
+- [ ] With the Brio fitted, run `--check` and read the `depth` line: does the head D435i still see the floor? The model says yes; the public head may differ from the real one by a few millimetres.
+- [x] Choice made on 12 November: **use the head arch** (`hardware/helmet_ring_mount`), because the Brio and the built-in depth camera can then both be used. This bracket stays as a backup.
 
 ## Camera on the head with Blu Tack (stop-gap, 12 November)
 
