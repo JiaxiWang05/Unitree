@@ -68,7 +68,8 @@ Until the arch is printed, the camera can sit on top of the head, held with Blu 
 
 - [ ] Print `trial_feet_plate.stl` in PLA and fit the two feet on the shoulder rings. Are the rings fixed, or do they swivel or wobble?
 - [ ] If the feet fit: print `helmet_crown.stl`, `helmet_foot_left.stl` and `helmet_foot_right.stl` in PETG.
-- [ ] Buy the screws, nuts and foam in the arch's parts list.
+- [ ] Buy the screws, nuts and foam in the arch's parts list. Non-Amazon suppliers: [procurement guide](https://jiaxiwang05.github.io/Unitree/mic-camera-guide.html#shops).
+- [ ] Thumb screw head: Accu lists the M5 × 25 DIN 464 head as 20 × 11.5 mm, but `check_helmet_arch.py` models 16 × 9 mm. Re-run the check with the real size (set `THUMB_HEAD_D`, `THUMB_HEAD_H`) or hold a screw against the trial feet before buying.
 - [ ] The arch sits on the rings the gantry hooks use: take it off before hanging the robot, or fit it only when the robot stands or sits.
 - [ ] After fitting: `--check` (camera and depth lines), then `calibrate --stand-at 1 2 3`.
 - [ ] Known cost: each leg shades about 10° of the head lidar to the left and right. Test before any use of the lidar for walking or mapping.
