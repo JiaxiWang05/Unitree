@@ -39,6 +39,7 @@ talk-spot answers logged (`python -m greeter.spot_compare`); `--roam` pauses inv
 a person walks the robot with the remote (read-only leg-speed detection).
 
 **First robot session (11 Nov 2026), from the session's notes:**
+- Lab setup: robot `G1_06864`; lab Ubuntu laptop `adaptive@adaptive-Recoil-18`, wired port `enp213s0` (NetworkManager connection `g1`, manual `192.168.123.99/24`, no gateway), Wi-Fi `wlp131s0f0`. Passwords are not kept in this repo.
 - The robot was reached by cable from the lab Ubuntu laptop: laptop `192.168.123.99`, Jetson
   `192.168.123.164`, login `unitree`. A backup of the robot was made to `~/g1-backup` on the
   Ubuntu laptop.
