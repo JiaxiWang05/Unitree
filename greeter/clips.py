@@ -123,7 +123,15 @@ def to_clip(src: Path, dest: Path) -> None:
         samples = samples[: len(samples) // channels * channels].reshape(-1, channels).mean(axis=1).astype("<i2")
     pcm = samples.tobytes()
     if rate != 16000:
-        pcm = StreamResampler(rate, 16000).process(pcm)
+        try:  # fast C resampler: seconds for all 16 lines (Python 3.8-3.12)
+            import warnings
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                import audioop
+            pcm, _ = audioop.ratecv(pcm, 2, 1, rate, 16000, None)
+        except ImportError:  # Python 3.13+: the numpy filter (slow on the Jetson: minutes per line)
+            pcm = StreamResampler(rate, 16000).process(pcm)
     with wave.open(str(dest), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)

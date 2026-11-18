@@ -23,7 +23,20 @@ Status after the first robot session (11 November 2026). No OpenAI API key yet. 
 - The robot's clock is about 8 minutes behind the laptop (tar warnings during deploy). Harmless for now.
 - By mistake: a copy of this repo was cloned on the robot (`/home/unitree/Unitree`); unused, can be deleted.
 
+## Done on 18-19 November (session 2, continued)
+
+- Re-ran `deploy.sh` with the fixed `install.sh`: **the TensorRT engine built** (`yolo26n-pose.engine`, 8.7 MB, 885 s on the Orin NX; FP16 warnings about subnormal weights are harmless). A copy is in `~/g1-backup/` on the lab laptop.
+- The install then started the offline voice lines and was very slow: about 2.5 minutes per line, because the numpy resampler in `clips.to_clip` is slow on the Jetson. 11 of 16 lines were made when **the robot's battery ran out and it shut down** mid-install. The last clip on the robot may be cut short.
+- All 16 lines were then made on the lab laptop in seconds (espeak-ng, resampled with `audioop`), in `~/Unitree/models/clips/` there. `clips.py` now uses `audioop` too, so the robot will also make them in seconds.
+- Lab laptop, not the robot: an NVIDIA driver (570) module would not build for a new kernel (7.0.0-30), so four kernel packages are half-installed and every `apt install` retries the build. The laptop still runs its old kernel and works. Leave it to whoever looks after the laptop; don't reboot it into the new kernel.
+
 ## Next on the robot
+
+- [ ] Charge the robot first. Keep it on the charger or check the battery during long installs.
+- [ ] Restore the network (commands page step 7; both sides reset on every restart).
+- [ ] Copy the laptop's clips over: `scp ~/Unitree/models/clips/*.wav unitree@192.168.123.164:g1-greeter/models/clips/`
+- [ ] Check the engine survived the power cut: `md5sum` of `~/g1-greeter/models/yolo26n-pose.engine` on the robot against `~/g1-backup/yolo26n-pose.engine`; copy the backup over if they differ.
+
 
 - [ ] Re-run `scripts/deploy.sh unitree@192.168.123.164 --no-service` from the laptop (`git pull` first). The TensorRT step takes about 5 minutes with little output.
 - [ ] Commands page step 10: self-test with `--check-sound`, listen to the robot speaker, read the `depth` line.

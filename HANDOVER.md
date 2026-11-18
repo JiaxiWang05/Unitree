@@ -55,8 +55,10 @@ a person walks the robot with the remote (read-only leg-speed detection).
 **Second robot session (18 Nov 2026):** Brio arrived and is detected by the robot (video and
 mic). Robot internet through the laptop and the robot's apt are fixed (details in
 [`docs/TODO.md`](docs/TODO.md)). `setup-jetson.sh` is done; `deploy.sh` installed everything up to the
-TensorRT export, which failed for want of `onnx` on aarch64 + Python 3.8; `install.sh` is fixed
-but the deploy has not been re-run yet. Self-test, speaker and mic still to do.
+TensorRT export, which failed for want of `onnx` on aarch64 + Python 3.8. With `install.sh` fixed,
+the re-run built the TensorRT engine (885 s), then the robot's battery ran out while the slow
+offline voice lines were being made (now fixed in `clips.py`; all 16 were made on the laptop).
+Next: finish `deploy.sh`, then the self-test, speaker and mic.
 
 **Hardware:** bought a Logitech Brio 4K for Business (part 960-001746) and a CableCreation 1 m
 USB-C to USB-C cable (check both arrived). The head arch v2 is ready to print but not printed
