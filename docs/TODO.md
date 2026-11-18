@@ -12,6 +12,23 @@ Status after the first robot session (11 November 2026). No OpenAI API key yet. 
 - The webcam's built-in mic records clearly with `arecord` (ALSA card 0 on the robot).
 - Unitree Explore app: voice assistant in wake-up mode. chat_go was switched back on for a test; switch it off again.
 
+## Done on 18 November (session 2)
+
+- Brio 4K arrived and plugged straight into a neck-panel USB-C port. The robot sees it: video `/dev/v4l/by-id/usb-046d_Logitech_BRIO_BC9F0E13-video-index0`, mic `card 0: BRIO` (ALSA). The head D435i shows up too.
+- Robot internet through the laptop works, after three fixes: Docker on the laptop was blocking forwarding (`DOCKER-USER` accept, `FORWARD` policy accept); the robot's default route pointed at a missing 192.168.123.1 (now 192.168.123.99); the robot had no DNS (`resolvectl dns eth0 192.168.50.1 1.1.1.1`). The lab Wi-Fi blocks ping, so check with `curl`. Commands page step 7 updated.
+- Robot apt repaired: refreshed the expired ROS repository key, and removed `systemd-timesyncd` (pulled in by a July 2024 upgrade, it conflicted with Unitree's `chrony`, so apt could install nothing). `chrony` still keeps time with the internal board (.161). Don't run `apt upgrade` or `apt autoremove` on the robot.
+- `setup-jetson.sh` done (API key skipped).
+- `deploy.sh --no-service` installed uv, the venv, CUDA torch 2.2.0 (GPU seen: Orin), CycloneDDS 0.10, `unitree_sdk2py`, OpenCV and the YOLO26n-pose weights, then **stopped at the TensorRT export**: Ultralytics tried to install onnx, onnxslim and onnxruntime-gpu in one go, onnxruntime-gpu has no aarch64 + Python 3.8 wheel, so onnx never got installed. Fixed in `install.sh` (installs onnx and onnxslim first; a failed export now falls back to the `.pt` model instead of stopping the install). Not yet re-run on the robot.
+- The robot's clock is about 8 minutes behind the laptop (tar warnings during deploy). Harmless for now.
+- By mistake: a copy of this repo was cloned on the robot (`/home/unitree/Unitree`); unused, can be deleted.
+
+## Next on the robot
+
+- [ ] Re-run `scripts/deploy.sh unitree@192.168.123.164 --no-service` from the laptop (`git pull` first). The TensorRT step takes about 5 minutes with little output.
+- [ ] Commands page step 10: self-test with `--check-sound`, listen to the robot speaker, read the `depth` line.
+- [ ] Set `GREETER_MIC_DEVICE=BRIO` in `~/.config/g1-greeter/greeter.env` if the robot's own mic is still silent, then `--check` again.
+- [ ] Camera photo facing forward, floor marks, distance calibration, a `--scripted` visit (TEST-PLAN session 1).
+
 ## Problems found
 
 - [ ] **Built-in robot mic sends only zeros.** The multicast `239.168.123.161:5555` delivers 5 s of packets (163840 bytes), all silent, in wake-up mode with chat_go both on and off. Pressing L1 + L2 after setting the mode in the app toggles it off again. To try: speak the wake word first, keypad conversation mode, the firmware version in the app, [g1-audio-driver](https://github.com/experientialtech/g1-audio-driver).

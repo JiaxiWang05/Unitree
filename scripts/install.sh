@@ -131,8 +131,13 @@ mkdir -p "$APP/models"
   https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt
 YOLO_MODEL="$APP/models/yolo26n-pose.pt"
 if [ "$TENSORRT" = 1 ] && cuda_ok; then
+  # The export needs onnx (+ onnxslim). Install them here: Ultralytics would try to add onnxruntime-gpu
+  # in the same command, which has no wheel for aarch64 + Python 3.8, so none of the three got installed.
+  pinned "onnx>=1.12.0,<2.0.0" "onnxslim>=0.1.82" || pinned "onnx>=1.12.0,<2.0.0" ||
+    TODO+=("onnx not installed: no TensorRT engine, YOLO runs from the .pt file (slower)")
   [ -s "$APP/models/yolo26n-pose.engine" ] || (cd "$APP/models" && LD_LIBRARY_PATH="$EXTRA_LD" "$PY" -c \
-    "from ultralytics import YOLO; YOLO('yolo26n-pose.pt').export(format='engine', half=True, imgsz=640)")
+    "from ultralytics import YOLO; YOLO('yolo26n-pose.pt').export(format='engine', half=True, imgsz=640)") ||
+    TODO+=("TensorRT export failed (see above): YOLO runs from the .pt file, which works but is slower")
   [ -s "$APP/models/yolo26n-pose.engine" ] && YOLO_MODEL="$APP/models/yolo26n-pose.engine"
 fi
 

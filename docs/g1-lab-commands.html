@@ -111,9 +111,13 @@ EOF</pre><button type="button">Copy</button></div>
     <p class="note">Ubuntu shares its Wi-Fi with the robot over the cable (the laptop's Wi-Fi must be its default route; the wired port has no gateway). Asks for the <b>Ubuntu</b> password. It all resets when either machine reboots.</p>
     <span class="where ubu">UBUNTU</span>
     <div class="cmd"><pre>sudo sysctl -w net.ipv4.ip_forward=1 &amp;&amp; sudo iptables -t nat -A POSTROUTING -s 192.168.123.164 -o $(ip route | awk '/^default/ {print $5; exit}') -j MASQUERADE &amp;&amp; sudo iptables -I FORWARD -s 192.168.123.164 -j ACCEPT &amp;&amp; sudo iptables -I FORWARD -d 192.168.123.164 -j ACCEPT</pre><button type="button">Copy</button></div>
-    <div class="cmd"><pre>ssh -t unitree@192.168.123.164 'sudo ip route add default via 192.168.123.99; date; ping -c 2 8.8.8.8 &amp;&amp; ping -c 2 google.com'</pre><button type="button">Copy</button></div>
-    <p class="note">The robot password again, for sudo. Both pings should answer. If <code>8.8.8.8</code> answers but <code>google.com</code> fails, run this, then ping again:</p>
-    <div class="cmd"><pre>ssh -t unitree@192.168.123.164 'echo nameserver 8.8.8.8 | sudo tee /etc/resolv.conf'</pre><button type="button">Copy</button></div>
+    <p class="note">If Docker is installed on the laptop (it is on the lab one), it blocks forwarding. Also run:</p>
+    <div class="cmd"><pre>sudo iptables -I DOCKER-USER -j ACCEPT 2&gt;/dev/null; sudo iptables -P FORWARD ACCEPT</pre><button type="button">Copy</button></div>
+    <span class="where robot">ROBOT</span> <span class="note">(typed on the laptop; it runs on the robot)</span>
+    <div class="cmd"><pre>ssh -t unitree@192.168.123.164 'sudo ip route replace default via 192.168.123.99 dev eth0 &amp;&amp; sudo resolvectl dns eth0 192.168.50.1 1.1.1.1; date'</pre><button type="button">Copy</button></div>
+    <p class="note">The robot password, for sudo. The robot's default route pointed at 192.168.123.1, which does not exist; <code>192.168.50.1</code> is the lab router's DNS. <b>Don't test with ping:</b> the lab Wi-Fi blocks it, so it never answers. Test like this instead; any <code>HTTP/...</code> line means the robot is online:</p>
+    <div class="cmd"><pre>ssh unitree@192.168.123.164 'curl -sI --max-time 8 https://google.com | head -1'</pre><button type="button">Copy</button></div>
+    <p class="note">All of this resets when either machine restarts or the cable is replugged; run it again. On the robot, never run <code>apt upgrade</code> or <code>apt autoremove</code>.</p>
   </section>
 
   <section>
