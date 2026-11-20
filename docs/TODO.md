@@ -30,6 +30,15 @@ Status after the first robot session (11 November 2026). No OpenAI API key yet. 
 - All 16 lines were then made on the lab laptop in seconds (espeak-ng, resampled with `audioop`), in `~/Unitree/models/clips/` there. `clips.py` now uses `audioop` too, so the robot will also make them in seconds.
 - Lab laptop, not the robot: an NVIDIA driver (570) module would not build for a new kernel (7.0.0-30), so four kernel packages are half-installed and every `apt install` retries the build. The laptop still runs its old kernel and works. Leave it to whoever looks after the laptop; don't reboot it into the new kernel.
 
+## OpenRouter mode (added 20 November)
+
+The team chose OpenRouter credit (budget: [openrouter-budget.md](openrouter-budget.md)), so the program now has `GREETER_BACKEND=openrouter` beside the OpenAI realtime mode. Tested with a fake OpenRouter (74 tests on Hamilton), **not yet with a real key**.
+
+- [ ] Buy the credit, then store the key on the robot: `scripts/set-api-key.sh unitree@192.168.123.164 OPENROUTER_API_KEY` (typed by the user).
+- [ ] Add `GREETER_BACKEND=openrouter` to `~/.config/g1-greeter/greeter.env`; `--check` should show the key, `qwen/qwen3.8-omni-flash` and `hexgrad/kokoro-82m` as listed (if a model name is wrong, set `GREETER_OPENROUTER_MODEL` / `GREETER_OPENROUTER_TTS`).
+- [ ] Measure one turn on the laptop first: `python -m greeter.backends.openrouter --wav question.wav --jpeg view.jpg --out reply.wav` prints the delay to the first word and the cost.
+- [ ] On the robot, note the logged `first audio after ... s` for real visits and compare with the OpenAI realtime mode before the open day.
+
 ## Next on the robot
 
 - [ ] Charge the robot first. Keep it on the charger or check the battery during long installs.

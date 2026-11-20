@@ -32,7 +32,7 @@ from greeter.envfile import DEFAULT_ENV_FILE, load_env_file
 from greeter.vision import GreenConfig, SceneConfig
 
 REPO = Path(__file__).resolve().parent.parent
-BACKENDS = ("openai", "gemini", "local", "scripted")
+BACKENDS = ("openai", "gemini", "openrouter", "local", "scripted")
 BOTSORT_REID = Path(__file__).resolve().parent / "robot" / "botsort_reid.yaml"
 
 
@@ -133,6 +133,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     b.add_argument("--asr", choices=("whisper", "parakeet"), default="whisper")
     b.add_argument("--asr-model", default=env("GREETER_ASR_MODEL"), help="default base.en on the Jetson, small.en elsewhere")
     b.add_argument("--kokoro-voice", default="bf_emma")
+    b.add_argument("--openrouter-model", default=env("GREETER_OPENROUTER_MODEL", "qwen/qwen3.8-omni-flash"), help="hears + sees, replies in text")
+    b.add_argument("--openrouter-tts", default=env("GREETER_OPENROUTER_TTS", "hexgrad/kokoro-82m"), help="OpenRouter text-to-speech model")
+    b.add_argument("--openrouter-voice", default=env("GREETER_OPENROUTER_VOICE", "bf_emma"))
 
     d = p.add_argument_group("dialogue")
     d.add_argument("--invite", choices=INVITE_MODES, default=env("GREETER_INVITE", "anyone"),
@@ -225,6 +228,13 @@ def providers(args: argparse.Namespace):
         if not gemini_available():
             sys.exit("--backend gemini needs GEMINI_API_KEY and google-genai (Python 3.10+)")
         chain.append(gemini())
+    elif backend == "openrouter":
+        if not _has("OPENROUTER_API_KEY"):
+            sys.exit("OPENROUTER_API_KEY is not set. Put it in %s (scripts/set-api-key.sh unitree@<robot> OPENROUTER_API_KEY)." % args.env_file)
+        from greeter.backends.openrouter import OpenRouterBackend
+
+        chain.append(("openrouter:" + args.openrouter_model, lambda: OpenRouterBackend(
+            model=args.openrouter_model, tts_model=args.openrouter_tts, voice=args.openrouter_voice, system_prompt=persona)))
     elif not _has("OPENAI_API_KEY"):
         sys.exit("OPENAI_API_KEY is not set. Put it in %s (README: What the human does), or try --scripted." % args.env_file)
     if backend in ("openai", "gemini") and _has("OPENAI_API_KEY"):

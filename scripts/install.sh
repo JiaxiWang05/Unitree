@@ -195,7 +195,10 @@ if [ ! -f "$ENVF" ]; then
 # g1-greeter settings. KEY=value, one per line. Read by the service and by `python -m greeter`.
 # The human sets the API key (setup-jetson.sh or scripts/set-api-key.sh); never put it in code.
 OPENAI_API_KEY=
-# GREETER_BACKEND=openai        # openai | gemini | local
+# GREETER_BACKEND=openai        # openai | openrouter | gemini | local | scripted
+# OPENROUTER_API_KEY=           # for GREETER_BACKEND=openrouter (scripts/set-api-key.sh ... OPENROUTER_API_KEY)
+# GREETER_OPENROUTER_MODEL=qwen/qwen3.8-omni-flash
+# GREETER_OPENROUTER_TTS=hexgrad/kokoro-82m
 # GREETER_OPENAI_VOICE=marin
 # GREETER_VOLUME=80
 # GREETER_DIST_K=160            # set by: python -m greeter.robot.calibrate --stand-at 1 2 3
@@ -214,7 +217,7 @@ fi
 set_default GREETER_YOLO_MODEL "$YOLO_MODEL"
 [ "$CPU_TORCH" = 1 ] && set_default GREETER_IMGSZ 416
 [ "$WITH_LOCAL" = 1 ] && [ "$PYV" -ge 310 ] && set_default GREETER_VLM qwen3-vl:2b-instruct
-grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted)' "$ENVF" ||
+grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted|openrouter)' "$ENVF" ||
   TODO+=("OPENAI_API_KEY is empty: the human runs scripts/set-api-key.sh $USER@<jetson> on the laptop")
 
 if grep -q '^OPENAI_API_KEY=.' "$ENVF"; then
@@ -253,7 +256,7 @@ WantedBy=default.target
 EOF
   systemctl --user daemon-reload
   systemctl --user enable g1-greeter >/dev/null
-  if grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted)' "$ENVF"; then
+  if grep -q '^OPENAI_API_KEY=.' "$ENVF" || grep -q -E '^GREETER_BACKEND=(local|scripted|openrouter)' "$ENVF"; then
     systemctl --user restart g1-greeter
     sleep 3
     systemctl --user --no-pager --lines=5 status g1-greeter || true

@@ -90,6 +90,26 @@ def check_backend(args) -> None:
             return
         ok = any(n == args.vlm or n == args.vlm + ":latest" for n in names)
         report("PASS" if ok else "FAIL", "ollama", "%s %s" % (args.vlm, "pulled" if ok else "missing: ollama pull " + args.vlm))
+    elif backend == "openrouter":
+        key = os.environ.get("OPENROUTER_API_KEY")
+        report("PASS" if key else "FAIL", "api key", "OPENROUTER_API_KEY " + mask(key))
+        if not key:
+            return
+        try:
+            code, body = _get("https://openrouter.ai/api/v1/key", {"Authorization": "Bearer " + key})
+            _, models = _get("https://openrouter.ai/api/v1/models", {})
+        except OSError as exc:
+            report("FAIL", "internet", "cannot reach openrouter.ai: %s" % exc)
+            return
+        if code != 200:
+            report("FAIL", "openrouter", "key rejected (HTTP %d): check the key and the credit" % code)
+            return
+        try:
+            ids = {m.get("id") for m in json.loads(models).get("data", [])}
+        except ValueError:
+            ids = set()
+        for name in (args.openrouter_model, args.openrouter_tts):
+            report("PASS" if name in ids else "WARN", "openrouter", "%s %s" % (name, "listed" if name in ids else "not in the model list: check the name on openrouter.ai/models"))
     else:
         report("PASS", "backend", "scripted (no network needed)")
 

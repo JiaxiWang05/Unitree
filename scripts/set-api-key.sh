@@ -4,6 +4,7 @@
 #
 #   scripts/set-api-key.sh unitree@<jetson-address>                  # OPENAI_API_KEY
 #   scripts/set-api-key.sh unitree@<jetson-address> GEMINI_API_KEY   # optional Gemini backend
+#   scripts/set-api-key.sh unitree@<jetson-address> OPENROUTER_API_KEY   # GREETER_BACKEND=openrouter
 set -euo pipefail
 HOST=${1:?usage: $0 user@jetson [OPENAI_API_KEY|GEMINI_API_KEY]}
 NAME=${2:-OPENAI_API_KEY}

@@ -368,6 +368,7 @@ Other scenarios: `--depth-scenario walkby | bag | empty`.
 | 1 | OpenAI `gpt-realtime-2.1` | Default. Raw WebSocket (works on Python 3.8). Reasoning effort `minimal`, semantic VAD, voice `marin`. Reconnects once and re-seeds the conversation if the socket drops. Truncates the reply at what was actually heard on barge-in. |
 | 2 | Gemini `gemini-3.8-live` | Only if `GEMINI_API_KEY` is set and google-genai is installed (Python 3.10+). Speaks first with `send_client_content(turn_complete=True)`. Context compression and session resumption are on. |
 | 3 | OpenAI `gpt-realtime-2.1-mini` | |
+| or | OpenRouter (`GREETER_BACKEND=openrouter`) | Turn by turn, no realtime connection: an omni model (default `qwen/qwen3.8-omni-flash`) hears the visitor's audio and sees the frame, streams a text reply, and an OpenRouter speech model (default Kokoro) says it sentence by sentence; espeak-ng if speech fails. Needs `OPENROUTER_API_KEY`. Half duplex, about 1.5-3 s before the robot answers. Budget: [`docs/openrouter-budget.md`](docs/openrouter-budget.md). One test turn from a recording: `python -m greeter.backends.openrouter --wav q.wav` |
 | 4 | ~15 pre-recorded clips | Same voice. The last resort says "my cloud brain has dropped out, please ask one of the team". |
 
 - **Moving down the chain:** a 429, spend-limit, quota or auth error moves to
