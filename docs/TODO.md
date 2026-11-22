@@ -30,27 +30,35 @@ Status after the first robot session (11 November 2026). No OpenAI API key yet. 
 - All 16 lines were then made on the lab laptop in seconds (espeak-ng, resampled with `audioop`), in `~/Unitree/models/clips/` there. `clips.py` now uses `audioop` too, so the robot will also make them in seconds.
 - Lab laptop, not the robot: an NVIDIA driver (570) module would not build for a new kernel (7.0.0-30), so four kernel packages are half-installed and every `apt install` retries the build. The laptop still runs its old kernel and works. Leave it to whoever looks after the laptop; don't reboot it into the new kernel.
 
-## OpenRouter mode (added 20 November)
+## OpenRouter mode (added 20 November, reviewed 22 November)
 
-The team chose OpenRouter credit (budget: [openrouter-budget.md](openrouter-budget.md)), so the program now has `GREETER_BACKEND=openrouter` beside the OpenAI realtime mode. Tested with a fake OpenRouter (74 tests on Hamilton), **not yet with a real key**.
+`GREETER_BACKEND=openrouter` sits beside the OpenAI realtime mode. On 22 Nov it was checked against OpenRouter's live API and docs and against the app; 28 confirmed problems were fixed, among them: speech asked for `wav` (OpenRouter offers only `pcm`/`mp3`, so Kokoro was never used); the espeak fallback froze the app for minutes per sentence; a goodbye started a second reply on top of the first; the 20 s cut-in threw the visitor's speech away; a cough started a 30 s recording; replies could be spoken twice; Gemini's compulsory reasoning could use up the reply; notes went out as extra system messages, which some models refuse. 80 tests pass (fake OpenRouter). **Still not run with a real key.**
 
-- [ ] Buy the credit, then store the key on the robot: `scripts/set-api-key.sh unitree@192.168.123.164 OPENROUTER_API_KEY` (typed by the user).
-- [ ] Add `GREETER_BACKEND=openrouter` to `~/.config/g1-greeter/greeter.env`; `--check` should show the key, `qwen/qwen3.8-omni-flash` and `hexgrad/kokoro-82m` as listed (if a model name is wrong, set `GREETER_OPENROUTER_MODEL` / `GREETER_OPENROUTER_TTS`).
-- [ ] Measure one turn on the laptop first: `python -m greeter.backends.openrouter --wav question.wav --jpeg view.jpg --out reply.wav` prints the delay to the first word and the cost.
-- [ ] On the robot, note the logged `first audio after ... s` for real visits and compare with the OpenAI realtime mode before the open day.
+Things only a real key will show (check on the first turn):
+- that `reasoning: {enabled: false}` really switches Qwen's reasoning off (the logged usage should show no reasoning tokens);
+- that OpenRouter passes the WAV audio on to Alibaba correctly (the log's `visitor:` lines show what it heard);
+- the speech sample rate (`--check` prints it).
 
-## Next on the robot
+**Data protection:** `qwen/qwen3.8-omni-flash` has one provider, Alibaba, with data centres in Singapore and China, and no zero-data-retention option. If the ethics or data-protection review requires zero data retention (an OpenRouter privacy setting), Qwen cannot be used; use Gemini 3.8 Flash (Google Vertex) instead: `GREETER_OPENROUTER_MODEL=google/gemini-3.8-flash`.
 
-- [ ] Charge the robot first. Keep it on the charger or check the battery during long installs.
-- [ ] Restore the network (commands page step 7; both sides reset on every restart).
-- [ ] Copy the laptop's clips over: `scp ~/Unitree/models/clips/*.wav unitree@192.168.123.164:g1-greeter/models/clips/`
-- [ ] Check the engine survived the power cut: `md5sum` of `~/g1-greeter/models/yolo26n-pose.engine` on the robot against `~/g1-backup/yolo26n-pose.engine`; copy the backup over if they differ.
+## Next on the robot (in person)
 
+Bring: the lab Ubuntu laptop, Ethernet cable, robot remote (charged), Brio and its USB-C cable, Blu Tack and tape, floor tape and a tape measure, headphones.
 
-- [ ] Re-run `scripts/deploy.sh unitree@192.168.123.164 --no-service` from the laptop (`git pull` first). The TensorRT step takes about 5 minutes with little output.
-- [ ] Commands page step 10: self-test with `--check-sound`, listen to the robot speaker, read the `depth` line.
-- [ ] Set `GREETER_MIC_DEVICE=BRIO` in `~/.config/g1-greeter/greeter.env` if the robot's own mic is still silent, then `--check` again.
-- [ ] Camera photo facing forward, floor marks, distance calibration, a `--scripted` visit (TEST-PLAN session 1).
+1. [ ] Charge the robot; hang it on the gantry. Keep the remote in hand (damping: L2 + B).
+2. [ ] Ethernet from the laptop to the robot; on the laptop `nmcli con up g1`, then `ping -c 2 192.168.123.164`.
+3. [ ] Restore the robot's internet (commands page step 7, laptop side first); check with `ssh unitree@192.168.123.164 'curl -sI --max-time 8 https://google.com | head -1'`.
+4. [ ] Check the TensorRT engine survived the power cut: `md5sum` of `~/g1-greeter/models/yolo26n-pose.engine` on the robot against `~/g1-backup/yolo26n-pose.engine`; copy the backup over if they differ.
+5. [ ] Copy the voice lines made on the laptop: `scp ~/Unitree/models/clips/*.wav unitree@192.168.123.164:g1-greeter/models/clips/`
+6. [ ] `cd ~/Unitree && git pull && scripts/deploy.sh unitree@192.168.123.164 --no-service` (finishes the install; voice lines now take seconds).
+7. [ ] Brio on the head top with Blu Tack, lens level and facing forward, cable taped down; take a test photo (commands page step 3).
+8. [ ] Self-test: `ssh unitree@192.168.123.164 'cd ~/g1-greeter && .venv/bin/python -m greeter --check --check-sound --scripted'`. Listen for the robot saying "Hello! Lovely to meet you." Note the `depth` and `mic` lines.
+9. [ ] Microphone: if the robot's own mic is still silent, add `GREETER_MIC_DEVICE=BRIO` to `~/.config/g1-greeter/greeter.env` and run the self-test again.
+10. [ ] Mic level for turn-taking: run the self-test once in silence and once while someone talks at 1 m; speech should be well above -38 dBFS and the quiet room well below. If not, set `GREETER_OPENROUTER_SPEECH_DBFS` in the settings file.
+11. [ ] Floor tape: talk spot 0.6-1.4 m in front, marks at 1, 2 and 3 m; then `.venv/bin/python -m greeter.robot.calibrate --stand-at 1 2 3`.
+12. [ ] A full visit in `--scripted` mode (free): lights, invitation, reply, goodbye.
+13. [ ] When the OpenRouter credit is bought: `scripts/set-api-key.sh unitree@192.168.123.164 OPENROUTER_API_KEY` (you type the key), add `GREETER_BACKEND=openrouter` to the settings file, run `--check` (key, credit, model names, one speech request), then talk to it and note `first audio after ... s` in the log.
+14. [ ] Before leaving: save the day's log if the service ran (`journalctl --user -u g1-greeter --since today > ~/g1-greeter/today.log`), copy `~/g1-backup` to a USB stick, L2 + B, switch off.
 
 ## Problems found
 
