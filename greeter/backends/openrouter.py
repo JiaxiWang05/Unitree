@@ -103,6 +103,14 @@ def split_heard(text: str) -> Tuple[Optional[str], str, bool]:
     return stripped[1:end].strip(), stripped[end + 1 :].lstrip(), True
 
 
+def reasoning_for(model: str) -> dict:
+    """Reasoning slows the first word and is billed as output. Gemini 3.x Flash cannot switch it
+    off, so keep it low; Qwen Omni and the others reason by default unless told not to."""
+    if model.startswith("google/gemini"):
+        return {"effort": "low", "exclude": True}
+    return {"enabled": False}
+
+
 class OpenRouterError(RuntimeError):
     def __init__(self, status: int, message: str) -> None:
         super().__init__("OpenRouter HTTP %d: %s" % (status, message))
@@ -131,7 +139,7 @@ class OpenRouterClient:
     def stream_chat(self, model: str, messages: List[dict], max_tokens: int = 160) -> Iterator[Tuple[str, Optional[dict]]]:
         """Yields (text piece, usage or None) as the reply streams in."""
         body = {"model": model, "messages": messages, "stream": True, "max_tokens": max_tokens,
-                "temperature": 0.7, "usage": {"include": True}}
+                "temperature": 0.7, "usage": {"include": True}, "reasoning": reasoning_for(model)}
         with self._request("/chat/completions", body) as resp:
             for raw in resp:
                 line = raw.decode("utf-8", "replace").strip()

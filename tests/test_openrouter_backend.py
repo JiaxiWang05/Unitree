@@ -132,3 +132,8 @@ def test_cli_openrouter_needs_its_key(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test")
     names = [n for n, _ in cli.providers(cli.parse_args(["--backend", "openrouter"]))]
     assert names[0] == "openrouter:qwen/qwen3.8-omni-flash"
+
+
+def test_reasoning_kept_out_of_the_way():
+    assert orb.reasoning_for("qwen/qwen3.8-omni-flash") == {"enabled": False}
+    assert orb.reasoning_for("google/gemini-3.8-flash")["effort"] == "low"

@@ -1,42 +1,22 @@
-# AI model budget for the Open Day robot: £100 of OpenRouter credit
+# Request: £100 of OpenRouter AI credit for the Open Day robot
 
-Prepared 22 November 2026. The full workbook, with every formula and source, is
-[`openrouter-budget.xlsx`](openrouter-budget.xlsx).
+Workbook: [`openrouter-budget.xlsx`](openrouter-budget.xlsx) (one-page Budget sheet, details in Workings).
 
-**Request:** £100 of prepaid credit on [OpenRouter](https://openrouter.ai), one account for models
-from OpenAI, Google, Alibaba (Qwen), Mistral, ElevenLabs and others. Prepaid, so spending cannot
-exceed it. The team picks the models during development.
+Lets the robot listen, see and talk to visitors. Prepaid, with auto top-up off, so nothing more can
+be charged. **Planned: 16 hours of conversation; even the dearest option buys 19 hours, so £100 is
+enough.**
 
-Each time a visitor finishes speaking, the robot sends their speech and one camera image, gets a
-short text reply, and turns it into speech.
+| Option | AI models (understand / speak) | Per hour of non-stop talk | Hours for £100 (after fee) |
+|---|---|---|---|
+| A | GPT Audio + Gemini 3.8 Flash / ElevenLabs v4 | £4.86 | 19 |
+| B | Gemini 3.8 Flash / ElevenLabs v4 Turbo | £1.71 | 55 |
+| C | Qwen3.8 Omni Flash / Voxtral TTS 3 | £0.34 | 277 |
+| D | Qwen3.8 Omni Flash / Kokoro | £0.09 | 1,001 |
 
-## Cost of one hour of non-stop conversation
+Planned use with option A: development and testing (now to 4 Dec, 10 h) £48.58, Open Day (6 h)
+£29.15, OpenRouter fee (5.5%) £5.50, spare £16.77. Total £100.00.
 
-| Option | Hears and replies | Sees the camera | Voice | Per hour | Hours for £100 |
-|---|---|---|---|---|---|
-| A Premium | OpenAI GPT Audio | Gemini 3.8 Flash (GPT Audio takes no images) | ElevenLabs v4 | £4.46 | 21 |
-| B High | Gemini 3.8 Flash | same model | ElevenLabs v4 Turbo | £1.35 | 70 |
-| C Balanced | Qwen3.8 Omni Flash | same model | Voxtral TTS 3 | £0.36 | 263 |
-| D Budget | Qwen3.8 Omni Flash | same model | Kokoro | £0.11 | 844 |
-
-With option A, £100 covers development and testing (about 10 h, £44.64) and one Open Day (about
-6 h, £26.78), leaving £23.07 after OpenRouter's 5.5% fee.
-
-## Checked
-
-- Model names, input types and prices: OpenRouter's live model list
-  (`https://openrouter.ai/api/v1/models`, and `?output_modalities=speech` for voices), 22 Nov 2026.
-- Fee: 5.5% ($0.80 minimum) on credit purchases, non-refundable
-  ([OpenRouter FAQ](https://openrouter.ai/docs/faq)).
-- Pound to dollar: 1.3125, ECB reference rate, 20 Nov 2026.
-
-## Estimates (editable in the workbook's Assumptions sheet)
-
-240 turns an hour, 7.5 s of visitor speech per turn with the last four turns sent each time,
-2,000 text tokens in and 60 out per turn, 27,000 characters of robot speech an hour; audio tokens per
-second (OpenAI 10, Gemini 32, Qwen 25) and tokens per image (Gemini 258, Qwen about 400). A real
-open-day hour has gaps between visitors, so it costs less. The robot's software logs the real cost
-of every conversation.
-
-Visitors' speech and images go through OpenRouter to the chosen provider: cover this in the data
-protection and ethics approval.
+Prices checked on OpenRouter on 22 Nov 2026 and independently re-checked (prices, model inputs,
+fee, exchange rate, token rates from Google and Alibaba documentation); hours of use are estimates.
+Visitors' voices and camera images would go to AI companies via OpenRouter; it will be used with
+visitors only once ethics and data-protection approval is in place.
