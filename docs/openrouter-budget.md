@@ -1,70 +1,42 @@
 # AI model budget for the Open Day robot: £100 of OpenRouter credit
 
-Prepared 20 November 2026 for the Unitree G1 Open Day greeter (Durham University).
+Prepared 22 November 2026. The full workbook, with every formula and source, is
+[`openrouter-budget.xlsx`](openrouter-budget.xlsx).
 
-## What is being bought
+**Request:** £100 of prepaid credit on [OpenRouter](https://openrouter.ai), one account for models
+from OpenAI, Google, Alibaba (Qwen), Mistral, ElevenLabs and others. Prepaid, so spending cannot
+exceed it. The team picks the models during development.
 
-**£100 of prepaid credit on [OpenRouter](https://openrouter.ai)**, one account that gives access to
-models from OpenAI, Google, Alibaba (Qwen), Mistral, ElevenLabs and others at their published prices.
-Credit is prepaid, so spending can never exceed what was bought, and unused credit stays on the
-account. The team chooses the models during development; the options below show what the credit buys.
+Each time a visitor finishes speaking, the robot sends their speech and one camera image, gets a
+short text reply, and turns it into speech.
 
-## What the robot sends to the models
+## Cost of one hour of non-stop conversation
 
-Each time a visitor finishes speaking, the robot sends:
+| Option | Hears and replies | Sees the camera | Voice | Per hour | Hours for £100 |
+|---|---|---|---|---|---|
+| A Premium | OpenAI GPT Audio | Gemini 3.8 Flash (GPT Audio takes no images) | ElevenLabs v4 | £4.46 | 21 |
+| B High | Gemini 3.8 Flash | same model | ElevenLabs v4 Turbo | £1.35 | 70 |
+| C Balanced | Qwen3.8 Omni Flash | same model | Voxtral TTS 3 | £0.36 | 263 |
+| D Budget | Qwen3.8 Omni Flash | same model | Kokoro | £0.11 | 844 |
 
-- **the visitor's speech** (a few seconds of audio, plus the last three turns for context),
-- **one camera image** (640 × 480), so the robot can mention what the visitor is wearing,
-- **the conversation so far as text**,
+With option A, £100 covers development and testing (about 10 h, £44.64) and one Open Day (about
+6 h, £26.78), leaving £23.07 after OpenRouter's 5.5% fee.
 
-and gets back a short text reply, which a **text-to-speech model** turns into the robot's voice.
+## Checked
 
-## Cost per hour of continuous conversation
+- Model names, input types and prices: OpenRouter's live model list
+  (`https://openrouter.ai/api/v1/models`, and `?output_modalities=speech` for voices), 22 Nov 2026.
+- Fee: 5.5% ($0.80 minimum) on credit purchases, non-refundable
+  ([OpenRouter FAQ](https://openrouter.ai/docs/faq)).
+- Pound to dollar: 1.3125, ECB reference rate, 20 Nov 2026.
 
-Assumptions: one hour of non-stop conversation, visitor and robot each speaking half the time, a
-new turn every 15 s (240 turns an hour), about 27,000 characters of robot speech an hour. A real
-open-day hour has gaps between visitors, so it costs less. Prices are OpenRouter's listed prices in
-US dollars per million tokens or characters on 20 November 2026.
+## Estimates (editable in the workbook's Assumptions sheet)
 
-| | Premium | Balanced | Budget |
-|---|---|---|---|
-| Hears + sees + replies | OpenAI GPT Audio (+ a vision model for the image¹) | OpenAI GPT Audio Mini (+ vision model¹) | Qwen3.8 Omni Flash (hears and sees in one call) |
-| Speech in (2 h of audio sent an hour) | $2.30 | $0.04 | $0.03 |
-| Images (240 frames) | $0.48 | $0.12 | $0.02 |
-| Conversation text in and replies out | $1.34 | $0.32 | $0.08 |
-| Voice (text to speech) | ElevenLabs v3: $2.16 | ElevenLabs Flash v2.5: $1.08 | Kokoro: $0.03 |
-| **Total per hour** | **about $6.30 (£5)** | **about $1.60 (£1.30)** | **about $0.15 (£0.12)** |
-| **Hours of conversation for £100** | **about 19 h** | **about 75 h** | **over 700 h** |
+240 turns an hour, 7.5 s of visitor speech per turn with the last four turns sent each time,
+2,000 text tokens in and 60 out per turn, 27,000 characters of robot speech an hour; audio tokens per
+second (OpenAI 10, Gemini 32, Qwen 25) and tokens per image (Gemini 258, Qwen about 400). A real
+open-day hour has gaps between visitors, so it costs less. The robot's software logs the real cost
+of every conversation.
 
-Unit prices used: GPT Audio $32 / M audio-input tokens, $2.50 / M text and image input, $10 / M text
-output; GPT Audio Mini $0.60 / M input, $2.40 / M output; Qwen3.8 Omni Flash $0.15 / M input,
-$0.47 / M output; ElevenLabs v3 $80, ElevenLabs Flash v2.5 $40, Kokoro $0.99 per million characters.
-Token counts: about 10 audio tokens per second (OpenAI), 25 (Qwen); 400-800 tokens per image.
-OpenRouter adds a fee of about 5.5% when credit is bought; £100 ≈ $120 of usable credit.
-
-¹ The GPT Audio models take audio and text but not images, so with them the camera frame goes to a separate vision model; the image row prices it at the same input rate. Qwen3.8 Omni Flash takes audio, images and text in one request, which is why the robot's software uses it by default.
-
-## How £100 would be used (premium models, the most expensive case)
-
-| Stage | Conversation time | Cost |
-|---|---|---|
-| Development and testing on the robot (22 Nov - 4 Dec) | about 10 h, including repeated tests | about $63 (£50) |
-| Open Day, one full day | about 6 h of actual conversation | about $38 (£30) |
-| Contingency (second day, retests, price changes) | | about $20 (£15) |
-| **Total** | | **about £95-100** |
-
-With the balanced or budget models the same £100 lasts several open days.
-
-## Notes
-
-- These are estimates; the robot's software logs the actual cost of every conversation, so real
-  figures will be available after the first tests.
-- Visitors' speech and images pass through OpenRouter to the chosen model provider. This should be
-  covered in the project's data-protection and ethics paperwork. OpenRouter lets an account restrict
-  requests to providers that do not train on or keep the data.
-- Sources: OpenRouter model pages for
-  [GPT Audio](https://openrouter.ai/openai/gpt-audio),
-  [GPT Audio Mini](https://openrouter.ai/openai/gpt-audio-mini),
-  [ElevenLabs v3](https://openrouter.ai/elevenlabs/eleven-v3),
-  [ElevenLabs Flash v2.5](https://openrouter.ai/elevenlabs/eleven-flash-v2.5),
-  [Kokoro](https://openrouter.ai/hexgrad/kokoro-82m), and the Qwen3.8 Omni Flash listing.
+Visitors' speech and images go through OpenRouter to the chosen provider: cover this in the data
+protection and ethics approval.
