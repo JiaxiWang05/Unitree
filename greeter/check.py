@@ -95,21 +95,38 @@ def check_backend(args) -> None:
         report("PASS" if key else "FAIL", "api key", "OPENROUTER_API_KEY " + mask(key))
         if not key:
             return
+        auth = {"Authorization": "Bearer " + key}
         try:
-            code, body = _get("https://openrouter.ai/api/v1/key", {"Authorization": "Bearer " + key})
-            _, models = _get("https://openrouter.ai/api/v1/models", {})
+            code, body = _get("https://openrouter.ai/api/v1/key", auth)
+            _, models = _get("https://openrouter.ai/api/v1/models?output_modalities=all", {}, timeout=20.0)
         except OSError as exc:
             report("FAIL", "internet", "cannot reach openrouter.ai: %s" % exc)
             return
         if code != 200:
-            report("FAIL", "openrouter", "key rejected (HTTP %d): check the key and the credit" % code)
+            report("FAIL", "openrouter", "key rejected (HTTP %d): check the key" % code)
             return
+        try:
+            info = json.loads(body).get("data", {})
+        except ValueError:
+            info = {}
+        if info.get("is_free_tier"):
+            report("WARN", "openrouter", "key works, but no credit has been bought on this account yet")
+        else:
+            report("PASS", "openrouter", "key works")
         try:
             ids = {m.get("id") for m in json.loads(models).get("data", [])}
         except ValueError:
             ids = set()
         for name in (args.openrouter_model, args.openrouter_tts):
-            report("PASS" if name in ids else "WARN", "openrouter", "%s %s" % (name, "listed" if name in ids else "not in the model list: check the name on openrouter.ai/models"))
+            listed = name in ids
+            report("PASS" if listed else "FAIL", "openrouter", "%s %s" % (name, "listed" if listed else "not on OpenRouter: check the name at openrouter.ai/models"))
+        try:  # one tiny real speech request: the part most likely to differ from the docs
+            from greeter.backends.openrouter import OpenRouterClient
+
+            pcm, rate = OpenRouterClient(key, timeout=20.0).speech(args.openrouter_tts, "Hello.", args.openrouter_voice)
+            report("PASS", "openrouter", "speech: %.1f s of audio at %d Hz from %s" % (len(pcm) / 2.0 / rate, rate, args.openrouter_tts))
+        except Exception as exc:
+            report("WARN", "openrouter", "speech request failed (%s): the robot will use espeak-ng instead" % exc)
     else:
         report("PASS", "backend", "scripted (no network needed)")
 
