@@ -30,6 +30,15 @@ Status after the first robot session (11 November 2026). No OpenAI API key yet. 
 - All 16 lines were then made on the lab laptop in seconds (espeak-ng, resampled with `audioop`), in `~/Unitree/models/clips/` there. `clips.py` now uses `audioop` too, so the robot will also make them in seconds.
 - Lab laptop, not the robot: an NVIDIA driver (570) module would not build for a new kernel (7.0.0-30), so four kernel packages are half-installed and every `apt install` retries the build. The laptop still runs its old kernel and works. Leave it to whoever looks after the laptop; don't reboot it into the new kernel.
 
+## Done on 25 November (session 3)
+
+- Laptop to robot by cable, SSH and the robot's internet work. Brio and the head D435i are detected; the runtime is `/home/unitree/g1-greeter` (its `.venv/bin/python`).
+- Self-test: camera PASS, YOLO 21 ms/frame with TensorRT, **depth PASS** (floor fit 48.6 deg, height 1.31 m), robot SDK PASS (volume 100).
+- `models/clips/recorded.wav` was 0 bytes (made when the battery died) and crashed the clip loader with `EOFError`; replaced by hand. `clips.load` now skips a broken clip instead of crashing.
+- **Robot speaker: silent.** The self-test reaches `PlayStream` with no error, but nothing is heard. Next: `.venv/bin/python scripts/speaker_test.py` on the robot (LED, the robot's own TtsMaker voice, then our PlayStream, each with its return code) to tell a speaker/volume/voice-service problem from a problem in how we send audio.
+- Built-in mic still all zeros (no packets or silent packets); wake-up mode with L1 + L2 not yet confirmed. The Brio mic (`card 0: BRIO`) works.
+- The robot's copy of the code is 11 commits behind: run `deploy.sh` from the laptop to bring `~/g1-greeter` up to date.
+
 ## OpenRouter mode (added 20 November, reviewed 22 November)
 
 `GREETER_BACKEND=openrouter` sits beside the OpenAI realtime mode. On 22 Nov it was checked against OpenRouter's live API and docs and against the app; 28 confirmed problems were fixed, among them: speech asked for `wav` (OpenRouter offers only `pcm`/`mp3`, so Kokoro was never used); the espeak fallback froze the app for minutes per sentence; a goodbye started a second reply on top of the first; the 20 s cut-in threw the visitor's speech away; a cough started a 30 s recording; replies could be spoken twice; Gemini's compulsory reasoning could use up the reply; notes went out as extra system messages, which some models refuse. 80 tests pass (fake OpenRouter). **Still not run with a real key.**

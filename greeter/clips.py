@@ -56,11 +56,17 @@ def load(directory: Path = DEFAULT_DIR) -> Dict[str, bytes]:
         path = Path(directory) / (name + ".wav")
         if not path.is_file():
             continue
-        with wave.open(str(path), "rb") as w:
-            if w.getframerate() != 16000 or w.getnchannels() != 1 or w.getsampwidth() != 2:
-                log.warning("skipping %s: not 16 kHz mono 16-bit", path)
-                continue
-            clips[name] = w.readframes(w.getnframes())
+        try:  # a clip cut short (e.g. the robot lost power while making it) must not stop everything
+            with wave.open(str(path), "rb") as w:
+                if w.getframerate() != 16000 or w.getnchannels() != 1 or w.getsampwidth() != 2:
+                    log.warning("skipping %s: not 16 kHz mono 16-bit", path)
+                    continue
+                pcm = w.readframes(w.getnframes())
+        except (EOFError, wave.Error, OSError) as exc:
+            log.warning("skipping %s: unreadable (%s); delete it and it will be made again", path, exc)
+            continue
+        if pcm:
+            clips[name] = pcm
     return clips
 
 

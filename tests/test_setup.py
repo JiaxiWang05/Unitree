@@ -265,3 +265,13 @@ def test_library_path_only_adds_folders_that_exist(tmp_path):
     lib.mkdir(parents=True)
     assert libpath.missing(tmp_path, "/usr/lib") == [str(lib)]
     assert libpath.missing(tmp_path, "/usr/lib:%s" % lib) == []
+
+
+def test_a_broken_clip_is_skipped(tmp_path):
+    from greeter import clips
+
+    (tmp_path / "recorded.wav").write_bytes(b"")  # cut short by a power cut
+    with wave.open(str(tmp_path / "hello.wav"), "wb") as w:
+        w.setnchannels(1), w.setsampwidth(2), w.setframerate(16000)
+        w.writeframes(b"\x01\x00" * 160)
+    assert list(clips.load(tmp_path)) == ["hello"]
