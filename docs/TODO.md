@@ -52,22 +52,19 @@ Things only a real key will show (check on the first turn):
 
 ## Next on the robot (in person)
 
-Bring: the lab Ubuntu laptop, Ethernet cable, robot remote (charged), Brio and its USB-C cable, Blu Tack and tape, floor tape and a tape measure, headphones.
+Bring: the lab Ubuntu laptop, Ethernet cable, robot remote (charged), Brio and its USB-C cable, Blu Tack and tape, floor tape and a tape measure, headphones. Done on 25 Nov and not repeated: TensorRT engine (loads fine), voice lines (valid).
 
-1. [ ] Charge the robot; hang it on the gantry. Keep the remote in hand (damping: L2 + B).
-2. [ ] Ethernet from the laptop to the robot; on the laptop `nmcli con up g1`, then `ping -c 2 192.168.123.164`.
-3. [ ] Restore the robot's internet (commands page step 7, laptop side first); check with `ssh unitree@192.168.123.164 'curl -sI --max-time 8 https://google.com | head -1'`.
-4. [ ] Check the TensorRT engine survived the power cut: `md5sum` of `~/g1-greeter/models/yolo26n-pose.engine` on the robot against `~/g1-backup/yolo26n-pose.engine`; copy the backup over if they differ.
-5. [ ] Copy the voice lines made on the laptop: `scp ~/Unitree/models/clips/*.wav unitree@192.168.123.164:g1-greeter/models/clips/`
-6. [ ] `cd ~/Unitree && git pull && scripts/deploy.sh unitree@192.168.123.164 --no-service` (finishes the install; voice lines now take seconds).
-7. [ ] Brio on the head top with Blu Tack, lens level and facing forward, cable taped down; take a test photo (commands page step 3).
-8. [ ] Self-test: `ssh unitree@192.168.123.164 'cd ~/g1-greeter && .venv/bin/python -m greeter --check --check-sound --scripted'`. Listen for the robot saying "Hello! Lovely to meet you." Note the `depth` and `mic` lines.
-9. [ ] Microphone: if the robot's own mic is still silent, add `GREETER_MIC_DEVICE=BRIO` to `~/.config/g1-greeter/greeter.env` and run the self-test again.
-10. [ ] Mic level for turn-taking: run the self-test once in silence and once while someone talks at 1 m; speech should be well above -38 dBFS and the quiet room well below. If not, set `GREETER_OPENROUTER_SPEECH_DBFS` in the settings file.
-11. [ ] Floor tape: talk spot 0.6-1.4 m in front, marks at 1, 2 and 3 m; then `.venv/bin/python -m greeter.robot.calibrate --stand-at 1 2 3`.
-12. [ ] A full visit in `--scripted` mode (free): lights, invitation, reply, goodbye.
-13. [ ] When the OpenRouter credit is bought: `scripts/set-api-key.sh unitree@192.168.123.164 OPENROUTER_API_KEY` (you type the key), add `GREETER_BACKEND=openrouter` to the settings file, run `--check` (key, credit, model names, one speech request), then talk to it and note `first audio after ... s` in the log.
-14. [ ] Before leaving: save the day's log if the service ran (`journalctl --user -u g1-greeter --since today > ~/g1-greeter/today.log`), copy `~/g1-backup` to a USB stick, L2 + B, switch off.
+1. [ ] Charge the robot; hang it on the gantry; remote in hand (damping: L2 + B).
+2. [ ] Cable to the laptop, `nmcli con up g1`, `ssh unitree@192.168.123.164`. Internet: `curl -sI --max-time 8 https://google.com | head -1` on the robot (it now joins the lab Wi-Fi itself; if not, commands page step 7).
+3. [ ] Robot: `sudo apt install -y libportaudio2` (for the Brio mic).
+4. [ ] Laptop: `cd ~/Unitree && git pull && scripts/deploy.sh unitree@192.168.123.164 --no-service` (the robot's code is behind).
+5. [ ] **Speaker:** robot: `cd ~/g1-greeter && .venv/bin/python scripts/speaker_test.py`. Note what you hear at each step (light, robot's own voice, our clip) and the return codes.
+6. [ ] **Mic:** `.venv/bin/python -m sounddevice` lists a BRIO device; add `GREETER_MIC_DEVICE=BRIO` to `~/.config/g1-greeter/greeter.env`; `.venv/bin/python -m greeter --check --scripted` shows `mic PASS`.
+7. [ ] Brio on the head top with Blu Tack, facing forward; test photo (commands page step 3).
+8. [ ] Floor tape (talk spot 0.6-1.4 m, marks at 1, 2, 3 m); `.venv/bin/python -m greeter.robot.calibrate --stand-at 1 2 3`.
+9. [ ] If the speaker works: a full visit with `.venv/bin/python -m greeter --scripted`.
+10. [ ] If the OpenRouter credit has arrived: `scripts/set-api-key.sh unitree@192.168.123.164 OPENROUTER_API_KEY` (you type it), `GREETER_BACKEND=openrouter` in the settings file, `--check`, then talk to it.
+11. [ ] Before leaving: L2 + B, switch off; send Claude the outputs of steps 5 and 6.
 
 ## Problems found
 
